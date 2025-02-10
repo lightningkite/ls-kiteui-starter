@@ -2,13 +2,14 @@ import com.lightningkite.kiteui.KiteUiPluginExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.BitcodeEmbeddingMode
 import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
 import java.util.*
+import com.lightningkite.deployhelpers.*
 
 plugins {
     kotlin("multiplatform")
     kotlin("plugin.serialization")
     kotlin("native.cocoapods")
     id("com.android.application")
-    id("com.lightningkite.kiteui")
+    alias(libs.plugins.comLightningkiteKiteui)
     id("io.sentry.android.gradle") version "4.5.1"
     id("dev.opensavvy.vite.kotlin") version "0.4.0"
 }
@@ -22,9 +23,9 @@ repositories {
 }
 
 
-val lightningServerVersion: String by project
-val kotlinVersion: String by project
-val kiteuiVersion: String by project
+val lk = lk {
+    kiteUiPlugin(4)
+}
 val coroutines: String by project
 kotlin {
     applyDefaultHierarchyTemplate()
@@ -46,8 +47,8 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                api("com.lightningkite.kiteui:library:$kiteuiVersion")
-                api("com.lightningkite.lightningserver:client:$lightningServerVersion")
+                api(lk.kiteUi(4))
+                api(lk.lightningServerKiteUiClient(4))
                 api("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines")
                 api(project(":shared"))
             }
@@ -95,7 +96,8 @@ kotlin {
         framework {
             baseName = "apps"
             export(project(":shared"))
-            export("com.lightningkite.kiteui:library:$kiteuiVersion")
+            export(lk.kiteUi(4))
+            export(lk.lightningServerKiteUiClient(4))
             embedBitcode(BitcodeEmbeddingMode.BITCODE)
 //            embedBitcode(BitcodeEmbeddingMode.DISABLE)
 //            podfile = project.file("../example-app-ios/Podfile")

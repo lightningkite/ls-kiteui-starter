@@ -1,0 +1,49 @@
+
+[versions]
+android-compile = "35"
+android-min = "21"
+atomicfu = "0.26.1"
+coroutines = "1.9.0"
+jvm-toolchain = "11"
+kotlin = "2.0.21"
+kotlinx-coroutines-core = "1.9.0"
+tuulbox = "8.0.0"
+
+[libraries]
+androidx-core = { module = "androidx.core:core-ktx", version = "1.15.0" }
+androidx-startup = { module = "androidx.startup:startup-runtime", version = "1.2.0" }
+atomicfu = { module = "org.jetbrains.kotlinx:atomicfu", version = { ref = "atomicfu" } }
+comLightningkiteKiteuiLibrary = { module = "com.lightningkite.kiteui:library", version = "4.0.10" }
+comLightningkiteLightningserverClient = { module = "com.lightningkite.lightningserver:client", version = "4.0.3" }
+comLightningkiteLightningserverProcessor = { module = "com.lightningkite.lightningserver:processor", version = "4.1.7" }
+comLightningkiteLightningserverServerAws = { module = "com.lightningkite.lightningserver:server-aws", version = "4.1.7" }
+comLightningkiteLightningserverServerClamav = { module = "com.lightningkite.lightningserver:server-clamav", version = "4.1.7" }
+comLightningkiteLightningserverServerCore = { module = "com.lightningkite.lightningserver:server-core", version = "4.1.7" }
+comLightningkiteLightningserverServerFirebase = { module = "com.lightningkite.lightningserver:server-firebase", version = "4.1.7" }
+comLightningkiteLightningserverServerKtor = { module = "com.lightningkite.lightningserver:server-ktor", version = "4.1.7" }
+comLightningkiteLightningserverServerMongo = { module = "com.lightningkite.lightningserver:server-mongo", version = "4.1.7" }
+comLightningkiteLightningserverServerRedis = { module = "com.lightningkite.lightningserver:server-redis", version = "4.1.7" }
+comLightningkiteLightningserverServerSentry = { module = "com.lightningkite.lightningserver:server-sentry", version = "4.1.7" }
+comLightningkiteLightningserverShared = { module = "com.lightningkite.lightningserver:shared", version = "4.1.7" }
+datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version = "0.6.1" }
+khronicle = { module = "com.juul.khronicle:khronicle-core", version = "0.4.1" }
+kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version = { ref = "coroutines" } }
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = { ref = "coroutines" } }
+kotlinx-coroutines-core-v181 = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = { ref = "kotlinx-coroutines-core" } }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version = { ref = "coroutines" } }
+kotlinx-io = { module = "org.jetbrains.kotlinx:kotlinx-io-core", version = "0.5.4" }
+tuulbox-collections = { module = "com.juul.tuulbox:collections", version = { ref = "tuulbox" } }
+tuulbox-coroutines = { module = "com.juul.tuulbox:coroutines", version = { ref = "tuulbox" } }
+uuid = { module = "com.benasher44:uuid", version = "0.8.4" }
+wrappers-bom = { module = "org.jetbrains.kotlin-wrappers:kotlin-wrappers-bom", version = "1.0.0-pre.835" }
+wrappers-web = { module = "org.jetbrains.kotlin-wrappers:kotlin-web", version = "0.0.0" }
+
+[plugins]
+android-library = { id = "com.android.library", version = "8.7.2" }
+api = { id = "org.jetbrains.kotlinx.binary-compatibility-validator", version = "0.16.3" }
+atomicfu = { id = "org.jetbrains.kotlinx.atomicfu", version = { ref = "atomicfu" } }
+comLightningkiteKiteui = { id = "com.lightningkite.kiteui", version = "4.0.10" }
+dokka = { id = "org.jetbrains.dokka", version = "1.9.20" }
+kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version = { ref = "kotlin" } }
+kotlinter = { id = "org.jmailen.kotlinter", version = "4.4.1" }
+maven-publish = { id = "com.vanniktech.maven.publish", version = "0.29.0" }

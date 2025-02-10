@@ -14,7 +14,6 @@ import com.lightningkite.lightningserver.core.ServerPath
 import com.lightningkite.lightningserver.core.ServerPathGroup
 import com.lightningkite.lightningserver.email.Email
 import com.lightningkite.lightningserver.email.EmailLabeledValue
-import com.lightningkite.lightningserver.exceptions.BadRequestException
 import com.lightningkite.lightningserver.exceptions.NotFoundException
 import com.lightningkite.lightningserver.settings.generalSettings
 import com.lightningkite.toEmailAddress

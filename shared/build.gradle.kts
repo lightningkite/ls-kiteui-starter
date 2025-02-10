@@ -1,3 +1,5 @@
+import com.lightningkite.deployhelpers.*
+
 plugins {
     kotlin("multiplatform")
     kotlin("plugin.serialization")
@@ -8,8 +10,9 @@ plugins {
 group = "com.lightningkite.template"
 version = "1.0-SNAPSHOT"
 
-val lightningServerVersion: String by project
 val kotlinVersion: String by project
+
+val lk = lk {}
 
 kotlin {
     applyDefaultHierarchyTemplate()
@@ -25,7 +28,7 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                api("com.lightningkite.lightningserver:shared:$lightningServerVersion")
+                api(lk.lightningServer("shared", 4))
             }
             kotlin {
                 srcDir(file("build/generated/ksp/common/commonMain/kotlin"))
@@ -36,7 +39,7 @@ kotlin {
 
 dependencies {
     configurations.filter { it.name.startsWith("ksp") && it.name != "ksp" }.forEach {
-        add(it.name, "com.lightningkite.lightningserver:processor:$lightningServerVersion")
+        add(it.name, lk.lightningServer("processor", 4))
     }
 }
 

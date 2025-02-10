@@ -1,3 +1,4 @@
+import com.lightningkite.deployhelpers.*
 import java.util.Properties
 
 plugins {
@@ -16,17 +17,20 @@ application {
     mainClass.set("com.lightningite.template.MainKt")
 }
 
-val lightningServerVersion: String by extra
-val coroutines: String by extra
+val lk = lk {}
+
 dependencies {
 
     implementation(project(":shared"))
-    api("com.lightningkite.lightningserver:server-core:$lightningServerVersion")
-    api("com.lightningkite.lightningserver:server-aws:$lightningServerVersion")
-    api("com.lightningkite.lightningserver:server-mongo:$lightningServerVersion")
-    api("com.lightningkite.lightningserver:server-ktor:$lightningServerVersion")
-    api("com.lightningkite.lightningserver:server-sentry:$lightningServerVersion")
-    ksp("com.lightningkite.lightningserver:processor:$lightningServerVersion")
+    api(lk.lightningServer("server-core", 4))
+    api(lk.lightningServer("server-ktor", 4))
+    api(lk.lightningServer("server-aws", 4))
+    api(lk.lightningServer("server-mongo", 4))
+    api(lk.lightningServer("server-firebase", 4))
+    api(lk.lightningServer("server-clamav", 4))
+    api(lk.lightningServer("server-redis", 4))
+    api(lk.lightningServer("server-sentry", 4))
+    ksp(lk.lightningServer("processor", 4))
 
     api("com.lightningkite:kotliner-cli:1.0.5")
     implementation("org.apache.logging.log4j:log4j-to-slf4j:2.23.1")
@@ -46,6 +50,20 @@ tasks.named<JavaExec>("run") {
 
 tasks.getByName<Zip>("distZip"){
     archiveFileName.set("server.zip")
+}
+tasks.create("generateSdk", JavaExec::class.java) {
+    group = "deploy"
+    classpath(sourceSets.main.get().runtimeClasspath)
+    mainClass.set("com.lightningkite.template.MainKt")
+    args("sdk")
+    workingDir(project.rootDir)
+}
+tasks.create("serve", JavaExec::class.java) {
+    group = "application"
+    classpath(sourceSets.main.get().runtimeClasspath)
+    mainClass.set("com.lightningkite.template.MainKt")
+    args("serve")
+    workingDir(project.rootDir)
 }
 
 tasks.create("lambda", Copy::class.java) {

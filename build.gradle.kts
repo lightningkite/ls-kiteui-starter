@@ -6,8 +6,7 @@ buildscript {
     val kotlinVersion:String by extra
     repositories {
         mavenLocal()
-        maven(url = "https://s01.oss.sonatype.org/content/repositories/snapshots/")
-        maven(url = "https://s01.oss.sonatype.org/content/repositories/releases/")
+        maven("https://lightningkite-maven.s3.us-west-2.amazonaws.com")
         google()
         mavenCentral()
     }
@@ -15,6 +14,7 @@ buildscript {
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
         classpath("org.jetbrains.kotlin:kotlin-serialization:$kotlinVersion")
         classpath("com.android.tools.build:gradle:8.6.1")
+        classpath("com.lightningkite:lk-gradle-helpers:1.1.1")
     }
 }
 
@@ -22,8 +22,7 @@ allprojects {
     repositories {
         group = "com.lightningkite.template"
         mavenLocal()
-        maven(url = "https://s01.oss.sonatype.org/content/repositories/snapshots/")
-        maven(url = "https://s01.oss.sonatype.org/content/repositories/releases/")
+        maven("https://lightningkite-maven.s3.us-west-2.amazonaws.com")
         google()
         mavenCentral()
     }

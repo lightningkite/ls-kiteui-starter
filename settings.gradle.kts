@@ -3,11 +3,9 @@ rootProject.name = "ls-kiteui-starter"
 pluginManagement {
     val kotlinVersion: String by settings
     val kspVersion: String by settings
-    val kiteuiVersion: String by settings
     repositories {
         mavenLocal()
-        maven(url = "https://s01.oss.sonatype.org/content/repositories/snapshots/")
-        maven(url = "https://s01.oss.sonatype.org/content/repositories/releases/")
+        maven("https://lightningkite-maven.s3.us-west-2.amazonaws.com")
         google()
         gradlePluginPortal()
         mavenCentral()
@@ -17,7 +15,6 @@ pluginManagement {
         kotlin("multiplatform") version kotlinVersion
         kotlin("plugin.serialization") version kotlinVersion
         id("com.google.devtools.ksp") version kspVersion
-        id("com.lightningkite.kiteui") version kiteuiVersion
     }
 }
 
