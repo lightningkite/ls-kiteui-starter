@@ -196,4 +196,4 @@ fun env(name: String, profile: String) {
     }
 }
 
-env("default", "default")
+env("lk", "lk")

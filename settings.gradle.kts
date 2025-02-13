@@ -1,5 +1,3 @@
-rootProject.name = "ls-kiteui-starter"
-
 pluginManagement {
     val kotlinVersion: String by settings
     val kspVersion: String by settings

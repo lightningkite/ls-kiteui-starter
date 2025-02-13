@@ -1,0 +1,7 @@
+- Welcome to the app
+- Enter email and validate, skippable?
+- Enter in phone, optional
+- Enter in name, optional
+- Enter in address, optional
+- Enter in purchase information for warranty, optional
+- Assembly guide for product

@@ -1,0 +1,39 @@
+# Customer Support Portal Estimate
+
+- Intro Flow
+  - Email with Validation
+  - Name and Phone
+  - Address
+  - Purchase Info
+  - Assembly Guide - stepped microvideos
+- My Products and Their Support
+  - Warranty Info Page
+  - Warranty Upsell to Service Plan
+  - Replacement Parts
+    - Selector
+    - Checkout
+  - Manual Link
+  - Help And Support
+    - Initial Selection
+    - Help Article
+    - Form into Chat
+    - Chat
+- Intelligent Upsell
+- Profile Updating
+  - Address, phone, name
+- Social Media
+  - Posts List
+  - Create Recipe
+  - Recipe Detail
+  - Recipe Review
+  - Create Brag
+  - Create Question
+  - Comment
+- Admin Side
+  - Requested order approval
+  - Curating Social Media
+  - Announcements
+- Integrations
+  - Make and track orders in Shopify for replacement parts
+  - Kustomer for Chat
+  - Kustomer for Articles?

@@ -11,3 +11,4 @@ settings.*.json
 build
 local/
 local.version.txt
+.terraform
