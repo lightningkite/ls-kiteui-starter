@@ -1,6 +1,6 @@
 package com.lightningkite.template.utils
 
-import com.lightningkite.kiteui.suspendCoroutineCancellable
+import kotlinx.coroutines.suspendCancellableCoroutine
 import platform.UserNotifications.*
 import platform.darwin.dispatch_async
 import platform.darwin.dispatch_get_main_queue
@@ -11,7 +11,7 @@ actual fun fcmSetup() {
 
 actual suspend fun requestNotificationPermissions() {
     println("requestNotificationPermissions: started")
-    val result = suspendCoroutineCancellable { cont ->
+    val result = suspendCancellableCoroutine { cont ->
         UNUserNotificationCenter.currentNotificationCenter()
             .getNotificationSettingsWithCompletionHandler { settings: UNNotificationSettings? ->
                 println("requestNotificationPermissions: ${settings?.authorizationStatus}")
@@ -35,7 +35,6 @@ actual suspend fun requestNotificationPermissions() {
                 }
             }
         println("requestNotificationPermissions: sent")
-        return@suspendCoroutineCancellable {}
     }
     println("requestNotificationPermissions: status ${decodeStatus[result] ?: result.toString()}")
     if (result == UNAuthorizationStatusAuthorized) {
@@ -58,7 +57,7 @@ object MyMessaging {
 
 actual suspend fun notificationPermissions(): Boolean? {
     println("notificationPermissions: started")
-    return suspendCoroutineCancellable { cont ->
+    return suspendCancellableCoroutine { cont ->
         UNUserNotificationCenter.currentNotificationCenter()
             .getNotificationSettingsWithCompletionHandler {
                 dispatch_async(dispatch_get_main_queue()) {
@@ -72,6 +71,5 @@ actual suspend fun notificationPermissions(): Boolean? {
                     }.also { if (it == true) MyMessaging.enableAutoInit() })
                 }
             }
-        return@suspendCoroutineCancellable { }
     }
 }

@@ -4,8 +4,9 @@ import com.lightningkite.kiteui.forms.prepareModelsClient
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.DefaultSerializersModule
-import com.lightningkite.kiteui.navigation.ScreenNavigator
-import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.kiteui.navigation.PageNavigator
+import com.lightningkite.kiteui.views.ViewModifiable
+import com.lightningkite.readable.*
 import com.lightningkite.kiteui.views.l2.*
 import com.lightningkite.serialization.ClientModule
 
@@ -19,7 +20,7 @@ val setFcmToken =
     { token: String -> fcmToken.value = token } //This is for iOS. It is used in the iOS app. Do not remove.
 
 
-fun ViewWriter.app(navigator: ScreenNavigator, dialog: ScreenNavigator) {
+fun ViewWriter.app(navigator: PageNavigator, dialog: PageNavigator): ViewModifiable {
 
     prepareModelsShared()
     prepareModelsClient()
@@ -27,22 +28,22 @@ fun ViewWriter.app(navigator: ScreenNavigator, dialog: ScreenNavigator) {
 
     DefaultSerializersModule = ClientModule
 
-    navigator.navigate(LandingScreen() )
-    appNav(navigator, dialog) {
+    navigator.navigate(LandingPage() )
+    return appNav(navigator, dialog) {
         appName = "KiteUI Sample App"
         ::navItems {
             listOf(
-                NavLink(title = { "Home" }, icon = { Icon.home }) { { HomeScreen() } },
-//                NavLink(title = { "Internal" }, icon = { Icon.home }) { { RootScreen } },
-//                NavLink(title = { "Documentation" }, icon = { Icon.list }) { { DocSearchScreen } },
+                NavLink(title = { "Home" }, icon = { Icon.home }) { { HomePage() } },
+//                NavLink(title = { "Internal" }, icon = { Icon.home }) { { RootPage } },
+//                NavLink(title = { "Documentation" }, icon = { Icon.list }) { { DocSearchPage } },
             )
         }
 
         ::exists {
-            navigator.currentScreen() !is UseFullScreen
+            navigator.currentPage() !is UseFullPage
         }
 
     }
 }
 
-interface UseFullScreen
+interface UseFullPage

@@ -17,9 +17,9 @@ import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.lightningkite.kiteui.KiteUiActivity
 import com.lightningkite.kiteui.PlatformStorage
-import com.lightningkite.kiteui.suspendCoroutineCancellable
 import com.lightningkite.kiteui.views.AndroidAppContext
 import com.lightningkite.template.fcmToken
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 
 
@@ -46,12 +46,11 @@ actual fun fcmSetup(): Unit {
 actual suspend fun requestNotificationPermissions() {
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-        val result = suspendCoroutineCancellable<KiteUiActivity.PermissionResult> { cont ->
+        val result = suspendCancellableCoroutine<KiteUiActivity.PermissionResult> { cont ->
             AndroidAppContext.requestPermissions(android.Manifest.permission.POST_NOTIFICATIONS, onResult = {
                 PlatformStorage.set("askedNotificationPermissions", "true")
                 cont.resume(it)
             })
-            return@suspendCoroutineCancellable { }
         }
         if (result.accepted) {
             fcmSetup()

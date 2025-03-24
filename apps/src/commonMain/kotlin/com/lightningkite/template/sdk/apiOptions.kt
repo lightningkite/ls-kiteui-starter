@@ -1,6 +1,6 @@
 package com.lightningkite.template.sdk
 
-import com.lightningkite.kiteui.reactive.PersistentProperty
+import com.lightningkite.readable.PersistentProperty
 import kotlinx.serialization.Serializable
 
 

@@ -11,3 +11,6 @@ settings.*.json
 build
 local/
 local.version.txt
+Pods
+*.xcworkspace
+xcuserdata

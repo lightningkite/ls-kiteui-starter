@@ -24,7 +24,7 @@ repositories {
 
 
 val lk = lk {
-    kiteUiPlugin(4)
+    kiteUiPlugin(5)
 }
 val coroutines: String by project
 kotlin {
@@ -47,13 +47,10 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                api(lk.kiteUi(4))
-                api(lk.lightningServerKiteUiClient(4))
+                api(lk.kiteUi(5))
+                api(lk.lightningServerKiteUiClient(5))
                 api("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines")
                 api(project(":shared"))
-            }
-            kotlin {
-                srcDir(file("build/generated/kiteui"))
             }
         }
         val androidMain by getting {
@@ -96,8 +93,8 @@ kotlin {
         framework {
             baseName = "apps"
             export(project(":shared"))
-            export(lk.kiteUi(4))
-            export(lk.lightningServerKiteUiClient(4))
+            export(lk.kiteUi(5))
+            export(lk.lightningServerKiteUiClient(5))
             embedBitcode(BitcodeEmbeddingMode.BITCODE)
 //            embedBitcode(BitcodeEmbeddingMode.DISABLE)
 //            podfile = project.file("../example-app-ios/Podfile")
@@ -170,7 +167,7 @@ dependencies {
 
 configure<KiteUiPluginExtension> {
     this.packageName = "com.lightningkite.template"
-    this.iosProjectRoot = project.file("./ios/Template")
+    this.iosProjectRoot = project.file("./ios/app")
 }
 
 fun env(name: String, profile: String) {

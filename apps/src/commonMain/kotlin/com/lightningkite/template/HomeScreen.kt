@@ -1,12 +1,12 @@
 package com.lightningkite.template
 
 import com.lightningkite.kiteui.Routable
-import com.lightningkite.kiteui.navigation.Screen
-import com.lightningkite.kiteui.navigation.screenNavigator
-import com.lightningkite.kiteui.reactive.Constant
-import com.lightningkite.kiteui.reactive.Readable
-import com.lightningkite.kiteui.reactive.await
-import com.lightningkite.kiteui.reactive.reactive
+import com.lightningkite.kiteui.navigation.Page
+import com.lightningkite.kiteui.navigation.pageNavigator
+import com.lightningkite.readable.Constant
+import com.lightningkite.readable.Readable
+import com.lightningkite.readable.await
+import com.lightningkite.readable.reactive
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.template.sdk.currentSession
@@ -14,17 +14,17 @@ import com.lightningkite.template.sdk.sessionToken
 import kotlinx.coroutines.launch
 
 @Routable("/dashboard")
-class HomeScreen: Screen {
+class HomePage: Page {
     override val title: Readable<String> get() = Constant("Home")
-    override fun ViewWriter.render(){
+    override fun ViewWriter.render(): ViewModifiable {
 
         reactive {
             if(currentSession() == null)
-                screenNavigator.reset(LandingScreen())
+                pageNavigator.reset(LandingPage())
         }
 
-        col {
-            centered - h2("Welcome to your home screen")
+        return col {
+            centered - h2("Welcome to your home page")
 
             expanding - space()
 
@@ -37,7 +37,7 @@ class HomeScreen: Screen {
 
                     } finally {
                         sessionToken set null
-                        screenNavigator.reset(LoginScreen())
+                        pageNavigator.reset(LoginPage())
                     }
                 }
             }

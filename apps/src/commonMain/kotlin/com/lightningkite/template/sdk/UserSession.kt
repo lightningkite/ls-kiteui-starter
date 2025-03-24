@@ -2,15 +2,15 @@ package com.lightningkite.template.sdk
 
 import com.lightningkite.UUID
 import com.lightningkite.default
-import com.lightningkite.kiteui.Async
-import com.lightningkite.kiteui.asyncGlobal
-import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.readable.*
 import com.lightningkite.lightningdb.CollectionUpdates
 import com.lightningkite.lightningdb.Query
 import com.lightningkite.lightningdb.condition
 import com.lightningkite.lightningdb.sort
 import com.lightningkite.lightningserver.db.ModelCache
 import com.lightningkite.template.User
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Clock.System.now
 import kotlinx.datetime.Instant
@@ -48,14 +48,14 @@ val userToken: Readable<Triple<LiveApi, String, suspend () -> String>?> = shared
     val api = selectedApi().api
 
     var lastRefresh: Instant = now()
-    var token: Async<String> = asyncGlobal {
+    var token: Deferred<String> = AppScope.async {
         api.userAuth.getTokenSimple(refresh)
     }
 
     Triple(api, refresh, suspend {
         if (lastRefresh <= now().minus(4.minutes)) {
             lastRefresh = now()
-            token = asyncGlobal {
+            token = AppScope.async {
                 api.userAuth.getTokenSimple(refresh)
             }
         }

@@ -60,8 +60,8 @@
             android:name="io.sentry.traces.user-interaction.enable"
             android:value="true"
         />
-        <!-- enable screenshot for crashes -->
-        <meta-data android:name="io.sentry.attach-screenshot" android:value="true"/>
+        <!-- enable pageshot for crashes -->
+        <meta-data android:name="io.sentry.attach-pageshot" android:value="true"/>
         <!-- enable view hierarchy for crashes -->
         <meta-data android:name="io.sentry.attach-view-hierarchy" android:value="true"/>
 
