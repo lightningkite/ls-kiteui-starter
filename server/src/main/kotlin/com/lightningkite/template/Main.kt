@@ -40,6 +40,10 @@ fun sdk() {
     Documentable.kotlinSdkLocal("com.lightningkite.template.sdk", File("apps/src/commonMain/kotlin/com/lightningkite/template/sdk"))
 }
 
+/**
+ * Entry point for CLI.
+ * Allows you to pick from several functions to run from the CLI.
+ */
 fun main(vararg args: String) = cli(
     args,
     ::setup,
