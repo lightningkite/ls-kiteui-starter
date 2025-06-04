@@ -17,25 +17,24 @@ application {
     mainClass.set("com.lightningite.template.MainKt")
 }
 
-val lk = lk {}
-
 dependencies {
 
     implementation(project(":shared"))
-    api(lk.lightningServer("server-core", 4))
-    api(lk.lightningServer("server-ktor", 4))
-    api(lk.lightningServer("server-aws", 4))
-    api(lk.lightningServer("server-mongo", 4))
-    api(lk.lightningServer("server-firebase", 4))
-    api(lk.lightningServer("server-clamav", 4))
-    api(lk.lightningServer("server-redis", 4))
-    api(lk.lightningServer("server-sentry", 4))
-    ksp(lk.lightningServer("processor", 4))
+    api(libs.comLightningkiteLightningserverServerAws)
+    api(libs.comLightningkiteLightningserverServerClamav)
+    api(libs.comLightningkiteLightningserverServerCore)
+    api(libs.comLightningkiteLightningserverServerFirebase)
+    api(libs.comLightningkiteLightningserverServerKtor)
+    api(libs.comLightningkiteLightningserverServerMongo)
+    api(libs.comLightningkiteLightningserverServerRedis)
+    api(libs.comLightningkiteLightningserverServerSentry)
+    api(libs.comLightningkiteLightningserverShared)
+    ksp(libs.comLightningkiteLightningserverProcessor)
 
-    api("com.lightningkite:kotliner-cli:1.0.5")
-    implementation("org.apache.logging.log4j:log4j-to-slf4j:2.23.1")
+    api(libs.kotliner.cli)
+    implementation(libs.log4j.to.slf4j)
 
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
+    testImplementation(libs.kotlin.test.junit)
 }
 
 kotlin {

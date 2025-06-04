@@ -12,7 +12,6 @@ import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.centered
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.lightningserver.auth.AuthClientEndpoints
-import com.lightningkite.template.sdk.AbstractAnonymousSession
 import com.lightningkite.template.sdk.currentSession
 import com.lightningkite.template.sdk.selectedApi
 import com.lightningkite.template.sdk.sessionToken
@@ -25,21 +24,21 @@ class LoginPage : Page, UseFullPage {
 
         val authUI = shared {
             val api = selectedApi().api
-            val anon = object : AbstractAnonymousSession(api) {}
-            AuthComponent(
+            val anon = AuthComponent(
                 endpoints = AuthClientEndpoints(
-                    subjects = mapOf("user" to anon.userAuth),
+                    subjects = mapOf("user" to api.userAuth),
                     authenticatedSubjects = emptyMap(),
-                    emailProof = anon.emailProof,
-                    oneTimePasswordProof = anon.oneTimePasswordProof,
-                    passwordProof = anon.passwordProof,
+                    emailProof = api.emailProof,
+                    oneTimePasswordProof = api.oneTimePasswordProof,
+                    passwordProof = api.passwordProof,
                 ),
                 subjectPath = "user",
-                subject = anon.userAuth
+                subject = api.userAuth
             ) { token ->
                 sessionToken set token
                 pageNavigator.reset(HomePage())
             }
+            anon
         }
 
         return frame {

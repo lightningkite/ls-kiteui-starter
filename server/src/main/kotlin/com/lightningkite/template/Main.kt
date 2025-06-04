@@ -9,6 +9,7 @@ import com.lightningkite.lightningserver.pubsub.LocalPubSub
 import com.lightningkite.lightningserver.settings.Settings
 import com.lightningkite.lightningserver.settings.loadSettings
 import com.lightningkite.lightningserver.typed.Documentable
+import com.lightningkite.lightningserver.typed.SDK2
 import com.lightningkite.lightningserver.typed.kotlinSdkLocal
 import java.io.File
 
@@ -37,7 +38,7 @@ fun terraform() {
 }
 
 fun sdk() {
-    Documentable.kotlinSdkLocal("com.lightningkite.template.sdk", File("apps/src/commonMain/kotlin/com/lightningkite/template/sdk"))
+    SDK2.write("com.lightningkite.template.sdk", File("apps/src/commonMain/kotlin/com/lightningkite/template/sdk"))
 }
 
 /**

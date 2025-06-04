@@ -6,7 +6,6 @@ import com.lightningkite.kiteui.navigation.PageNavigator
 import com.lightningkite.kiteui.navigation.basePath
 import com.lightningkite.readable.invoke
 import com.lightningkite.kiteui.views.*
-import com.lightningkite.kiteui.views.direct.KeyCodes
 import kotlinx.browser.document
 import kotlinx.browser.window
 import org.w3c.dom.events.KeyboardEvent

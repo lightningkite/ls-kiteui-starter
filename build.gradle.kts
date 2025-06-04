@@ -1,9 +1,15 @@
+import com.lightningkite.deployhelpers.publishing
+import com.lightningkite.deployhelpers.useGitBasedVersion
+import com.lightningkite.deployhelpers.useLocalDependencies
+
 plugins {
-    kotlin("jvm") version "2.0.21"
+    alias(libs.plugins.kotlin.jvm) apply false
+    alias(libs.plugins.kotlin.serialization) apply false
+    alias(libs.plugins.android.library) apply false
+    alias(libs.plugins.versionCatalogUpdate)
 }
 
 buildscript {
-    val kotlinVersion:String by extra
     repositories {
         mavenLocal()
         maven("https://lightningkite-maven.s3.us-west-2.amazonaws.com")
@@ -11,14 +17,16 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
-        classpath("org.jetbrains.kotlin:kotlin-serialization:$kotlinVersion")
-        classpath(libs.androidBuildTools)
         classpath(libs.lkGradleHelpers)
     }
 }
 
 allprojects {
+
+//    useGitBasedVersion()
+    useLocalDependencies()
+//    publishing()
+
     repositories {
         group = "com.lightningkite.template"
         mavenLocal()

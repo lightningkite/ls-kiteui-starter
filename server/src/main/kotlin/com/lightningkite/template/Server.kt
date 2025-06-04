@@ -15,6 +15,7 @@ import com.lightningkite.lightningserver.http.get
 import com.lightningkite.lightningserver.http.handler
 import com.lightningkite.lightningserver.http.post
 import com.lightningkite.lightningserver.meta.metaEndpoints
+import com.lightningkite.lightningserver.notifications.NotificationSettings
 import com.lightningkite.lightningserver.settings.setting
 import com.lightningkite.lightningserver.typed.api
 import com.lightningkite.prepareModelsServerCore
@@ -25,6 +26,8 @@ object Server: ServerPathGroup(ServerPath.root) {
     val cache = setting("cache", CacheSettings())
     val database = setting("database", DatabaseSettings())
     val email = setting("email", EmailSettings())
+    val notifications = setting("notifications", default = NotificationSettings("console"))
+    val webUrl = setting("webUrl", "http://localhost:8080")
 
     init{
         // Auth keys
@@ -66,6 +69,7 @@ object Server: ServerPathGroup(ServerPath.root) {
 
     val users = UserEndpoints(path("users"))
     val auth = AuthenticationEndpoints(path("auth"))
+    val fcmTokens = FcmTokenEndpoints(path("fcmTokens"))
 
 
     val meta = path("meta").metaEndpoints()

@@ -2,80 +2,66 @@ package com.lightningkite.template.sdk
 
 import com.lightningkite.UUID
 import com.lightningkite.default
+import com.lightningkite.kiteui.reactive.PersistentProperty
+import com.lightningkite.kiteui.suppressConnectivityIssues
 import com.lightningkite.readable.*
 import com.lightningkite.lightningdb.CollectionUpdates
 import com.lightningkite.lightningdb.Query
 import com.lightningkite.lightningdb.condition
 import com.lightningkite.lightningdb.sort
+import com.lightningkite.lightningserver.auth.accessToken
 import com.lightningkite.lightningserver.db.ModelCache
 import com.lightningkite.template.User
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Clock.System.now
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.todayIn
+import kotlin.coroutines.cancellation.CancellationException
 import kotlin.time.Duration.Companion.minutes
 
 
 class UserSession(
-    override val api: Api,
-    override val userToken: String,
-    override val userAccessToken: suspend () -> String,
-    self: User,
-) : AbstractUserSession(api, userToken, userAccessToken) {
+    val api: Api2,
+    val userId: UUID,
+) : CachedApi2(api) {
 
-    val userId = self._id
-    val role = self.role
-
-    val nonCached = object : AbstractUserSession(api, userToken, userAccessToken) {
-        override val api: Api = this@UserSession.api
-        override val userToken: String = this@UserSession.userToken
-        override val userAccessToken: suspend () -> String = this@UserSession.userAccessToken
-    }
-
-    val users = ModelCache(nonCached.user, User.serializer())
 }
 
 val sessionToken = PersistentProperty<String?>("sessionToken", null)
-var invalidateAccess = BasicListenable()
 
-
-val userToken: Readable<Triple<LiveApi, String, suspend () -> String>?> = shared {
-    rerunOn(invalidateAccess)
-    val refresh = sessionToken<String?>() ?: return@shared null
+val currentSession: Readable<UserSession?> = sharedSuspending {
+    val token = sessionToken() ?: return@sharedSuspending null
     val api = selectedApi().api
 
-    var lastRefresh: Instant = now()
-    var token: Deferred<String> = AppScope.async {
-        api.userAuth.getTokenSimple(refresh)
-    }
+    val authApi = api.withHeaderCalculator(api.userAuth.accessToken(token))
+    try {
+        val self = authApi.userAuth.getSelf()
 
-    Triple(api, refresh, suspend {
-        if (lastRefresh <= now().minus(4.minutes)) {
-            lastRefresh = now()
-            token = AppScope.async {
-                api.userAuth.getTokenSimple(refresh)
-            }
+        UserSession(
+            api = authApi,
+            userId = self._id,
+        ).also {
+//            AppScope.launch { registerToken(authApi) }
         }
-        token.await()
-    })
-
-}
-
-val currentSession = sharedSuspending<UserSession?> {
-    val (api: LiveApi, userToken: String, access: suspend () -> String) = userToken.await() ?: return@sharedSuspending null
-    val self = try {
-        api.userAuth.getSelf(access, masquerade = null)
     } catch (e: Exception) {
-        return@sharedSuspending null
+        println("FAILED")
+        e.printStackTrace()
+        null
     }
-    UserSession(
-        api = api,
-        userToken = userToken,
-        userAccessToken = access,
-        self = self,
-    )
 }
 
+//private suspend fun registerToken(authApi: Api2) {
+//    suppressConnectivityIssues {
+//        fcmToken()?.takeIf { it.isNotEmpty() }?.let { authApi.fcmToken.registerToken(it) }
+//    }
+//}
+//private suspend fun deregisterToken() {
+//    val api: Api2 = selectedApi().api
+//    suppressConnectivityIssues {
+//        fcmToken()?.takeIf { it.isNotEmpty() }?.let { api.fcmToken.clearToken(it) }
+//    }
+//}

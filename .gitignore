@@ -14,3 +14,4 @@ local.version.txt
 Pods
 *.xcworkspace
 xcuserdata
+local.properties

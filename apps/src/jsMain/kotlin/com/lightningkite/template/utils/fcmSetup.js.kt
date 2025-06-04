@@ -1,10 +1,10 @@
 package com.lightningkite.template.utils
 
-import com.lightningkite.kiteui.suspendCoroutineCancellable
 import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.template.fcmToken
 import com.lightningkite.template.utils.*
 import kotlinx.browser.window
+import kotlinx.coroutines.suspendCancellableCoroutine
 import org.w3c.notifications.*
 import org.w3c.workers.*
 import kotlin.coroutines.resume
@@ -86,11 +86,10 @@ private fun finishSetup(
 }
 
 actual suspend fun requestNotificationPermissions(): Unit {
-    val result = suspendCoroutineCancellable { cont ->
+    val result = suspendCancellableCoroutine { cont ->
         Notification.requestPermission { result ->
             cont.resume(result)
         }
-        return@suspendCoroutineCancellable {}
     }
     if (result == NotificationPermission.GRANTED) fcmSetup()
 }

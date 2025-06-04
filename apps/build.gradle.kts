@@ -11,7 +11,7 @@ plugins {
     id("com.android.application")
     alias(libs.plugins.comLightningkiteKiteui)
     id("io.sentry.android.gradle") version "4.5.1"
-    id("dev.opensavvy.vite.kotlin") version "0.4.0"
+    id("dev.opensavvy.vite.kotlin") version "0.5.1"
 }
 
 group = "com.lightningkite.template"
@@ -22,11 +22,6 @@ repositories {
     maven("https://jitpack.io")
 }
 
-
-val lk = lk {
-    kiteUiPlugin(5)
-}
-val coroutines: String by project
 kotlin {
     applyDefaultHierarchyTemplate()
     androidTarget()
@@ -47,20 +42,21 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                api(lk.kiteUi(5))
-                api(lk.lightningServerKiteUiClient(5))
-                api("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines")
+                api(libs.comLightningkiteKiteuiLibrary)
+                api(libs.comLightningkiteLightningserverClient)
+                api(libs.comLightningkiteLightningserverShared)
+                api(libs.kotlinx.coroutines.core)
                 api(project(":shared"))
             }
         }
         val androidMain by getting {
             dependencies {
-                api("com.google.firebase:firebase-messaging-ktx:24.1.0")
+                api(libs.firebase.messaging.ktx)
             }
         }
         val iosMain by getting {
             dependencies {
-                implementation("io.sentry:sentry-kotlin-multiplatform:0.9.0")
+                implementation(libs.sentry.kotlin.multiplatform)
             }
         }
         val jsMain by getting {
@@ -73,7 +69,7 @@ kotlin {
 
         val commonTest by getting {
             dependencies {
-                implementation("org.jetbrains.kotlin:kotlin-test")
+                implementation(libs.kotlin.test)
             }
         }
     }
@@ -93,8 +89,8 @@ kotlin {
         framework {
             baseName = "apps"
             export(project(":shared"))
-            export(lk.kiteUi(5))
-            export(lk.lightningServerKiteUiClient(5))
+            export(libs.comLightningkiteKiteuiLibrary)
+            export(libs.comLightningkiteLightningserverClient)
             embedBitcode(BitcodeEmbeddingMode.BITCODE)
 //            embedBitcode(BitcodeEmbeddingMode.DISABLE)
 //            podfile = project.file("../example-app-ios/Podfile")

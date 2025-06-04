@@ -32,7 +32,7 @@ class HomePage: Page {
                 centered - text("Logout")
                 onClick {
                     try {
-                        currentSession.await()?.userAuth?.terminateSession()
+                        currentSession.await()?.api?.userAuth?.terminateSession()
                     } catch (e:Exception){
 
                     } finally {
