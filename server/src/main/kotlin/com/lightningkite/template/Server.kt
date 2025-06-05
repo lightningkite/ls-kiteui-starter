@@ -18,6 +18,8 @@ import com.lightningkite.lightningserver.meta.metaEndpoints
 import com.lightningkite.lightningserver.notifications.NotificationSettings
 import com.lightningkite.lightningserver.settings.setting
 import com.lightningkite.lightningserver.typed.api
+import com.lightningkite.lightningserver.websocket.MultiplexWebSocketHandler
+import com.lightningkite.lightningserver.websocket.websocket
 import com.lightningkite.prepareModelsServerCore
 
 object Server: ServerPathGroup(ServerPath.root) {
@@ -71,6 +73,6 @@ object Server: ServerPathGroup(ServerPath.root) {
     val auth = AuthenticationEndpoints(path("auth"))
     val fcmTokens = FcmTokenEndpoints(path("fcmTokens"))
 
-
+    val multiplex = path("multiplex").websocket(MultiplexWebSocketHandler(cache))
     val meta = path("meta").metaEndpoints()
 }
