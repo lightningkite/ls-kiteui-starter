@@ -17,7 +17,7 @@ import kotlinx.serialization.Serializable
 data class User(
     override val _id: UUID = UUID.random(),
     val email: EmailAddress,
-    val name: String,
+    val name: String = "No Name Specified",
     val role: UserRole = UserRole.User,
 ) : HasId<UUID>
 
