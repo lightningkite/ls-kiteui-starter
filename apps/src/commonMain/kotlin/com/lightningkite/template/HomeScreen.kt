@@ -3,19 +3,27 @@ package com.lightningkite.template
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.navigation.pageNavigator
-import com.lightningkite.readable.Constant
-import com.lightningkite.readable.Readable
-import com.lightningkite.readable.await
-import com.lightningkite.readable.reactive
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.lightningserver.*
+import com.lightningkite.lightningserver.sessions.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
+import com.lightningkite.services.data.*
+import com.lightningkite.services.database.*
+import com.lightningkite.services.files.*
 import com.lightningkite.template.sdk.currentSession
 import com.lightningkite.template.sdk.sessionToken
+import kotlin.uuid.Uuid
 import kotlinx.coroutines.launch
 
 @Routable("/dashboard")
 class HomePage: Page {
-    override val title: Readable<String> get() = Constant("Home")
+    override val title: Reactive<String> get() = Constant("Home")
     override fun ViewWriter.render(): ViewModifiable {
 
         reactive {

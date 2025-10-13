@@ -1,58 +1,89 @@
 package com.lightningkite.template.sdk
 
-import com.lightningkite.*
-import com.lightningkite.lightningdb.*
-import com.lightningkite.kiteui.*
-import kotlinx.datetime.*
-import com.lightningkite.serialization.*
-import com.lightningkite.lightningserver.db.*
-import com.lightningkite.lightningserver.auth.*
 
-interface Api2 {
-fun withHeaderCalculator(headerCalculator: suspend () -> List<Pair<String, String>>): Api2
-suspend fun exampleEndpoint(): kotlin.Int
-suspend fun getServerHealth(): com.lightningkite.lightningserver.serverhealth.ServerHealth
-suspend fun bulkRequest(input: Map<String, com.lightningkite.lightningserver.typed.BulkRequest>): Map<String, com.lightningkite.lightningserver.typed.BulkResponse>
-interface Api2EmailProof : EmailProofClientEndpoints{
-}
-val emailProof: Api2EmailProof
-interface Api2FunnelInstance : ClientModelRestEndpoints<com.lightningkite.lightningserver.monitoring.FunnelInstance, com.lightningkite.UUID>{
-suspend fun simplifiedModify(id: com.lightningkite.UUID, input: com.lightningkite.serialization.Partial<com.lightningkite.lightningserver.monitoring.FunnelInstance>): com.lightningkite.lightningserver.monitoring.FunnelInstance
-suspend fun getFunnelHealth(date: kotlinx.datetime.LocalDate): List<com.lightningkite.lightningserver.monitoring.FunnelSummary>
-suspend fun summarizeFunnelsNow(input: kotlinx.datetime.LocalDate): kotlin.Unit
-suspend fun startFunnelInstance(input: com.lightningkite.lightningserver.monitoring.FunnelStart): com.lightningkite.UUID
-suspend fun errorFunnelInstance(id: com.lightningkite.UUID, input: kotlin.String): kotlin.Unit
-suspend fun setStepFunnelInstance(id: com.lightningkite.UUID, input: kotlin.Int): kotlin.Unit
-suspend fun successFunnelInstance(id: com.lightningkite.UUID): kotlin.Unit
-}
-val funnelInstance: Api2FunnelInstance
-interface Api2FunnelSummary : ClientModelRestEndpoints<com.lightningkite.lightningserver.monitoring.FunnelSummary, com.lightningkite.UUID>{
-suspend fun simplifiedModify(id: com.lightningkite.UUID, input: com.lightningkite.serialization.Partial<com.lightningkite.lightningserver.monitoring.FunnelSummary>): com.lightningkite.lightningserver.monitoring.FunnelSummary
-}
-val funnelSummary: Api2FunnelSummary
-interface Api2OneTimePasswordProof : AuthenticatedOneTimePasswordProofClientEndpoints, OneTimePasswordProofClientEndpoints{
-}
-val oneTimePasswordProof: Api2OneTimePasswordProof
-interface Api2OtpSecret : ClientModelRestEndpoints<com.lightningkite.lightningserver.auth.proof.OtpSecret, com.lightningkite.UUID>{
-suspend fun simplifiedModify(id: com.lightningkite.UUID, input: com.lightningkite.serialization.Partial<com.lightningkite.lightningserver.auth.proof.OtpSecret>): com.lightningkite.lightningserver.auth.proof.OtpSecret
-}
-val otpSecret: Api2OtpSecret
-interface Api2PasswordProof : AuthenticatedPasswordProofClientEndpoints, PasswordProofClientEndpoints{
-}
-val passwordProof: Api2PasswordProof
-interface Api2PasswordSecret : ClientModelRestEndpoints<com.lightningkite.lightningserver.auth.proof.PasswordSecret, com.lightningkite.UUID>{
-suspend fun simplifiedModify(id: com.lightningkite.UUID, input: com.lightningkite.serialization.Partial<com.lightningkite.lightningserver.auth.proof.PasswordSecret>): com.lightningkite.lightningserver.auth.proof.PasswordSecret
-}
-val passwordSecret: Api2PasswordSecret
-interface Api2User : ClientModelRestEndpoints<com.lightningkite.template.User, com.lightningkite.UUID>{
-suspend fun simplifiedModify(id: com.lightningkite.UUID, input: com.lightningkite.serialization.Partial<com.lightningkite.template.User>): com.lightningkite.template.User
-}
-val user: Api2User
-interface Api2UserAuth : UserAuthClientEndpoints<com.lightningkite.UUID>, AuthenticatedUserAuthClientEndpoints<com.lightningkite.template.User, com.lightningkite.UUID>{
-}
-val userAuth: Api2UserAuth
-interface Api2UserSession : ClientModelRestEndpoints<com.lightningkite.lightningserver.auth.subject.Session<com.lightningkite.template.User, com.lightningkite.UUID>, com.lightningkite.UUID>{
-suspend fun simplifiedModify(id: com.lightningkite.UUID, input: com.lightningkite.serialization.Partial<com.lightningkite.lightningserver.auth.subject.Session<com.lightningkite.template.User, com.lightningkite.UUID>>): com.lightningkite.lightningserver.auth.subject.Session<com.lightningkite.template.User, com.lightningkite.UUID>
-}
-val userSession: Api2UserSession
+
+interface Api {
+	fun withHeaderCalculator(calculator: suspend () -> List<Pair<String, String>>): Api
+	/**
+	 * Example Endpoint
+	 * 
+	 * **Auth Requirements:** No Requirements
+	 * */
+	suspend fun exampleEndpoint(): kotlin.Int
+	/**
+	 * Example Endpoint
+	 * 
+	 * **Auth Requirements:** User with scope *
+	 * */
+	suspend fun exampleEndpoint(input: kotlin.Int): kotlin.Int
+
+	val user: com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.template.User, kotlin.uuid.Uuid>
+
+	interface UserAuthApi : com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lightningserver.sessions.Session<com.lightningkite.template.User, kotlin.uuid.Uuid>, kotlin.uuid.Uuid>, com.lightningkite.lightningserver.sessions.proofs.AuthClientEndpoints<com.lightningkite.template.User, kotlin.uuid.Uuid> {
+
+		interface EmailApi : com.lightningkite.lightningserver.sessions.proofs.ProofClientEndpoints.Email {
+			/**
+			 * Verify New Email
+			 * 
+			 * Sends a verification passcode to a new email.
+			 * 
+			 * **Auth Requirements:** User with scope *
+			 * */
+			suspend fun verifyNewEmail(input: com.lightningkite.EmailAddress): kotlin.String
+		}
+		val email: EmailApi
+
+		interface TimeBasedOTPProof : com.lightningkite.lightningserver.sessions.proofs.ProofClientEndpoints.TimeBasedOTP, com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lightningserver.sessions.TotpSecret, kotlin.uuid.Uuid> {
+		}
+		val totp: TimeBasedOTPProof
+
+		interface PasswordProof : com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lightningserver.sessions.PasswordSecret, kotlin.uuid.Uuid>, com.lightningkite.lightningserver.sessions.proofs.ProofClientEndpoints.Password {
+		}
+		val password: PasswordProof
+
+		val backupCode: com.lightningkite.lightningserver.sessions.proofs.ProofClientEndpoints.BackupCode
+	}
+	val userAuth: UserAuthApi
+
+	interface FcmTokenApi : com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.template.FcmToken, kotlin.String> {
+		/**
+		 * Register Token
+		 * 
+		 * **Auth Requirements:** User with scope *
+		 * */
+		suspend fun registerToken(input: kotlin.String): com.lightningkite.services.database.EntryChange<com.lightningkite.template.FcmToken>
+		/**
+		 * Test In-App Notifications
+		 * 
+		 * **Auth Requirements:** User with scope *
+		 * */
+		suspend fun testInAppNotifications(id: kotlin.String): kotlin.String
+		/**
+		 * Clear Token
+		 * 
+		 * **Auth Requirements:** No Requirements
+		 * */
+		suspend fun clearToken(id: kotlin.String): kotlin.Boolean
+	}
+	val fcmToken: FcmTokenApi
+
+	interface MetaApi {
+		/**
+		 * Get Server Health
+		 * 
+		 * Gets the current status of the server
+		 * 
+		 * **Auth Requirements:** No Requirements
+		 * */
+		suspend fun getServerHealth(): com.lightningkite.lightningserver.typed.ServerHealth
+		/**
+		 * Bulk Request
+		 * 
+		 * Performs multiple requests at once, returning the results in the same order.
+		 * 
+		 * **Auth Requirements:** No Requirements
+		 * */
+		suspend fun bulkRequest(input: Map<String, com.lightningkite.lightningserver.typed.BulkRequest>): Map<String, com.lightningkite.lightningserver.typed.BulkResponse>
+	}
+	val meta: MetaApi
 }

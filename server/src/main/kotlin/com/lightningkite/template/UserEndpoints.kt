@@ -1,27 +1,38 @@
 package com.lightningkite.template
 
 import com.lightningkite.*
-import com.lightningkite.lightningdb.*
-import com.lightningkite.lightningserver.auth.authOptions
-import com.lightningkite.lightningserver.auth.id
-import com.lightningkite.lightningserver.core.*
-import com.lightningkite.lightningserver.db.ModelRestEndpoints
-import com.lightningkite.lightningserver.db.ModelSerializationInfo
-import com.lightningkite.lightningserver.db.modelInfo
-import com.lightningkite.lightningserver.db.modelInfoWithDefault
-import com.lightningkite.lightningserver.tasks.startupOnce
-import com.lightningkite.lightningserver.typed.auth
+import com.lightningkite.lightningserver.*
+import com.lightningkite.lightningserver.auth.*
+import com.lightningkite.lightningserver.definition.*
+import com.lightningkite.lightningserver.definition.builder.*
+import com.lightningkite.lightningserver.deprecations.*
+import com.lightningkite.lightningserver.encryption.*
+import com.lightningkite.lightningserver.http.*
+import com.lightningkite.lightningserver.pathing.*
+import com.lightningkite.lightningserver.runtime.*
+import com.lightningkite.lightningserver.serialization.*
+import com.lightningkite.lightningserver.sessions.*
+import com.lightningkite.lightningserver.settings.*
+import com.lightningkite.lightningserver.typed.*
+import com.lightningkite.lightningserver.websockets.*
+import com.lightningkite.services.cache.*
+import com.lightningkite.services.data.*
+import com.lightningkite.services.database.*
+import com.lightningkite.services.email.*
+import com.lightningkite.services.files.*
+import com.lightningkite.services.notifications.*
+import com.lightningkite.services.sms.*
+import com.lightningkite.template.UserAuth.RoleCache.userRole
+import kotlin.uuid.Uuid
 
-
-class UserEndpoints(path: ServerPath) : ServerPathGroup(path) {
+object UserEndpoints : ServerBuilder() {
 
     val info = Server.database.modelInfo(
-        serialization = ModelSerializationInfo<User, UUID>(),
-        authOptions = authOptions<User>(),
+        auth = UserAuth.require(),
         permissions = {
-            val allowedRoles = UserRole.entries.filter { it <= auth.role() }
+            val allowedRoles = UserRole.entries.filter { it <= auth.userRole() }
             val admin: Condition<User> =
-                if (this.auth.role() >= UserRole.Admin) condition { it.role inside allowedRoles } else Condition.Never
+                if (this.auth.userRole() >= UserRole.Admin) condition { it.role inside allowedRoles } else Condition.Never
             val self = condition<User> { it._id eq auth.id }
             ModelPermissions(
                 create = admin,
@@ -35,17 +46,17 @@ class UserEndpoints(path: ServerPath) : ServerPathGroup(path) {
         }
     )
 
-    val rest = ModelRestEndpoints(path, info)
+    val rest = path include ModelRestEndpoints(info)
 //    val socketUpdates = ModelRestUpdatesWebsocket(path, Server.database, info)
 
     init {
         startupOnce("initAdminUser", Server.database) {
             println("Adding user")
             val email = "joseph+root@lightningkite.com".toEmailAddress()
-            info.collection().deleteMany(condition { it.email.eq(email) })
-            info.collection().insertOne(
+            info.table().deleteMany(condition { it.email.eq(email) })
+            info.table().insertOne(
                 User(
-                    _id = UUID(0L, 10L),
+                    _id = Uuid.fromLongs(0L, 10L),
                     email = email,
                     name = "Joseph Root",
                     role = UserRole.Root

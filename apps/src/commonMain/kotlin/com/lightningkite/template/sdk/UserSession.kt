@@ -1,40 +1,44 @@
 package com.lightningkite.template.sdk
 
-import com.lightningkite.UUID
-import com.lightningkite.default
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.PersistentProperty
 import com.lightningkite.kiteui.suppressConnectivityIssues
-import com.lightningkite.readable.*
-import com.lightningkite.lightningdb.CollectionUpdates
-import com.lightningkite.lightningdb.Query
-import com.lightningkite.lightningdb.condition
-import com.lightningkite.lightningdb.sort
+import com.lightningkite.lightningserver.*
 import com.lightningkite.lightningserver.auth.accessToken
 import com.lightningkite.lightningserver.db.ModelCache
+import com.lightningkite.lightningserver.sessions.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
+import com.lightningkite.services.data.*
+import com.lightningkite.services.database.*
+import com.lightningkite.services.files.*
 import com.lightningkite.template.User
+import kotlin.coroutines.cancellation.CancellationException
+import kotlin.time.Duration.Companion.minutes
+import kotlin.uuid.Uuid
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
-import kotlinx.datetime.Clock.System.now
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.todayIn
-import kotlin.coroutines.cancellation.CancellationException
-import kotlin.time.Duration.Companion.minutes
 
 
 class UserSession(
-    val api: Api2,
-    val userId: UUID,
-) : CachedApi2(api) {
+    val api: Api,
+    val userId: Uuid,
+) : CachedApi(api) {
 
 }
 
 val sessionToken = PersistentProperty<String?>("sessionToken", null)
 
-val currentSession: Readable<UserSession?> = sharedSuspending {
-    val token = sessionToken() ?: return@sharedSuspending null
+val currentSession: Reactive<UserSession?> = rememberSuspending {
+    val token = sessionToken() ?: return@rememberSuspending null
     val api = selectedApi().api
 
     val authApi = api.withHeaderCalculator(api.userAuth.accessToken(token))

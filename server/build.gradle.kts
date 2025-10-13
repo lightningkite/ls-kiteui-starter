@@ -2,9 +2,9 @@ import com.lightningkite.deployhelpers.*
 import java.util.Properties
 
 plugins {
-    kotlin("jvm")
-    kotlin("plugin.serialization")
-    id("com.google.devtools.ksp")
+    alias(libs.plugins.kotlinJvm)
+    alias(libs.plugins.serialization)
+    alias(libs.plugins.ksp)
     application
 }
 
@@ -20,26 +20,40 @@ application {
 dependencies {
 
     implementation(project(":shared"))
-    api(libs.comLightningkiteLightningserverServerAws)
-    api(libs.comLightningkiteLightningserverServerClamav)
-    api(libs.comLightningkiteLightningserverServerCore)
-    api(libs.comLightningkiteLightningserverServerFirebase)
-    api(libs.comLightningkiteLightningserverServerKtor)
-    api(libs.comLightningkiteLightningserverServerMongo)
-    api(libs.comLightningkiteLightningserverServerRedis)
-    api(libs.comLightningkiteLightningserverServerSentry)
-    api(libs.comLightningkiteLightningserverShared)
-    ksp(libs.comLightningkiteLightningserverProcessor)
+    api(libs.kotliner.cli)
+    api(libs.comLightningKite.csvDurable)
+    api(libs.comLightningKite.services.database)
+    api(libs.comLightningKite.services.database.jsonfile)
+    api(libs.comLightningKite.services.database.mongodb)
+    api(libs.comLightningKite.services.notifications.firebase)
+    api(libs.comLightningKite.lightningServer.core)
+    api(libs.comLightningKite.lightningServer.typed)
+    api(libs.comLightningKite.lightningServer.files)
+    api(libs.comLightningKite.lightningServer.media)
+    api(libs.comLightningKite.lightningServer.sessions)
+    api(libs.comLightningKite.lightningServer.sessions.email)
+    api(libs.comLightningKite.lightningServer.sessions.sms)
+    implementation(libs.comLightningKite.lightningServer.engine.aws)
+    implementation(libs.comLightningKite.services.files.s3)
+    implementation(libs.comLightningKite.lightningServer.engine.netty)
+    implementation(libs.comLightningKite.lightningServer.engine.ktor)
+    implementation(libs.comLightningKite.lightningServerClient.serverUtils)
+    implementation(libs.kotliner.cli)
+
+    ksp(libs.comLightningKite.services.database.processor)
 
     api(libs.kotliner.cli)
-    implementation(libs.log4j.to.slf4j)
-
-    testImplementation(libs.kotlin.test.junit)
+    testImplementation(kotlin("test"))
 }
 
 kotlin {
     sourceSets.main {
         kotlin.srcDir("build/generated/ksp/main/kotlin")
+    }
+    compilerOptions {
+        optIn.add("kotlin.time.ExperimentalTime")
+        optIn.add("kotlin.uuid.ExperimentalUuidApi")
+        freeCompilerArgs.add("-Xcontext-parameters")
     }
 }
 

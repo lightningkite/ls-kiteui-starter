@@ -1,76 +1,57 @@
 package com.lightningkite.template.sdk
 
-import com.lightningkite.*
-import com.lightningkite.lightningdb.*
-import com.lightningkite.kiteui.*
-import kotlinx.datetime.*
-import com.lightningkite.serialization.*
-import com.lightningkite.lightningserver.db.*
-import com.lightningkite.lightningserver.auth.*
-import com.lightningkite.lightningserver.networking.Fetcher
-import kotlinx.serialization.builtins.*
-import kotlinx.serialization.*
+import com.lightningkite.lightningserver.HttpMethod
+import com.lightningkite.lightningserver.typed.Fetcher
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.builtins.MapSerializer
+import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.builtins.nullable
 
-class LiveApi2(val fetcher: Fetcher): Api2 {
-override fun withHeaderCalculator(headerCalculator: suspend () -> List<Pair<String, String>>): LiveApi2 = LiveApi2(fetcher.withHeaderCalculator(headerCalculator))
-override suspend fun exampleEndpoint(): kotlin.Int
-    = fetcher("example-endpoint", HttpMethod.GET, kotlin.Unit.serializer(), Unit, kotlin.Int.serializer())
-override suspend fun getServerHealth(): com.lightningkite.lightningserver.serverhealth.ServerHealth
-    = fetcher("meta/health", HttpMethod.GET, kotlin.Unit.serializer(), Unit, com.lightningkite.lightningserver.serverhealth.ServerHealth.serializer())
-override suspend fun bulkRequest(input: Map<String, com.lightningkite.lightningserver.typed.BulkRequest>): Map<String, com.lightningkite.lightningserver.typed.BulkResponse>
-    = fetcher("meta/bulk", HttpMethod.POST, MapSerializer(String.serializer(), com.lightningkite.lightningserver.typed.BulkRequest.serializer()), input, MapSerializer(String.serializer(), com.lightningkite.lightningserver.typed.BulkResponse.serializer()))
-inner class Api2EmailProofLive : EmailProofClientEndpoints by EmailProofClientEndpointsLive(fetcher, "auth/proof/email", ), Api2.Api2EmailProof{
-}
-override val emailProof: Api2EmailProofLive = Api2EmailProofLive()
-inner class Api2FunnelInstanceLive : ClientModelRestEndpoints<com.lightningkite.lightningserver.monitoring.FunnelInstance, com.lightningkite.UUID> by ClientModelRestEndpointsLive(fetcher, "meta/funnels/instance/rest", com.lightningkite.lightningserver.monitoring.FunnelInstance.serializer(), ContextualSerializer(com.lightningkite.UUID::class, null, arrayOf())), Api2.Api2FunnelInstance{
-override suspend fun simplifiedModify(id: com.lightningkite.UUID, input: com.lightningkite.serialization.Partial<com.lightningkite.lightningserver.monitoring.FunnelInstance>): com.lightningkite.lightningserver.monitoring.FunnelInstance
-    = fetcher("meta/funnels/instance/rest/${id.urlifyToCommaString()}/simplified", HttpMethod.PATCH, com.lightningkite.serialization.Partial.serializer(com.lightningkite.lightningserver.monitoring.FunnelInstance.serializer()), input, com.lightningkite.lightningserver.monitoring.FunnelInstance.serializer())
-override suspend fun getFunnelHealth(date: kotlinx.datetime.LocalDate): List<com.lightningkite.lightningserver.monitoring.FunnelSummary>
-    = fetcher("meta/funnels/summaries/${date.urlifyToCommaString()}", HttpMethod.GET, kotlin.Unit.serializer(), Unit, ListSerializer(com.lightningkite.lightningserver.monitoring.FunnelSummary.serializer()))
-override suspend fun summarizeFunnelsNow(input: kotlinx.datetime.LocalDate): kotlin.Unit
-    = fetcher("meta/funnels/summarize-now", HttpMethod.POST, ContextualSerializer(kotlinx.datetime.LocalDate::class, null, arrayOf()).nullable, input, kotlin.Unit.serializer())
-override suspend fun startFunnelInstance(input: com.lightningkite.lightningserver.monitoring.FunnelStart): com.lightningkite.UUID
-    = fetcher("meta/funnels/start", HttpMethod.POST, com.lightningkite.lightningserver.monitoring.FunnelStart.serializer(), input, ContextualSerializer(com.lightningkite.UUID::class, null, arrayOf()))
-override suspend fun errorFunnelInstance(id: com.lightningkite.UUID, input: kotlin.String): kotlin.Unit
-    = fetcher("meta/funnels/error/${id.urlifyToCommaString()}", HttpMethod.POST, kotlin.String.serializer(), input, kotlin.Unit.serializer())
-override suspend fun setStepFunnelInstance(id: com.lightningkite.UUID, input: kotlin.Int): kotlin.Unit
-    = fetcher("meta/funnels/step/${id.urlifyToCommaString()}", HttpMethod.POST, kotlin.Int.serializer(), input, kotlin.Unit.serializer())
-override suspend fun successFunnelInstance(id: com.lightningkite.UUID): kotlin.Unit
-    = fetcher("meta/funnels/success/${id.urlifyToCommaString()}", HttpMethod.POST, kotlin.Unit.serializer(), Unit, kotlin.Unit.serializer())
-}
-override val funnelInstance: Api2FunnelInstanceLive = Api2FunnelInstanceLive()
-inner class Api2FunnelSummaryLive : ClientModelRestEndpoints<com.lightningkite.lightningserver.monitoring.FunnelSummary, com.lightningkite.UUID> by ClientModelRestEndpointsLive(fetcher, "meta/funnels/summary/rest", com.lightningkite.lightningserver.monitoring.FunnelSummary.serializer(), ContextualSerializer(com.lightningkite.UUID::class, null, arrayOf())), Api2.Api2FunnelSummary{
-override suspend fun simplifiedModify(id: com.lightningkite.UUID, input: com.lightningkite.serialization.Partial<com.lightningkite.lightningserver.monitoring.FunnelSummary>): com.lightningkite.lightningserver.monitoring.FunnelSummary
-    = fetcher("meta/funnels/summary/rest/${id.urlifyToCommaString()}/simplified", HttpMethod.PATCH, com.lightningkite.serialization.Partial.serializer(com.lightningkite.lightningserver.monitoring.FunnelSummary.serializer()), input, com.lightningkite.lightningserver.monitoring.FunnelSummary.serializer())
-}
-override val funnelSummary: Api2FunnelSummaryLive = Api2FunnelSummaryLive()
-inner class Api2OneTimePasswordProofLive : AuthenticatedOneTimePasswordProofClientEndpoints by AuthenticatedOneTimePasswordProofClientEndpointsLive(fetcher, "auth/proof/otp", ), OneTimePasswordProofClientEndpoints by OneTimePasswordProofClientEndpointsLive(fetcher, "auth/proof/otp", ), Api2.Api2OneTimePasswordProof{
-}
-override val oneTimePasswordProof: Api2OneTimePasswordProofLive = Api2OneTimePasswordProofLive()
-inner class Api2OtpSecretLive : ClientModelRestEndpoints<com.lightningkite.lightningserver.auth.proof.OtpSecret, com.lightningkite.UUID> by ClientModelRestEndpointsLive(fetcher, "auth/proof/otp/secrets", com.lightningkite.lightningserver.auth.proof.OtpSecret.serializer(), ContextualSerializer(com.lightningkite.UUID::class, null, arrayOf())), Api2.Api2OtpSecret{
-override suspend fun simplifiedModify(id: com.lightningkite.UUID, input: com.lightningkite.serialization.Partial<com.lightningkite.lightningserver.auth.proof.OtpSecret>): com.lightningkite.lightningserver.auth.proof.OtpSecret
-    = fetcher("auth/proof/otp/secrets/${id.urlifyToCommaString()}/simplified", HttpMethod.PATCH, com.lightningkite.serialization.Partial.serializer(com.lightningkite.lightningserver.auth.proof.OtpSecret.serializer()), input, com.lightningkite.lightningserver.auth.proof.OtpSecret.serializer())
-}
-override val otpSecret: Api2OtpSecretLive = Api2OtpSecretLive()
-inner class Api2PasswordProofLive : AuthenticatedPasswordProofClientEndpoints by AuthenticatedPasswordProofClientEndpointsLive(fetcher, "auth/proof/password", ), PasswordProofClientEndpoints by PasswordProofClientEndpointsLive(fetcher, "auth/proof/password", ), Api2.Api2PasswordProof{
-}
-override val passwordProof: Api2PasswordProofLive = Api2PasswordProofLive()
-inner class Api2PasswordSecretLive : ClientModelRestEndpoints<com.lightningkite.lightningserver.auth.proof.PasswordSecret, com.lightningkite.UUID> by ClientModelRestEndpointsLive(fetcher, "auth/proof/password/secrets", com.lightningkite.lightningserver.auth.proof.PasswordSecret.serializer(), ContextualSerializer(com.lightningkite.UUID::class, null, arrayOf())), Api2.Api2PasswordSecret{
-override suspend fun simplifiedModify(id: com.lightningkite.UUID, input: com.lightningkite.serialization.Partial<com.lightningkite.lightningserver.auth.proof.PasswordSecret>): com.lightningkite.lightningserver.auth.proof.PasswordSecret
-    = fetcher("auth/proof/password/secrets/${id.urlifyToCommaString()}/simplified", HttpMethod.PATCH, com.lightningkite.serialization.Partial.serializer(com.lightningkite.lightningserver.auth.proof.PasswordSecret.serializer()), input, com.lightningkite.lightningserver.auth.proof.PasswordSecret.serializer())
-}
-override val passwordSecret: Api2PasswordSecretLive = Api2PasswordSecretLive()
-inner class Api2UserLive : ClientModelRestEndpoints<com.lightningkite.template.User, com.lightningkite.UUID> by ClientModelRestEndpointsLive(fetcher, "users", com.lightningkite.template.User.serializer(), ContextualSerializer(com.lightningkite.UUID::class, null, arrayOf())), Api2.Api2User{
-override suspend fun simplifiedModify(id: com.lightningkite.UUID, input: com.lightningkite.serialization.Partial<com.lightningkite.template.User>): com.lightningkite.template.User
-    = fetcher("users/${id.urlifyToCommaString()}/simplified", HttpMethod.PATCH, com.lightningkite.serialization.Partial.serializer(com.lightningkite.template.User.serializer()), input, com.lightningkite.template.User.serializer())
-}
-override val user: Api2UserLive = Api2UserLive()
-inner class Api2UserAuthLive : UserAuthClientEndpoints<com.lightningkite.UUID> by UserAuthClientEndpointsLive(fetcher, "auth/user", ContextualSerializer(com.lightningkite.UUID::class, null, arrayOf())), AuthenticatedUserAuthClientEndpoints<com.lightningkite.template.User, com.lightningkite.UUID> by AuthenticatedUserAuthClientEndpointsLive(fetcher, "auth/user", com.lightningkite.template.User.serializer(), ContextualSerializer(com.lightningkite.UUID::class, null, arrayOf())), Api2.Api2UserAuth{
-}
-override val userAuth: Api2UserAuthLive = Api2UserAuthLive()
-inner class Api2UserSessionLive : ClientModelRestEndpoints<com.lightningkite.lightningserver.auth.subject.Session<com.lightningkite.template.User, com.lightningkite.UUID>, com.lightningkite.UUID> by ClientModelRestEndpointsLive(fetcher, "auth/user/sessions", com.lightningkite.lightningserver.auth.subject.Session.serializer(com.lightningkite.template.User.serializer(), ContextualSerializer(com.lightningkite.UUID::class, null, arrayOf())), ContextualSerializer(com.lightningkite.UUID::class, null, arrayOf())), Api2.Api2UserSession{
-override suspend fun simplifiedModify(id: com.lightningkite.UUID, input: com.lightningkite.serialization.Partial<com.lightningkite.lightningserver.auth.subject.Session<com.lightningkite.template.User, com.lightningkite.UUID>>): com.lightningkite.lightningserver.auth.subject.Session<com.lightningkite.template.User, com.lightningkite.UUID>
-    = fetcher("auth/user/sessions/${id.urlifyToCommaString()}/simplified", HttpMethod.PATCH, com.lightningkite.serialization.Partial.serializer(com.lightningkite.lightningserver.auth.subject.Session.serializer(com.lightningkite.template.User.serializer(), ContextualSerializer(com.lightningkite.UUID::class, null, arrayOf()))), input, com.lightningkite.lightningserver.auth.subject.Session.serializer(com.lightningkite.template.User.serializer(), ContextualSerializer(com.lightningkite.UUID::class, null, arrayOf())))
-}
-override val userSession: Api2UserSessionLive = Api2UserSessionLive()
+class LiveApi(val fetcher: Fetcher) : Api {
+	override fun withHeaderCalculator(calculator: suspend () -> List<Pair<String, String>>): LiveApi = 
+		LiveApi(fetcher.withHeaderCalculator(calculator))
+	override suspend fun exampleEndpoint(): kotlin.Int =
+		fetcher("example-endpoint", HttpMethod.GET, kotlin.Unit.serializer(), kotlin.Unit, kotlin.Int.serializer())
+	override suspend fun exampleEndpoint(input: kotlin.Int): kotlin.Int =
+		fetcher("example-endpoint", HttpMethod.POST, kotlin.Int.serializer(), input, kotlin.Int.serializer())
+
+	override val user = com.lightningkite.lightningserver.typed.LiveClientModelRestEndpoints(fetcher, "users", com.lightningkite.template.User.serializer(), kotlin.uuid.Uuid.serializer())
+
+	inner class LiveUserAuthApi : Api.UserAuthApi, com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lightningserver.sessions.Session<com.lightningkite.template.User, kotlin.uuid.Uuid>, kotlin.uuid.Uuid> by com.lightningkite.lightningserver.typed.LiveClientModelRestEndpoints(fetcher, "auth/user/sessions", com.lightningkite.lightningserver.sessions.Session.serializer(com.lightningkite.template.User.serializer(), kotlin.uuid.Uuid.serializer()), kotlin.uuid.Uuid.serializer()), com.lightningkite.lightningserver.sessions.proofs.AuthClientEndpoints<com.lightningkite.template.User, kotlin.uuid.Uuid> by com.lightningkite.lightningserver.sessions.proofs.LiveAuthClientEndpoints(fetcher, "auth/user", com.lightningkite.template.User.serializer(), kotlin.uuid.Uuid.serializer()) {
+
+		inner class LiveEmailApi : Api.UserAuthApi.EmailApi, com.lightningkite.lightningserver.sessions.proofs.ProofClientEndpoints.Email by com.lightningkite.lightningserver.sessions.proofs.LiveProofClientEndpoints.Email(fetcher, "auth/proof/email", ) {
+			override suspend fun verifyNewEmail(input: com.lightningkite.EmailAddress): kotlin.String =
+				fetcher("auth/proof/email/verify-new-email", HttpMethod.POST, com.lightningkite.EmailAddress.serializer(), input, kotlin.String.serializer())
+		}
+		override val email = LiveEmailApi()
+
+		inner class LiveTimeBasedOTPProof : Api.UserAuthApi.TimeBasedOTPProof, com.lightningkite.lightningserver.sessions.proofs.ProofClientEndpoints.TimeBasedOTP by com.lightningkite.lightningserver.sessions.proofs.LiveProofClientEndpoints.TimeBasedOTP(fetcher, "auth/proof/totp", ), com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lightningserver.sessions.TotpSecret, kotlin.uuid.Uuid> by com.lightningkite.lightningserver.typed.LiveClientModelRestEndpoints(fetcher, "auth/proof/totp/secrets", com.lightningkite.lightningserver.sessions.TotpSecret.serializer(), kotlin.uuid.Uuid.serializer()) {
+		}
+		override val totp = LiveTimeBasedOTPProof()
+
+		inner class LivePasswordProof : Api.UserAuthApi.PasswordProof, com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lightningserver.sessions.PasswordSecret, kotlin.uuid.Uuid> by com.lightningkite.lightningserver.typed.LiveClientModelRestEndpoints(fetcher, "auth/proof/password/secrets", com.lightningkite.lightningserver.sessions.PasswordSecret.serializer(), kotlin.uuid.Uuid.serializer()), com.lightningkite.lightningserver.sessions.proofs.ProofClientEndpoints.Password by com.lightningkite.lightningserver.sessions.proofs.LiveProofClientEndpoints.Password(fetcher, "auth/proof/password", ) {
+		}
+		override val password = LivePasswordProof()
+
+		override val backupCode = com.lightningkite.lightningserver.sessions.proofs.LiveProofClientEndpoints.BackupCode(fetcher, "auth/proof/backup-codes", )
+	}
+	override val userAuth = LiveUserAuthApi()
+
+	inner class LiveFcmTokenApi : Api.FcmTokenApi, com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.template.FcmToken, kotlin.String> by com.lightningkite.lightningserver.typed.LiveClientModelRestEndpoints(fetcher, "fcmTokens", com.lightningkite.template.FcmToken.serializer(), kotlin.String.serializer()) {
+		override suspend fun registerToken(input: kotlin.String): com.lightningkite.services.database.EntryChange<com.lightningkite.template.FcmToken> =
+			fetcher("fcmTokens/register", HttpMethod.POST, kotlin.String.serializer(), input, com.lightningkite.services.database.EntryChange.serializer(com.lightningkite.template.FcmToken.serializer()))
+		override suspend fun testInAppNotifications(id: kotlin.String): kotlin.String =
+			fetcher("fcmTokens/${fetcher.url(id, kotlin.String.serializer())}/test", HttpMethod.POST, kotlin.Unit.serializer(), kotlin.Unit, kotlin.String.serializer())
+		override suspend fun clearToken(id: kotlin.String): kotlin.Boolean =
+			fetcher("fcmTokens/${fetcher.url(id, kotlin.String.serializer())}/clear", HttpMethod.POST, kotlin.Unit.serializer(), kotlin.Unit, kotlin.Boolean.serializer())
+	}
+	override val fcmToken = LiveFcmTokenApi()
+
+	inner class LiveMetaApi : Api.MetaApi {
+		override suspend fun getServerHealth(): com.lightningkite.lightningserver.typed.ServerHealth =
+			fetcher("meta/health", HttpMethod.GET, kotlin.Unit.serializer(), kotlin.Unit, com.lightningkite.lightningserver.typed.ServerHealth.serializer())
+		override suspend fun bulkRequest(input: Map<String, com.lightningkite.lightningserver.typed.BulkRequest>): Map<String, com.lightningkite.lightningserver.typed.BulkResponse> =
+			fetcher("meta/bulk", HttpMethod.POST, MapSerializer(String.serializer(), com.lightningkite.lightningserver.typed.BulkRequest.serializer()), input, MapSerializer(String.serializer(), com.lightningkite.lightningserver.typed.BulkResponse.serializer()))
+	}
+	override val meta = LiveMetaApi()
 }

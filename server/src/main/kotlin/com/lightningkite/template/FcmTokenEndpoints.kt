@@ -1,81 +1,70 @@
 package com.lightningkite.template
 
-import com.lightningkite.UUID
-import com.lightningkite.lightningdb.ModelPermissions
-import com.lightningkite.lightningdb._id
-import com.lightningkite.lightningdb.collection
-import com.lightningkite.lightningdb.condition
-import com.lightningkite.lightningdb.deleteOneById
-import com.lightningkite.lightningdb.eq
-import com.lightningkite.lightningdb.get
-import com.lightningkite.lightningdb.modification
-import com.lightningkite.lightningdb.or
-import com.lightningkite.lightningdb.withPermissions
-import com.lightningkite.lightningserver.auth.authOptions
-import com.lightningkite.lightningserver.auth.id
-import com.lightningkite.lightningserver.auth.noAuth
-import com.lightningkite.lightningserver.core.ServerPath
-import com.lightningkite.lightningserver.core.ServerPathGroup
-import com.lightningkite.lightningserver.db.ModelRestEndpoints
-import com.lightningkite.lightningserver.db.ModelSerializationInfo
-import com.lightningkite.lightningserver.db.modelInfoWithDefault
-import com.lightningkite.lightningserver.exceptions.ForbiddenException
-import com.lightningkite.lightningserver.http.post
-import com.lightningkite.lightningserver.notifications.Notification
-import com.lightningkite.lightningserver.notifications.NotificationData
-import com.lightningkite.lightningserver.typed.api
-import com.lightningkite.lightningserver.typed.auth
-import com.lightningkite.lightningserver.typed.path1
-import com.lightningkite.lightningserver.typed.post
-import io.ktor.server.plugins.NotFoundException
+import com.lightningkite.lightningserver.*
+import com.lightningkite.lightningserver.auth.*
+import com.lightningkite.lightningserver.definition.*
+import com.lightningkite.lightningserver.definition.builder.*
+import com.lightningkite.lightningserver.deprecations.*
+import com.lightningkite.lightningserver.encryption.*
+import com.lightningkite.lightningserver.http.*
+import com.lightningkite.lightningserver.pathing.*
+import com.lightningkite.lightningserver.runtime.*
+import com.lightningkite.lightningserver.serialization.*
+import com.lightningkite.lightningserver.sessions.*
+import com.lightningkite.lightningserver.settings.*
+import com.lightningkite.lightningserver.typed.*
+import com.lightningkite.lightningserver.websockets.*
+import com.lightningkite.services.cache.*
+import com.lightningkite.services.data.*
+import com.lightningkite.services.database.*
+import com.lightningkite.services.email.*
+import com.lightningkite.services.files.*
+import com.lightningkite.services.notifications.*
+import com.lightningkite.services.sms.*
+import com.lightningkite.template.UserAuth.RoleCache.userRole
 import kotlin.text.get
+import kotlin.uuid.Uuid
 
-class FcmTokenEndpoints(path: ServerPath) : ServerPathGroup(path) {
-    val info = modelInfoWithDefault<User, FcmToken, kotlin.String>(
-        serialization = ModelSerializationInfo(),
-        authOptions = authOptions<User>(),
-        getBaseCollection = { Server.database().collection() },
-        forUser = {
-            val admin = condition<FcmToken>((auth.role() ?: UserRole.NoOne) >= UserRole.Admin)
+object FcmTokenEndpoints : ServerBuilder() {
+    val info = Server.database.modelInfo(
+        auth = UserAuth.require(),
+        permissions = {
+            val admin = condition<FcmToken>(auth.userRole() >= UserRole.Admin)
             val mine = condition<FcmToken> { it.user eq auth.id }
-            it.withPermissions(
-                ModelPermissions(
-                    create = admin or mine,
-                    read = admin or mine,
-                    update = admin or mine,
-                    delete = admin or mine,
-                )
+            ModelPermissions(
+                create = admin or mine,
+                read = admin or mine,
+                update = admin or mine,
+                delete = admin or mine,
             )
-        },
-        defaultItem = { FcmToken("", UUID.random()) }
-    )
-    val rest = ModelRestEndpoints(path, info)
+        })
+    val rest = path include ModelRestEndpoints(info)
 
-    val registerEndpoint = path.path("register").post.api(
+    val registerEndpoint = path.path("register").post bind ApiHttpHandler(
         summary = "Register Token",
-        authOptions = authOptions<User>(),
+        auth = UserAuth.require(),
         implementation = { id: String ->
-            info.collection().upsertOne(
+            info.table().upsertOne(
                 condition { it._id eq id },
                 modification { it.user assign auth.id },
-                FcmToken(id, auth.id, userAgent = rawRequest?.headers["User-Agent"] ?: "?")
+                FcmToken(id, auth.id, userAgent = request.headers["User-Agent"]?.root ?: "?")
             )
         }
     )
-    val clearEndpoint = rest.detailPath.path("clear").post.api(
+    val clearEndpoint = rest.detailPath.path("clear").post bind ApiHttpHandler(
         summary = "Clear Token",
-        authOptions = noAuth,
+        auth = noAuth,
         implementation = { _: Unit ->
-            info.collection().deleteOneById(path1)
+            info.table().deleteOneById(first)
         }
     )
 
-    val testEndpoint = rest.detailPath.path("test").post.api(
+    val testEndpoint = rest.detailPath.path("test").post bind ApiHttpHandler(
         summary = "Test In-App Notifications",
-        authOptions = authOptions<User>(),
+        auth = UserAuth.require(),
         implementation = { _: Unit ->
-            val token = info.collection().get(path1) ?: throw NotFoundException()
-            if(token.user != auth.id && (auth.role() ?: UserRole.NoOne) < UserRole.Admin) throw ForbiddenException("You don't own this token.")
+            val token = info.table().get(this.request.first) ?: throw NotFoundException()
+            if(token.user != auth.id && auth.userRole() < UserRole.Admin) throw ForbiddenException("You don't own this token.")
             Server.notifications().send(
                 listOf(token._id), NotificationData(
                     notification = Notification(

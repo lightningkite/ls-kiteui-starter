@@ -1,17 +1,16 @@
 import com.lightningkite.kiteui.KiteUiPluginExtension
-import org.jetbrains.kotlin.gradle.plugin.mpp.BitcodeEmbeddingMode
-import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
 import java.util.*
 import com.lightningkite.deployhelpers.*
 
 plugins {
-    kotlin("multiplatform")
-    kotlin("plugin.serialization")
-    kotlin("native.cocoapods")
-    id("com.android.application")
-    alias(libs.plugins.comLightningkiteKiteui)
+    alias(libs.plugins.androidApp)
+    alias(libs.plugins.kotlinMultiplatform)
+    alias(libs.plugins.serialization)
+    alias(libs.plugins.kotlinCocoapods)
+    alias(libs.plugins.comLightningKite.kiteuiPlugin)
+    alias(libs.plugins.vite)
+    id("com.google.gms.google-services")
     id("io.sentry.android.gradle") version "4.5.1"
-    id("dev.opensavvy.vite.kotlin") version "0.5.1"
 }
 
 group = "com.lightningkite.template"
@@ -42,10 +41,12 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                api(libs.comLightningkiteKiteuiLibrary)
-                api(libs.comLightningkiteLightningserverClient)
-                api(libs.comLightningkiteLightningserverShared)
-                api(libs.kotlinx.coroutines.core)
+                api(libs.comLightningKite.kiteui)
+                api(libs.comLightningKite.csvDurable)
+                api(libs.comLightningKite.lightningServer.core.shared)
+                api(libs.comLightningKite.lightningServer.typed.shared)
+                api(libs.comLightningKite.lightningServer.sessions.shared)
+                api(libs.comLightningKite.lightningServerClient)
                 api(project(":shared"))
             }
         }
@@ -69,7 +70,7 @@ kotlin {
 
         val commonTest by getting {
             dependencies {
-                implementation(libs.kotlin.test)
+                implementation(kotlin("test"))
             }
         }
     }
@@ -89,10 +90,8 @@ kotlin {
         framework {
             baseName = "apps"
             export(project(":shared"))
-            export(libs.comLightningkiteKiteuiLibrary)
-            export(libs.comLightningkiteLightningserverClient)
-            embedBitcode(BitcodeEmbeddingMode.BITCODE)
-//            embedBitcode(BitcodeEmbeddingMode.DISABLE)
+            export(libs.comLightningKite.kiteui)
+            export(libs.comLightningKite.lightningServerClient)
 //            podfile = project.file("../example-app-ios/Podfile")
         }
         pod("Sentry") {
@@ -100,14 +99,11 @@ kotlin {
             linkOnly = true
             extraOpts += listOf("-compiler-option", "-fmodules")
         }
-//        pod("Library") {
-//            version = "1.0"
-//            source = path(project.file("../library"))
-//        }
-
-        // Maps custom Xcode configuration to NativeBuildType
-        xcodeConfigurationToNativeBuildType["CUSTOM_DEBUG"] = NativeBuildType.DEBUG
-        xcodeConfigurationToNativeBuildType["CUSTOM_RELEASE"] = NativeBuildType.RELEASE
+    }
+    compilerOptions {
+        optIn.add("kotlin.time.ExperimentalTime")
+        optIn.add("kotlin.uuid.ExperimentalUuidApi")
+        freeCompilerArgs.add("-Xcontext-parameters")
     }
 }
 
@@ -158,7 +154,7 @@ android {
 }
 
 dependencies {
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
+    coreLibraryDesugaring(libs.desugarJdkLibs)
 }
 
 configure<KiteUiPluginExtension> {

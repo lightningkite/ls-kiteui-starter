@@ -1,78 +1,86 @@
 package com.lightningkite.template
 
-import com.lightningkite.lightningserver.auth.Authentication
-import com.lightningkite.lightningserver.auth.authOptions
-import com.lightningkite.lightningserver.auth.authRequired
-import com.lightningkite.lightningserver.auth.noAuth
-import com.lightningkite.lightningserver.auth.user
-import com.lightningkite.lightningserver.cache.CacheSettings
-import com.lightningkite.lightningserver.core.ServerPath
-import com.lightningkite.lightningserver.core.ServerPathGroup
-import com.lightningkite.lightningserver.db.DatabaseSettings
-import com.lightningkite.lightningserver.email.EmailSettings
-import com.lightningkite.lightningserver.http.HttpResponse
-import com.lightningkite.lightningserver.http.get
-import com.lightningkite.lightningserver.http.handler
-import com.lightningkite.lightningserver.http.post
-import com.lightningkite.lightningserver.meta.metaEndpoints
-import com.lightningkite.lightningserver.notifications.NotificationSettings
-import com.lightningkite.lightningserver.settings.setting
-import com.lightningkite.lightningserver.typed.api
-import com.lightningkite.lightningserver.websocket.MultiplexWebSocketHandler
-import com.lightningkite.lightningserver.websocket.websocket
-import com.lightningkite.prepareModelsServerCore
+import com.lightningkite.lightningserver.*
+import com.lightningkite.lightningserver.auth.*
+import com.lightningkite.lightningserver.cors.CorsInterceptor
+import com.lightningkite.lightningserver.cors.CorsSettings
+import com.lightningkite.lightningserver.definition.*
+import com.lightningkite.lightningserver.definition.builder.*
+import com.lightningkite.lightningserver.deprecations.*
+import com.lightningkite.lightningserver.encryption.*
+import com.lightningkite.lightningserver.files.FileSystemEndpoints
+import com.lightningkite.lightningserver.files.UploadEarlyEndpoint
+import com.lightningkite.lightningserver.http.*
+import com.lightningkite.lightningserver.pathing.*
+import com.lightningkite.lightningserver.runtime.*
+import com.lightningkite.lightningserver.serialization.*
+import com.lightningkite.lightningserver.sessions.*
+import com.lightningkite.lightningserver.settings.*
+import com.lightningkite.lightningserver.typed.*
+import com.lightningkite.lightningserver.typed.sdk.module
+import com.lightningkite.lightningserver.websockets.*
+import com.lightningkite.services.cache.*
+import com.lightningkite.services.data.*
+import com.lightningkite.services.database.*
+import com.lightningkite.services.database.jsonfile.JsonFileDatabase
+import com.lightningkite.services.database.mongodb.MongoDatabase
+import com.lightningkite.services.email.*
+import com.lightningkite.services.files.*
+import com.lightningkite.services.notifications.*
+import com.lightningkite.services.notifications.fcm.FcmNotificationClient
+import com.lightningkite.services.sms.*
+import com.lightningkite.template.UserAuth.RoleCache.userRole
+import kotlin.uuid.Uuid
 
-object Server: ServerPathGroup(ServerPath.root) {
+object Server: ServerBuilder() {
 
     // Settings
-    val cache = setting("cache", CacheSettings())
-    val database = setting("database", DatabaseSettings())
-    val email = setting("email", EmailSettings())
-    val notifications = setting("notifications", default = NotificationSettings("console"))
+    val cache = setting("cache", Cache.Settings())
+    val database = setting("database", Database.Settings())
+    val email = setting("email", EmailService.Settings())
+    val notifications = setting("notifications", default = NotificationService.Settings("console"))
     val webUrl = setting("webUrl", "http://localhost:8080")
+    val cors = setting("cors", CorsSettings())
+    val files = setting("files", PublicFileSystem.Settings())
 
-    init{
-        // Auth keys
-        RoleCacheKey
+    init {
+        install(CorsInterceptor(cors))
+        registerBasicMediaTypeCoders()
 
-        // Prepare models
-        prepareModelsShared()
-        prepareModelsServerCore()
-        com.lightningkite.prepareModelsShared()
+        MongoDatabase
+        JsonFileDatabase
+        FcmNotificationClient
 
-        // Authentication level aliases
-        Authentication.isDeveloper = authRequired<User> {
-            it.role() >= UserRole.Developer
-        }
-        Authentication.isSuperUser = authRequired<User> {
-            it.role() >= UserRole.Root
-        }
-        Authentication.isAdmin = authRequired<User> {
-            it.role() >= UserRole.Admin
-        }
+        AuthRequirement.isSuperUser = UserAuth.require { it.userRole() >= UserRole.Root }
     }
 
     // Endpoints, tasks, and schedules
 
-    val root = get.handler {
+    val root = path.get bind HttpHandler {
         HttpResponse.plainText("Welcome to Lightning Server!")
     }
+    val uploadEarly = path.path("upload-early") module UploadEarlyEndpoint(files = files, database = database, fileScanner = Runtime.Constant(emptyList()))
+    val localFileServer = path.path("files") include FileSystemEndpoints(files)
 
-    val example = path("example-endpoint").get.api(
+    val example = path.path("example-endpoint").get bind ApiHttpHandler(
         summary = "Example Endpoint",
-        authOptions = noAuth,
+        auth = noAuth,
         implementation = { _: Unit -> 42 }
     )
-    val example2 = path("example-endpoint").post.api(
+    val example2 = path.path("example-endpoint").post bind ApiHttpHandler(
         summary = "Example Endpoint",
-        authOptions = authOptions<User>(),
+        auth = UserAuth.require(),
         implementation = { number: Int -> number + 42 }
     )
 
-    val users = UserEndpoints(path("users"))
-    val auth = AuthenticationEndpoints(path("auth"))
-    val fcmTokens = FcmTokenEndpoints(path("fcmTokens"))
+    val users = path.path("users") module UserEndpoints
+    val authEndpoints = path.path("auth") module UserAuth
+    val fcmTokens = path.path("fcmTokens") module FcmTokenEndpoints
 
-    val multiplex = path("multiplex").websocket(MultiplexWebSocketHandler(cache))
-    val meta = path("meta").metaEndpoints()
+    val multiplex = path.path("multiplex") bind MultiplexWebSocketHandler()
+    val base = path bind QueryParamWebSocketHandler()
+    val meta = path.path("meta") module MetaEndpoints("com.lightningkite.template",
+        database,
+        cache
+    )
 }

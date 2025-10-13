@@ -1,10 +1,10 @@
 import com.lightningkite.deployhelpers.*
 
 plugins {
-    kotlin("multiplatform")
-    kotlin("plugin.serialization")
-    id("com.android.library")
-    id("com.google.devtools.ksp")
+    alias(libs.plugins.kotlinMultiplatform)
+    alias(libs.plugins.serialization)
+    alias(libs.plugins.androidLibrary)
+    alias(libs.plugins.ksp)
 }
 
 group = "com.lightningkite.template"
@@ -24,18 +24,27 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                api(libs.comLightningkiteLightningserverShared)
+                api(libs.comLightningKite.lightningServer.core.shared)
+                api(libs.comLightningKite.lightningServer.typed.shared)
+                api(libs.comLightningKite.lightningServer.sessions.shared)
+                api(libs.comLightningKite.lightningServer.files.shared)
+                api(libs.comLightningKite.lightningServer.media.shared)
             }
             kotlin {
                 srcDir(file("build/generated/ksp/common/commonMain/kotlin"))
             }
         }
     }
+    compilerOptions {
+        optIn.add("kotlin.time.ExperimentalTime")
+        optIn.add("kotlin.uuid.ExperimentalUuidApi")
+        freeCompilerArgs.add("-Xcontext-parameters")
+    }
 }
 
 dependencies {
     configurations.filter { it.name.startsWith("ksp") && it.name != "ksp" }.forEach {
-        add(it.name, libs.comLightningkiteLightningserverProcessor)
+        add(it.name, libs.comLightningKite.services.database.processor)
     }
 }
 
@@ -53,6 +62,6 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
     dependencies {
-        coreLibraryDesugaring(libs.desugar.jdk.libs)
+        coreLibraryDesugaring(libs.desugarJdkLibs)
     }
 }

@@ -1,46 +1,79 @@
 
 [versions]
-androidBuildTools = "8.5.2"
-atomicfu = "0.26.1"
-coroutines = "1.9.0"
-desugar_jdk_libs = "2.1.5"
-firebaseMessagingKtx = "24.1.1"
-kiteui = "5.2.85"
-kotlin = "2.0.21"
+agp = "8.11.2"
+coroutines = "1.10.2"
+desugar_jdk_libs = "2.1.4"
+desugar_jdk_libsVersion = "2.1.5"
+firebaseMessagingKtx = "24.1.2"
+graalVmNative = "0.11.1"
+kiteui = "6.1.0-prerelease-42"
+kotlin = "2.2.20"
 kotlinerCli = "1.0.5"
-lightningServer = "4.1.104"
-lightningServerKiteui = "5.3.16"
-lkGradleHelpers = "2.0.0"
-log4jToSlf4j = "2.23.1"
-sentryKotlinMultiplatform = "0.12.0"
-tuulbox = "8.0.0"
+kotlinxSerializationCsvDurable = "0.2.21-1"
+ksp = "2.2.20-2.0.3"
+lightningServer = "5.0.0-prerelease-176"
+lightningServerKiteui = "7.0.0-prerelease-34"
+lkGradleHelpers = "4.0.6"
+markdown = "0.7.3"
+playServicesLocation = "21.3.0"
+playServicesMaps = "19.2.0"
+qrcodeKotlin = "4.5.0"
+sentryKotlinMultiplatform = "0.19.0"
+serviceAbstractions = "0.0.1-63"
+sha2 = "0.8.0"
+shadow = "8.1.1"
+stripe = "30.0.0"
+vite = "DEV"
 
 [libraries]
-comLightningkiteKiteuiLibrary = { module = "com.lightningkite.kiteui:library", version = { ref = "kiteui" } }
-comLightningkiteLightningserverClient = { module = "com.lightningkite.lightningserver:client", version = { ref = "lightningServerKiteui" } }
-comLightningkiteLightningserverProcessor = { module = "com.lightningkite.lightningserver:processor", version = { ref = "lightningServer" } }
-comLightningkiteLightningserverServerAws = { module = "com.lightningkite.lightningserver:server-aws", version = { ref = "lightningServer" } }
-comLightningkiteLightningserverServerClamav = { module = "com.lightningkite.lightningserver:server-clamav", version = { ref = "lightningServer" } }
-comLightningkiteLightningserverServerCore = { module = "com.lightningkite.lightningserver:server-core", version = { ref = "lightningServer" } }
-comLightningkiteLightningserverServerFirebase = { module = "com.lightningkite.lightningserver:server-firebase", version = { ref = "lightningServer" } }
-comLightningkiteLightningserverServerKtor = { module = "com.lightningkite.lightningserver:server-ktor", version = { ref = "lightningServer" } }
-comLightningkiteLightningserverServerMongo = { module = "com.lightningkite.lightningserver:server-mongo", version = { ref = "lightningServer" } }
-comLightningkiteLightningserverServerRedis = { module = "com.lightningkite.lightningserver:server-redis", version = { ref = "lightningServer" } }
-comLightningkiteLightningserverServerSentry = { module = "com.lightningkite.lightningserver:server-sentry", version = { ref = "lightningServer" } }
-comLightningkiteLightningserverShared = { module = "com.lightningkite.lightningserver:shared", version = { ref = "lightningServer" } }
-desugar_jdk_libs = { module = "com.android.tools:desugar_jdk_libs", version = { ref = "desugar_jdk_libs" } }
+comLightningKite-csvDurable = { module = "com.lightningkite:kotlinx-serialization-csv-durable", version = { ref = "kotlinxSerializationCsvDurable" } }
+comLightningKite-kiteui = { module = "com.lightningkite.kiteui:library", version = { ref = "kiteui" } }
+comLightningKite-lightningServer-core = { module = "com.lightningkite.lightningserver:core", version = { ref = "lightningServer" } }
+comLightningKite-lightningServer-core-shared = { module = "com.lightningkite.lightningserver:core-shared", version = { ref = "lightningServer" } }
+comLightningKite-lightningServer-engine-aws = { module = "com.lightningkite.lightningserver:engine-aws-serverless", version = { ref = "lightningServer" } }
+comLightningKite-lightningServer-engine-ktor = { module = "com.lightningkite.lightningserver:engine-ktor", version = { ref = "lightningServer" } }
+comLightningKite-lightningServer-engine-netty = { module = "com.lightningkite.lightningserver:engine-netty", version = { ref = "lightningServer" } }
+comLightningKite-lightningServer-files = { module = "com.lightningkite.lightningserver:files", version = { ref = "lightningServer" } }
+comLightningKite-lightningServer-files-shared = { module = "com.lightningkite.lightningserver:files-shared", version = { ref = "lightningServer" } }
+comLightningKite-lightningServer-media = { module = "com.lightningkite.lightningserver:media", version = { ref = "lightningServer" } }
+comLightningKite-lightningServer-media-shared = { module = "com.lightningkite.lightningserver:media-shared", version = { ref = "lightningServer" } }
+comLightningKite-lightningServer-sessions = { module = "com.lightningkite.lightningserver:sessions", version = { ref = "lightningServer" } }
+comLightningKite-lightningServer-sessions-email = { module = "com.lightningkite.lightningserver:sessions-email", version = { ref = "lightningServer" } }
+comLightningKite-lightningServer-sessions-shared = { module = "com.lightningkite.lightningserver:sessions-shared", version = { ref = "lightningServer" } }
+comLightningKite-lightningServer-sessions-sms = { module = "com.lightningkite.lightningserver:sessions-sms", version = { ref = "lightningServer" } }
+comLightningKite-lightningServer-typed = { module = "com.lightningkite.lightningserver:typed", version = { ref = "lightningServer" } }
+comLightningKite-lightningServer-typed-shared = { module = "com.lightningkite.lightningserver:typed-shared", version = { ref = "lightningServer" } }
+comLightningKite-lightningServerClient = { module = "com.lightningkite.lightningserver:client", version = { ref = "lightningServerKiteui" } }
+comLightningKite-lightningServerClient-serverUtils = { module = "com.lightningkite.lightningserver:server-client-utils", version = { ref = "lightningServerKiteui" } }
+comLightningKite-services-database = { module = "com.lightningkite.services:database", version = { ref = "serviceAbstractions" } }
+comLightningKite-services-database-jsonfile = { module = "com.lightningkite.services:database-jsonfile", version = { ref = "serviceAbstractions" } }
+comLightningKite-services-database-mongodb = { module = "com.lightningkite.services:database-mongodb", version = { ref = "serviceAbstractions" } }
+comLightningKite-services-database-processor = { module = "com.lightningkite.services:database-processor", version = { ref = "serviceAbstractions" } }
+comLightningKite-services-database-shared = { module = "com.lightningkite.services:database-shared", version = { ref = "serviceAbstractions" } }
+comLightningKite-services-files-s3 = { module = "com.lightningkite.services:files-s3", version = { ref = "serviceAbstractions" } }
+comLightningKite-services-notifications-firebase = { module = "com.lightningkite.services:notifications-fcm", version = { ref = "serviceAbstractions" } }
+desugarJdkLibs = { module = "com.android.tools:desugar_jdk_libs", version = { ref = "desugar_jdk_libsVersion" } }
 firebase-messaging-ktx = { module = "com.google.firebase:firebase-messaging-ktx", version = { ref = "firebaseMessagingKtx" } }
-kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version = { ref = "kotlin" } }
-kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version = { ref = "kotlin" } }
+kotlin-coroutines-play = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-play-services", version = { ref = "coroutines" } }
 kotliner-cli = { module = "com.lightningkite:kotliner-cli", version = { ref = "kotlinerCli" } }
-kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = { ref = "coroutines" } }
 lkGradleHelpers = { module = "com.lightningkite:lk-gradle-helpers", version = { ref = "lkGradleHelpers" } }
-log4j-to-slf4j = { module = "org.apache.logging.log4j:log4j-to-slf4j", version = { ref = "log4jToSlf4j" } }
+markdown = { module = "org.jetbrains:markdown", version = { ref = "markdown" } }
+play-services-location = { module = "com.google.android.gms:play-services-location", version = { ref = "playServicesLocation" } }
+play-services-maps = { module = "com.google.android.gms:play-services-maps", version = { ref = "playServicesMaps" } }
+qrcode-kotlin = { module = "io.github.g0dkar:qrcode-kotlin", version = { ref = "qrcodeKotlin" } }
 sentry-kotlin-multiplatform = { module = "io.sentry:sentry-kotlin-multiplatform", version = { ref = "sentryKotlinMultiplatform" } }
+sha2 = { module = "org.kotlincrypto.hash:sha2", version = { ref = "sha2" } }
+stripe-java = { module = "com.stripe:stripe-java", version = { ref = "stripe" } }
 
 [plugins]
-android-library = { id = "com.android.library", version = { ref = "androidBuildTools" } }
-comLightningkiteKiteui = { id = "com.lightningkite.kiteui", version = { ref = "kiteui" } }
-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version = { ref = "kotlin" } }
-kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version = { ref = "kotlin" } }
-versionCatalogUpdate = { id = "nl.littlerobots.version-catalog-update", version = "1.0.0" }
+androidApp = { id = "com.android.application", version = { ref = "agp" } }
+androidLibrary = { id = "com.android.library", version = { ref = "agp" } }
+comLightningKite-kiteuiPlugin = { id = "com.lightningkite.kiteui", version = { ref = "kiteui" } }
+graalVmNative = { id = "org.graalvm.buildtools.native", version = { ref = "graalVmNative" } }
+kotlinCocoapods = { id = "org.jetbrains.kotlin.native.cocoapods", version = { ref = "kotlin" } }
+kotlinJvm = { id = "org.jetbrains.kotlin.jvm", version = { ref = "kotlin" } }
+kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version = { ref = "kotlin" } }
+ksp = { id = "com.google.devtools.ksp", version = { ref = "ksp" } }
+serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version = { ref = "kotlin" } }
+shadow = { id = "com.github.johnrengelman.shadow", version = { ref = "shadow" } }
+vite = { id = "dev.opensavvy.vite.kotlin", version = { ref = "vite" } }

@@ -1,56 +1,117 @@
 package com.lightningkite.template
 
 import com.lightningkite.kotlinercli.cli
-import com.lightningkite.lightningserver.aws.terraform.createTerraform
-import com.lightningkite.lightningserver.aws.terraformAws
-import com.lightningkite.lightningserver.cache.LocalCache
-import com.lightningkite.lightningserver.ktor.runServer
-import com.lightningkite.lightningserver.pubsub.LocalPubSub
-import com.lightningkite.lightningserver.settings.Settings
-import com.lightningkite.lightningserver.settings.loadSettings
-import com.lightningkite.lightningserver.typed.Documentable
-import com.lightningkite.lightningserver.typed.SDK2
-import com.lightningkite.lightningserver.typed.kotlinSdkLocal
+import com.lightningkite.lightningserver.*
+import com.lightningkite.lightningserver.auth.*
+import com.lightningkite.lightningserver.definition.*
+import com.lightningkite.lightningserver.definition.builder.*
+import com.lightningkite.lightningserver.deprecations.*
+import com.lightningkite.lightningserver.encryption.*
+import com.lightningkite.lightningserver.engine.ktor.KtorEngine
+import com.lightningkite.lightningserver.http.*
+import com.lightningkite.lightningserver.pathing.*
+import com.lightningkite.lightningserver.runtime.*
+import com.lightningkite.lightningserver.serialization.*
+import com.lightningkite.lightningserver.sessions.*
+import com.lightningkite.lightningserver.settings.*
+import com.lightningkite.lightningserver.typed.*
+import com.lightningkite.lightningserver.typed.sdk.FetcherSdk
+import com.lightningkite.lightningserver.typed.sdk.SDK.writeSdk
+import com.lightningkite.lightningserver.typed.sdk.CachingSdk
+import com.lightningkite.lightningserver.typed.sdk.plus
+import com.lightningkite.lightningserver.websockets.*
+import com.lightningkite.services.cache.*
+import com.lightningkite.services.data.*
+import com.lightningkite.services.database.*
+import com.lightningkite.services.email.*
+import com.lightningkite.services.files.*
+import com.lightningkite.services.notifications.*
+import com.lightningkite.services.sms.*
+import io.github.oshai.kotlinlogging.KLogger
+import io.github.oshai.kotlinlogging.KotlinLogging
+import io.ktor.server.netty.Netty
+import kotlinx.coroutines.runBlocking
 import java.io.File
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.TimeSource
+import kotlin.uuid.Uuid
 
-private lateinit var settingsFile: File
+private lateinit var settingsFile: KFile
 
-fun setup(settings: File = File("settings.json")) {
+fun setup(settings: KFile = KFile("settings.json")) {
     settingsFile = settings
-    println("Using settings ${settingsFile.absolutePath}")
-    Server
 }
 
-private fun setup2() {
-    if (!Settings.sealed)
-        loadSettings(settingsFile)
+private var engine: KtorEngine? = null
+
+fun engine(setup: KtorEngine.() -> Unit) {
+    engine?.let {
+        setup(it)
+        return
+    }
+
+    val before = TimeSource.Monotonic.markNow()
+    val built = Server.build()
+    println("Server built in ${before.elapsedNow()}")
+
+    engine = KtorEngine(built).apply {
+        settings.loadFromFile(settingsFile, internalSerializersModule)
+        setup()
+    }
 }
 
-fun serve() {
-    setup2()
-    runServer(LocalPubSub, Server.cache())
-}
+fun serve() = engine { start(Netty) }
 
-fun terraform() {
-    println("Generating Terraform")
-    createTerraform("com.lightningkite.template.AwsHandler", "ls-kiteui-template", File("server/terraform"))
-    println("Finished Generating Terraform")
-}
-
-fun sdk() {
-    SDK2.write("com.lightningkite.template.sdk", File("apps/src/commonMain/kotlin/com/lightningkite/template/sdk"))
-}
-
-/**
- * Entry point for CLI.
- * Allows you to pick from several functions to run from the CLI.
- */
-fun main(vararg args: String) = cli(
-    args,
-    ::setup,
-    listOf(
-        ::serve,
-        ::terraform,
-        ::sdk
+fun sdk() = engine {
+    Utils.logger.info { "Generating FetcherSdk" }
+    Server.writeSdk(
+        FetcherSdk + CachingSdk,
+        KFile("apps/src/commonMain/kotlin/com/lightningkite/template/sdk"),
+        "com.lightningkite.template.sdk",
     )
+    Utils.logger.info { "Done" }
+}
+fun main(vararg args: String) = cli(
+    arguments = args,
+    setup = ::setup,
+    available = listOf(
+        ::serve,
+        ::sdk,
+    ),
+    useInteractive = true,
 )
+
+
+object Utils {
+    val logger: KLogger = KotlinLogging.logger("com.lightningtime")
+
+    suspend fun <T> runForEach(seconds: Int, items: Collection<T>, action: suspend (T) -> Unit): List<T> {
+        val loopStart = TimeSource.Monotonic.markNow()
+        val duration = seconds.seconds
+
+        val remaining = items.toMutableList()
+        while (loopStart.elapsedNow() < duration && remaining.isNotEmpty()) {
+            try {
+                action(remaining.removeFirst())
+            } catch (e: Throwable) {
+                KotlinLogging.logger("runForEach").error(e) { "Exception encountered in runForEach" }
+            }
+        }
+
+        return remaining
+    }
+
+    suspend fun <T> runFor(seconds: Int, startingValue: T, action: suspend (T) -> T?): T? {
+
+        val loopStart = TimeSource.Monotonic.markNow()
+        val duration = seconds.seconds
+
+        var value = startingValue
+
+        while (loopStart.elapsedNow() < duration) {
+            value = action(value) ?: return null
+        }
+
+        return value
+    }
+}
