@@ -25,6 +25,9 @@ import com.lightningkite.services.files.s3.S3PublicFileSystem
 import com.lightningkite.services.notifications.*
 import com.lightningkite.services.notifications.fcm.FcmNotificationClient
 import com.lightningkite.lskiteuistarter.UserAuth.RoleCache.userRole
+import com.lightningkite.lskiteuistarter.data.AppReleaseEndpoints
+import com.lightningkite.lskiteuistarter.data.FcmTokenEndpoints
+import com.lightningkite.lskiteuistarter.data.UserEndpoints
 
 object Server: ServerBuilder() {
 
@@ -70,6 +73,7 @@ object Server: ServerBuilder() {
         implementation = { number: Int -> number + 42 }
     )
 
+    val appReleases = path.path("app-releases") module AppReleaseEndpoints
     val users = path.path("users") module UserEndpoints
     val authEndpoints = path.path("auth") module UserAuth
     val fcmTokens = path.path("fcmTokens") module FcmTokenEndpoints

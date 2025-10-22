@@ -66,7 +66,7 @@ fun sdk() = engine {
     Utils.logger.info { "Generating FetcherSdk" }
     Server.writeSdk(
         FetcherSdk + CachingSdk,
-        KFile("apps/src/commonMain/kotlin/com/lightningkite/template/sdk"),
+        KFile("apps/src/commonMain/kotlin/com/lightningkite/lskiteuistarter/sdk"),
         "com.lightningkite.lskiteuistarter.sdk",
     )
     Utils.logger.info { "Done" }

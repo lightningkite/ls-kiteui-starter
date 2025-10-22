@@ -30,6 +30,7 @@ import com.lightningkite.lightningserver.typed.*
 import com.lightningkite.lightningserver.typed.invoke
 import com.lightningkite.lightningserver.typed.sdk.module
 import com.lightningkite.lightningserver.websockets.*
+import com.lightningkite.lskiteuistarter.data.UserEndpoints
 import com.lightningkite.services.cache.*
 import com.lightningkite.services.data.*
 import com.lightningkite.services.database.*
