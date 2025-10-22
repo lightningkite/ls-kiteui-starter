@@ -30,7 +30,7 @@
             android:value="default" />
 
         <service
-            android:name="com.lightningkite.template.utils.FCMService"
+            android:name="com.lightningkite.lskiteuistarter.utils.FCMService"
             android:exported="false"
         >
 
@@ -44,7 +44,7 @@
 
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="com.lightningkite.template.fileprovider"
+            android:authorities="com.lightningkite.lskiteuistarter.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data

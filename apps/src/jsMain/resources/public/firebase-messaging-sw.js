@@ -43,12 +43,13 @@ importScripts("https://cdnjs.cloudflare.com/ajax/libs/firebase/10.7.1/firebase-m
 
 
 firebase.initializeApp({
-    apiKey: "REPLACE ME",
-    authDomain: "REPLACE ME",
-    projectId: "REPLACE ME",
-    storageBucket: "REPLACE ME",
-    messagingSenderId: "REPLACE ME",
-    appId: "REPLACE ME",
+    // TODO: Replace with your app's Firebase project configuration.'
+    apiKey: "AIzaSyCL8CNiVYE-JoF3JxJffpgHjHV8wfMdqTY",
+    authDomain: "ls-kiteui-starter-project.firebaseapp.com",
+    projectId: "ls-kiteui-starter-project",
+    storageBucket: "ls-kiteui-starter-project.firebasestorage.app",
+    messagingSenderId: "763812266707",
+    appId: "1:763812266707:web:3ee91ef35b45b8e70c0a26"
 });
 
 // Retrieve an instance of Firebase Messaging so that it can handle background

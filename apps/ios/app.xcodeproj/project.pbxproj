@@ -638,7 +638,7 @@
 					"\"apps\"",
 					"-ObjC",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.lightningkite.template;
+				PRODUCT_BUNDLE_IDENTIFIER = com.lightningkite.lskiteuistarter;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -682,7 +682,7 @@
 					"\"apps\"",
 					"-ObjC",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.lightningkite.template;
+				PRODUCT_BUNDLE_IDENTIFIER = com.lightningkite.lskiteuistarter;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;

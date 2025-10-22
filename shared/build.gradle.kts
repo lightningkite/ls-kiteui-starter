@@ -7,7 +7,7 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
-group = "com.lightningkite.template"
+group = "com.lightningkite.lskiteuistarter"
 version = "1.0-SNAPSHOT"
 
 kotlin {
@@ -50,7 +50,7 @@ dependencies {
 
 
 android {
-    namespace = "com.lightningkite.template.shared"
+    namespace = "com.lightningkite.lskiteuistarter.shared"
     compileSdk = 35
 
     defaultConfig {

@@ -18,7 +18,7 @@ terraform {
 terraform {
   backend "s3" {
     bucket = "lightningkite-terraform"
-    key = INSERT YOUR APP NAME HERE
+    key = "lskiteuistarter/frontend"
     region = "us-west-2"
   }
 }
@@ -37,9 +37,9 @@ module "web" {
     aws = aws
     aws.acm = aws.acm
   }
-  deployment_name  = "time-app"
+  deployment_name  = "lskiteuistarter"
   dist_folder = "../../build/vite/dist"
-  domain_name      = "INSERT YOUR APP NAME HERE.cs.lightningkite.com"
+  domain_name      = "app.lskiteuistarter.cs.lightningkite.com"
   domain_name_zone = "cs.lightningkite.com"
   react_mode = true
 }

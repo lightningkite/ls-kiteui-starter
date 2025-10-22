@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "763812266707",
+    "project_id": "ls-kiteui-starter-project",
+    "storage_bucket": "ls-kiteui-starter-project.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:763812266707:android:658f851a73b868ef0c0a26",
+        "android_client_info": {
+          "package_name": "com.lightningkite.lskiteuistarter"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA-P12W75hqVZ8EG6ygWj4rrDHeFZEIH6o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

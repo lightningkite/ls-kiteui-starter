@@ -11,15 +11,15 @@ kotlin = "2.2.20"
 kotlinerCli = "1.0.5"
 kotlinxSerializationCsvDurable = "0.2.21-1"
 ksp = "2.2.20-2.0.3"
-lightningServer = "5.0.0-prerelease-176"
-lightningServerKiteui = "7.0.0-prerelease-34"
+lightningServer = "5.0.0-prerelease-196-local"
+lightningServerKiteui = "7.0.0-prerelease-37-local"
 lkGradleHelpers = "4.0.6"
 markdown = "0.7.3"
 playServicesLocation = "21.3.0"
 playServicesMaps = "19.2.0"
 qrcodeKotlin = "4.5.0"
 sentryKotlinMultiplatform = "0.19.0"
-serviceAbstractions = "0.0.1-63"
+serviceAbstractions = "0.0.1-69-local"
 sha2 = "0.8.0"
 shadow = "8.1.1"
 stripe = "30.0.0"
@@ -50,6 +50,7 @@ comLightningKite-services-database-jsonfile = { module = "com.lightningkite.serv
 comLightningKite-services-database-mongodb = { module = "com.lightningkite.services:database-mongodb", version = { ref = "serviceAbstractions" } }
 comLightningKite-services-database-processor = { module = "com.lightningkite.services:database-processor", version = { ref = "serviceAbstractions" } }
 comLightningKite-services-database-shared = { module = "com.lightningkite.services:database-shared", version = { ref = "serviceAbstractions" } }
+comLightningKite-services-email-javasmtp = { module = "com.lightningkite.services:email-javasmtp", version = { ref = "serviceAbstractions" } }
 comLightningKite-services-files-s3 = { module = "com.lightningkite.services:files-s3", version = { ref = "serviceAbstractions" } }
 comLightningKite-services-notifications-firebase = { module = "com.lightningkite.services:notifications-fcm", version = { ref = "serviceAbstractions" } }
 desugarJdkLibs = { module = "com.android.tools:desugar_jdk_libs", version = { ref = "desugar_jdk_libsVersion" } }

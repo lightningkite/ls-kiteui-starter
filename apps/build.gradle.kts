@@ -1,6 +1,8 @@
 import com.lightningkite.kiteui.KiteUiPluginExtension
 import java.util.*
 import com.lightningkite.deployhelpers.*
+import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnLockMismatchReport
+import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnRootExtension
 
 plugins {
     alias(libs.plugins.androidApp)
@@ -10,10 +12,9 @@ plugins {
     alias(libs.plugins.comLightningKite.kiteuiPlugin)
     alias(libs.plugins.vite)
     id("com.google.gms.google-services")
-    id("io.sentry.android.gradle") version "4.5.1"
 }
 
-group = "com.lightningkite.template"
+group = "com.lightningkite.lskiteuistarter"
 version = "1.0-SNAPSHOT"
 
 
@@ -57,13 +58,11 @@ kotlin {
         }
         val iosMain by getting {
             dependencies {
-                implementation(libs.sentry.kotlin.multiplatform)
             }
         }
         val jsMain by getting {
             dependencies {
                 implementation(npm("firebase", "10.7.1"))
-                implementation(npm("@sentry/browser", "8.0.0"))
             }
         }
 
@@ -94,11 +93,6 @@ kotlin {
             export(libs.comLightningKite.lightningServerClient)
 //            podfile = project.file("../example-app-ios/Podfile")
         }
-        pod("Sentry") {
-            version = "~> 8.25"
-            linkOnly = true
-            extraOpts += listOf("-compiler-option", "-fmodules")
-        }
     }
     compilerOptions {
         optIn.add("kotlin.time.ExperimentalTime")
@@ -108,11 +102,11 @@ kotlin {
 }
 
 android {
-    namespace = "com.lightningkite.template"
+    namespace = "com.lightningkite.lskiteuistarter"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.lightningkite.template"
+        applicationId = "com.lightningkite.lskiteuistarter"
         minSdk = 26
         targetSdk = 35
         versionCode = 1
@@ -157,8 +151,15 @@ dependencies {
     coreLibraryDesugaring(libs.desugarJdkLibs)
 }
 
+rootProject.plugins.withType<org.jetbrains.kotlin.gradle.targets.js.yarn.YarnPlugin> {
+    rootProject.the<YarnRootExtension>().yarnLockMismatchReport =
+        YarnLockMismatchReport.WARNING
+    rootProject.the<YarnRootExtension>().reportNewYarnLock = true
+    rootProject.the<YarnRootExtension>().yarnLockAutoReplace = true
+}
+
 configure<KiteUiPluginExtension> {
-    this.packageName = "com.lightningkite.template"
+    this.packageName = "com.lightningkite.lskiteuistarter"
     this.iosProjectRoot = project.file("./ios/app")
 }
 

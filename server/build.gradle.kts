@@ -9,7 +9,7 @@ plugins {
 }
 
 
-group = "com.lightningkite.template"
+group = "com.lightningkite.lskiteuistarter"
 version = "1.0-SNAPSHOT"
 
 
@@ -34,6 +34,7 @@ dependencies {
     api(libs.comLightningKite.lightningServer.sessions.email)
     api(libs.comLightningKite.lightningServer.sessions.sms)
     implementation(libs.comLightningKite.lightningServer.engine.aws)
+    implementation(libs.comLightningKite.services.email.javasmtp)
     implementation(libs.comLightningKite.services.files.s3)
     implementation(libs.comLightningKite.lightningServer.engine.netty)
     implementation(libs.comLightningKite.lightningServer.engine.ktor)
@@ -67,14 +68,14 @@ tasks.getByName<Zip>("distZip"){
 tasks.create("generateSdk", JavaExec::class.java) {
     group = "deploy"
     classpath(sourceSets.main.get().runtimeClasspath)
-    mainClass.set("com.lightningkite.template.MainKt")
+    mainClass.set("com.lightningkite.lskiteuistarter.MainKt")
     args("sdk")
     workingDir(project.rootDir)
 }
 tasks.create("serve", JavaExec::class.java) {
     group = "application"
     classpath(sourceSets.main.get().runtimeClasspath)
-    mainClass.set("com.lightningkite.template.MainKt")
+    mainClass.set("com.lightningkite.lskiteuistarter.MainKt")
     args("serve")
     workingDir(project.rootDir)
 }
@@ -90,43 +91,3 @@ tasks.create("lambda", Copy::class.java) {
         from(configurations.runtimeClasspath)
     }
 }
-tasks.create("rebuildTerraform", JavaExec::class.java) {
-    group = "deploy"
-    classpath(sourceSets.main.get().runtimeClasspath)
-    mainClass.set("com.lightningkite.template.MainKt")
-    args("terraform")
-    workingDir(project.rootDir)
-}
-
-fun env(name: String, profile: String) {
-    val mongoProfile = file("${System.getProperty("user.home")}/.mongo/profiles/$profile.env")
-
-    if(mongoProfile.exists()) {
-        tasks.create("deployServer${name}Init", Exec::class.java) {
-            group = "deploy"
-            this.dependsOn("lambda", "rebuildTerraform")
-            this.environment("AWS_PROFILE", "$profile")
-            val props = Properties()
-            mongoProfile.reader().use { props.load(it) }
-            props.entries.forEach {
-                environment(it.key.toString().trim('"', ' '), it.value.toString().trim('"', ' '))
-            }
-            this.executable = "terraform"
-            this.args("init")
-            this.workingDir = file("terraform/$name")
-        }
-        tasks.create("deployServer${name}", Exec::class.java) {
-            group = "deploy"
-            this.dependsOn("deployServer${name}Init")
-            this.environment("AWS_PROFILE", "$profile")
-            val props = Properties()
-            mongoProfile.reader().use { props.load(it) }
-            props.entries.forEach { environment(it.key.toString().trim('"', ' '), it.value.toString().trim('"', ' ')) }
-
-            this.executable = "terraform"
-            this.args("apply", "-auto-approve")
-            this.workingDir = file("terraform/$name")
-        }
-    }
-}
-env("default", "default")

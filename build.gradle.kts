@@ -29,7 +29,7 @@ allprojects {
     useLocalDependencies()
 
     repositories {
-        group = "com.lightningkite.template"
+        group = "com.lightningkite.lskiteuistarter"
         mavenLocal()
         maven("https://lightningkite-maven.s3.us-west-2.amazonaws.com")
         google()
