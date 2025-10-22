@@ -5,6 +5,7 @@ import com.lightningkite.lightningserver.definition.loggingSettings
 import com.lightningkite.lightningserver.definition.secretBasis
 import com.lightningkite.lightningserver.definition.telemetrySettings
 import com.lightningkite.lightningserver.engine.awsserverless.AwsAdapter
+import com.lightningkite.lightningserver.terraform.SecretSource
 import com.lightningkite.lightningserver.terraform.awsserverless.TerraformAwsServerlessDomainBuilder
 import com.lightningkite.lightningserver.terraform.generated
 import com.lightningkite.services.LoggingSettings
@@ -29,10 +30,13 @@ import kotlin.time.Duration.Companion.minutes
 
 
 object LkEnv : TerraformAwsServerlessDomainBuilder<Server>(Server) {
-    override val displayName = "Bike Take-Off"
+    override val displayName = "LS KiteUI Starter"
     override val domain = "api.lskiteuistarter.cs.lightningkite.com"
     override val domainZone = "cs.lightningkite.com"
     override val terraformRoot: File = File("server/terraform/lk")
+
+    override val secretsSource: SecretSource
+        get() = super.secretsSource
 
     override val handler: KClass<out AwsAdapter> = AwsHandler::class
     override val timeout: Duration = 5.minutes
