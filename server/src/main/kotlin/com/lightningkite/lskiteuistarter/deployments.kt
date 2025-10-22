@@ -41,6 +41,7 @@ object LkEnv : TerraformAwsServerlessDomainBuilder<Server>(Server) {
     override val handler: KClass<out AwsAdapter> = AwsHandler::class
     override val timeout: Duration = 5.minutes
 
+    // why use these in code vs as settings?
     override val storageBucket = "lightningkite-terraform"
     override val debug = true
     override val emergencyContact = "josephivie@gmail.com".toEmailAddress()

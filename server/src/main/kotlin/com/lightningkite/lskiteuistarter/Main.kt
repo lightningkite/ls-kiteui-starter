@@ -44,6 +44,7 @@ fun setup(settings: KFile = KFile("settings.json")) {
 
 private var engine: KtorEngine? = null
 
+// not sure what this is
 fun engine(setup: KtorEngine.() -> Unit) {
     engine?.let {
         setup(it)
@@ -85,6 +86,7 @@ fun main(vararg args: String) = cli(
 object Utils {
     val logger: KLogger = KotlinLogging.logger("com.lightningtime")
 
+    // This is serverless, right? An explanation of how serverless works would be good
     suspend fun <T> runForEach(seconds: Int, items: Collection<T>, action: suspend (T) -> Unit): List<T> {
         val loopStart = TimeSource.Monotonic.markNow()
         val duration = seconds.seconds

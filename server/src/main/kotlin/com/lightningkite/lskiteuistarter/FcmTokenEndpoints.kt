@@ -25,6 +25,7 @@ import com.lightningkite.lskiteuistarter.UserAuth.RoleCache.userRole
 import kotlin.text.get
 import kotlin.uuid.Uuid
 
+// an explanation of this would be nice
 object FcmTokenEndpoints : ServerBuilder() {
     val info = Server.database.modelInfo(
         auth = UserAuth.require(),

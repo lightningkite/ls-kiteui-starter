@@ -69,6 +69,8 @@ object UserAuth : PrincipalType<User, Uuid>, ServerBuilder() {
     context(server: ServerRuntime)
     override suspend fun fetch(id: Uuid): User = UserEndpoints.info.table().get(id) ?: throw NotFoundException()
 
+    // why was .collection() changed to .table()?
+    // what if I want to run using .rawCollection? Is that was .baseTable() is?
     context(server: ServerRuntime)
     override suspend fun fetchByProperty(property: String, value: String): User? = when (property) {
         "email" -> UserEndpoints.info.table()
@@ -84,6 +86,7 @@ object UserAuth : PrincipalType<User, Uuid>, ServerBuilder() {
 
     // caching
 
+    // what is this?
     object RoleCache : AuthCacheKey<User, UserRole> {
         override val id: String = "role"
         override val serializer: KSerializer<UserRole> = kotlinx.serialization.serializer()
@@ -102,6 +105,8 @@ object UserAuth : PrincipalType<User, Uuid>, ServerBuilder() {
 
     val pins = PinHandler(Server.cache, "pins")
 
+    // an explanation of these endpoints would be great. I've only ever used email proof. I'm not sure how saving a password
+    // to a user works
     val email = proofs.path("email") module EmailEndpoints(pins)
     val totp = proofs.path("totp") module TimeBasedOTPProofEndpoints(Server.database, Server.cache)
     val password = proofs.path("password") module PasswordProofEndpoints(Server.database, Server.cache)
@@ -164,13 +169,18 @@ object UserAuth : PrincipalType<User, Uuid>, ServerBuilder() {
         )
     }
 
+    // what are these endpoints for?
+    // why aren't they included in the higher
     object SessionEndpoints : AuthEndpoints<User, Uuid>(
         principal = UserAuth,
         database = Server.database,
     ) {
+        // I think this method is used to say "to allow login, require the following strengths of proof"
+        // But I'm not sure if that's correct or how it works
         context(server: ServerRuntime)
         override suspend fun requiredProofStrengthFor(subject: User): Int {
             // AppStoreTester
+            // what is this app store tester? Is it the user that tests your app before approving it?
             if (subject._id.toString() == "f00ffbaa-abf9-497d-a75a-442f1c77c1e9") return 10
 
             val methods = server.proofMethods
@@ -180,6 +190,9 @@ object UserAuth : PrincipalType<User, Uuid>, ServerBuilder() {
             return if (methods.size > 1) 20 else 10
         }
 
+        // Is the difference between these how long the session lasts vs how long it lasts before logging you out
+        // if you've performed no actions?
+        // Why is one an Instant and the other a Duration
         context(server: ServerRuntime)
         override suspend fun sessionExpiration(subject: User): Instant? = null
 

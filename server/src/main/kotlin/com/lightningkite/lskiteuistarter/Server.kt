@@ -37,6 +37,7 @@ object Server: ServerBuilder() {
     val cors = setting("cors", CorsSettings())
     val files = setting("files", PublicFileSystem.Settings())
 
+    // this seems like boilerplate to me. What does it do?
     init {
         install(CorsInterceptor(cors))
         registerBasicMediaTypeCoders()
@@ -48,6 +49,7 @@ object Server: ServerBuilder() {
         S3PublicFileSystem
         DynamoDbCache
 
+        // what is this line doing?
         AuthRequirement.isSuperUser = UserAuth.require { it.userRole() >= UserRole.Root }
     }
 
