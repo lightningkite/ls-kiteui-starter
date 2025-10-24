@@ -5,14 +5,14 @@ coroutines = "1.10.2"
 desugar_jdk_libs = "2.1.4"
 desugar_jdk_libsVersion = "2.1.5"
 firebaseMessagingKtx = "24.1.2"
-graalVmNative = "0.11.1"
+graalVmNative = "0.11.2"
 kiteui = "6.1.0-prerelease-23"
-kotlin = "2.2.20"
+kotlin = "2.2.21"
 kotlinerCli = "1.0.5"
 kotlinxSerializationCsvDurable = "0.2.21-1"
 ksp = "2.2.20-2.0.3"
-lightningServer = "5.0.0-prerelease-197"
-lightningServerKiteui = "7.0.0-prerelease-40"
+lightningServer = "5.0.0-prerelease-198"
+lightningServerKiteui = "7.0.0-prerelease-41"
 lkGradleHelpers = "4.0.6"
 markdown = "0.7.3"
 playServicesLocation = "21.3.0"
@@ -31,6 +31,7 @@ comLightningKite-kiteui = { module = "com.lightningkite.kiteui:library", version
 comLightningKite-lightningServer-core = { module = "com.lightningkite.lightningserver:core", version = { ref = "lightningServer" } }
 comLightningKite-lightningServer-core-shared = { module = "com.lightningkite.lightningserver:core-shared", version = { ref = "lightningServer" } }
 comLightningKite-lightningServer-engine-aws = { module = "com.lightningkite.lightningserver:engine-aws-serverless", version = { ref = "lightningServer" } }
+comLightningKite-lightningServer-secretSource-aws = { module = "com.lightningkite.lightningserver:secret-source-aws", version = { ref = "lightningServer" } }
 comLightningKite-lightningServer-engine-ktor = { module = "com.lightningkite.lightningserver:engine-ktor", version = { ref = "lightningServer" } }
 comLightningKite-lightningServer-engine-netty = { module = "com.lightningkite.lightningserver:engine-netty", version = { ref = "lightningServer" } }
 comLightningKite-lightningServer-files = { module = "com.lightningkite.lightningserver:files", version = { ref = "lightningServer" } }
