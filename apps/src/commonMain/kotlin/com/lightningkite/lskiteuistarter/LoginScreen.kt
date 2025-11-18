@@ -7,7 +7,6 @@ import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.navigation.pageNavigator
 import com.lightningkite.kiteui.reactive.*
-import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.centered
 import com.lightningkite.kiteui.views.direct.*
@@ -32,7 +31,7 @@ import kotlinx.coroutines.launch
 @Routable("/login")
 class LoginPage : Page, UseFullPage {
     override val title: Reactive<String> get() = Constant("Home")
-    override fun ViewWriter.render(): ViewModifiable {
+    override fun ViewWriter.render() {
 
         val authUI = remember {
             val api = selectedApi().api
@@ -55,17 +54,13 @@ class LoginPage : Page, UseFullPage {
             anon
         }
 
-        return frame {
-            centered - sizedBox(SizeConstraints(maxWidth = 40.rem)) - scrolls - col {
+        frame {
+            centered.sizedBox(SizeConstraints(maxWidth = 40.rem)).scrolling.col {
+                centered.h4("Lightning Server and KiteUI Template")
+                centered.text("This template is your bare bones starting point")
+                centered.text("Sign in to get started")
 
-                centered - h4("Lightning Server and KiteUI Template")
-
-                centered - text("This template is your bare bones starting point")
-
-                centered - text("Sign in to get started")
-
-
-                stack {
+                frame {
                     reactive {
                         clearChildren()
                         with(authUI()) {

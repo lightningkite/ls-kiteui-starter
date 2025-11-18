@@ -24,28 +24,28 @@ import kotlinx.coroutines.launch
 @Routable("/dashboard")
 class HomePage: Page {
     override val title: Reactive<String> get() = Constant("Home")
-    override fun ViewWriter.render(): ViewModifiable {
+    override fun ViewWriter.render() {
 
         reactive {
             if(currentSession() == null)
                 pageNavigator.reset(LandingPage())
         }
 
-        return col {
-            centered - h2("Welcome to your home page")
+        col {
+            centered.h2("Welcome to your home page")
 
-            expanding - space()
+            expanding.space()
 
-            important - buttonTheme - button {
-                centered - text("Test Notifications")
+            important.buttonTheme.button {
+                centered.text("Test Notifications")
                 ::enabled { fcmToken() != null }
                 onClick {
                     currentSession()?.api?.fcmToken?.testInAppNotifications(fcmToken()!!)
                 }
             }
 
-            important - buttonTheme - button {
-                centered - text("Logout")
+            important.buttonTheme.button {
+                centered.text("Logout")
                 onClick {
                     try {
                         currentSession()?.api?.userAuth?.terminateSession()

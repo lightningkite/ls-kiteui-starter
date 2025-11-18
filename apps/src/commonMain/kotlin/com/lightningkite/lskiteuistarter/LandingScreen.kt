@@ -4,7 +4,6 @@ import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.navigation.pageNavigator
 import com.lightningkite.kiteui.reactive.*
-import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.centered
 import com.lightningkite.kiteui.views.direct.activityIndicator
@@ -27,7 +26,7 @@ import kotlinx.coroutines.launch
 @Routable("/")
 class LandingPage: Page, UseFullPage {
     override val title: Reactive<String> get() = Constant("Home")
-    override fun ViewWriter.render(): ViewModifiable {
+    override fun ViewWriter.render() {
         launch {
             delay(1)
             if(currentSession.await() != null){
@@ -38,6 +37,6 @@ class LandingPage: Page, UseFullPage {
                 pageNavigator.reset(LoginPage())
             }
         }
-        return centered - activityIndicator()
+        centered.activityIndicator()
     }
 }

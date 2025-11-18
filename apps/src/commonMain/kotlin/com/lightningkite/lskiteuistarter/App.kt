@@ -7,7 +7,6 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.DefaultSerializersModule
 import com.lightningkite.kiteui.navigation.PageNavigator
 import com.lightningkite.kiteui.reactive.*
-import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.confirmDanger
 import com.lightningkite.kiteui.views.l2.*
@@ -38,7 +37,7 @@ val setFcmToken =
     { token: String -> fcmToken.value = token } //This is for iOS. It is used in the iOS app. Do not remove.
 
 
-fun ViewWriter.app(navigator: PageNavigator, dialog: PageNavigator): ViewModifiable {
+fun ViewWriter.app(navigator: PageNavigator, dialog: PageNavigator) {
     ExceptionToMessages.root.installLsError()
     ExceptionToMessages.root.installLoggedOutErrors()
 
@@ -65,7 +64,7 @@ fun ViewWriter.app(navigator: PageNavigator, dialog: PageNavigator): ViewModifia
     }
 
     navigator.navigate(LandingPage() )
-    return appNav(navigator, dialog) {
+    appNav(navigator, dialog) {
         appName = "KiteUI Sample App"
         ::navItems {
             listOf(
