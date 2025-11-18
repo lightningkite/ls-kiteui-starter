@@ -9,7 +9,6 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.PageNavigator
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.navigation.dialogPageNavigator
-import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.confirmDanger
 import com.lightningkite.kiteui.views.l2.appNav
