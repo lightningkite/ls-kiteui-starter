@@ -1,29 +1,33 @@
-package com.lightningkite.lskiteuistarter
+package com.lightningkite.lskiteuistarter.data
 
-import com.lightningkite.lightningserver.*
-import com.lightningkite.lightningserver.auth.*
-import com.lightningkite.lightningserver.definition.*
-import com.lightningkite.lightningserver.definition.builder.*
-import com.lightningkite.lightningserver.deprecations.*
-import com.lightningkite.lightningserver.encryption.*
-import com.lightningkite.lightningserver.http.*
-import com.lightningkite.lightningserver.pathing.*
-import com.lightningkite.lightningserver.runtime.*
-import com.lightningkite.lightningserver.serialization.*
-import com.lightningkite.lightningserver.sessions.*
-import com.lightningkite.lightningserver.settings.*
-import com.lightningkite.lightningserver.typed.*
-import com.lightningkite.lightningserver.websockets.*
-import com.lightningkite.services.cache.*
-import com.lightningkite.services.data.*
-import com.lightningkite.services.database.*
-import com.lightningkite.services.email.*
-import com.lightningkite.services.files.*
-import com.lightningkite.services.notifications.*
-import com.lightningkite.services.sms.*
+import com.lightningkite.lightningserver.ForbiddenException
+import com.lightningkite.lightningserver.NotFoundException
+import com.lightningkite.lightningserver.auth.id
+import com.lightningkite.lightningserver.auth.noAuth
+import com.lightningkite.lightningserver.auth.require
+import com.lightningkite.lightningserver.definition.builder.ServerBuilder
+import com.lightningkite.lightningserver.http.post
+import com.lightningkite.lightningserver.pathing.arg1
+import com.lightningkite.lightningserver.typed.ApiHttpHandler
+import com.lightningkite.lightningserver.typed.ModelRestEndpoints
+import com.lightningkite.lightningserver.typed.auth
+import com.lightningkite.lightningserver.typed.modelInfo
+import com.lightningkite.lskiteuistarter.FcmToken
+import com.lightningkite.lskiteuistarter.Server
+import com.lightningkite.lskiteuistarter.UserAuth
 import com.lightningkite.lskiteuistarter.UserAuth.RoleCache.userRole
-import kotlin.text.get
-import kotlin.uuid.Uuid
+import com.lightningkite.lskiteuistarter.UserRole
+import com.lightningkite.lskiteuistarter._id
+import com.lightningkite.lskiteuistarter.user
+import com.lightningkite.services.database.ModelPermissions
+import com.lightningkite.services.database.condition
+import com.lightningkite.services.database.deleteOneById
+import com.lightningkite.services.database.eq
+import com.lightningkite.services.database.get
+import com.lightningkite.services.database.modification
+import com.lightningkite.services.database.or
+import com.lightningkite.services.notifications.Notification
+import com.lightningkite.services.notifications.NotificationData
 
 object FcmTokenEndpoints : ServerBuilder() {
     val info = Server.database.modelInfo(
@@ -64,7 +68,7 @@ object FcmTokenEndpoints : ServerBuilder() {
         auth = UserAuth.require(),
         implementation = { _: Unit ->
             val token = info.table().get(this.request.arg1) ?: throw NotFoundException("Token not found in database.")
-            if(token.user != auth.untypedId && auth.userRole() < UserRole.Admin) throw ForbiddenException("You don't own this token.")
+            if (token.user != auth.untypedId && auth.userRole() < UserRole.Admin) throw ForbiddenException("You don't own this token.")
             Server.notifications().send(
                 listOf(token._id), NotificationData(
                     notification = Notification(
@@ -78,4 +82,3 @@ object FcmTokenEndpoints : ServerBuilder() {
         }
     )
 }
-

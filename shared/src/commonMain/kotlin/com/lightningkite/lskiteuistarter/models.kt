@@ -1,16 +1,40 @@
 package com.lightningkite.lskiteuistarter
 
 import com.lightningkite.EmailAddress
-import com.lightningkite.lightningserver.*
-import com.lightningkite.lightningserver.sessions.*
-import com.lightningkite.services.data.*
-import com.lightningkite.services.database.*
-import com.lightningkite.services.files.*
-import kotlin.uuid.Uuid
-import kotlin.time.Instant
+import com.lightningkite.services.data.GenerateDataClassPaths
+import com.lightningkite.services.data.Index
+import com.lightningkite.services.data.MaxLength
+import com.lightningkite.services.data.References
+import com.lightningkite.services.database.HasId
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.todayIn
 import kotlinx.serialization.Serializable
 import kotlin.time.Clock
+import kotlin.time.Instant
+import kotlin.uuid.Uuid
 
+
+@Serializable
+enum class AppPlatform {
+    iOS,
+    Android,
+    Web,
+    Desktop,
+    ;
+
+    companion object
+}
+
+@GenerateDataClassPaths
+@Serializable
+data class AppRelease(
+    override val _id: Uuid = Uuid.random(),
+    val version: String,
+    val platform: AppPlatform,
+    val releaseDate: LocalDate = Clock.System.todayIn(TimeZone.currentSystemDefault()),
+    val requiredUpdate: Boolean,
+) : HasId<Uuid>
 
 @Serializable
 @GenerateDataClassPaths

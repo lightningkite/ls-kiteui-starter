@@ -1,28 +1,29 @@
-package com.lightningkite.lskiteuistarter
+package com.lightningkite.lskiteuistarter.data
 
-import com.lightningkite.*
-import com.lightningkite.lightningserver.*
-import com.lightningkite.lightningserver.auth.*
-import com.lightningkite.lightningserver.definition.*
-import com.lightningkite.lightningserver.definition.builder.*
-import com.lightningkite.lightningserver.deprecations.*
-import com.lightningkite.lightningserver.encryption.*
-import com.lightningkite.lightningserver.http.*
-import com.lightningkite.lightningserver.pathing.*
-import com.lightningkite.lightningserver.runtime.*
-import com.lightningkite.lightningserver.serialization.*
-import com.lightningkite.lightningserver.sessions.*
-import com.lightningkite.lightningserver.settings.*
-import com.lightningkite.lightningserver.typed.*
-import com.lightningkite.lightningserver.websockets.*
-import com.lightningkite.services.cache.*
-import com.lightningkite.services.data.*
-import com.lightningkite.services.database.*
-import com.lightningkite.services.email.*
-import com.lightningkite.services.files.*
-import com.lightningkite.services.notifications.*
-import com.lightningkite.services.sms.*
+import com.lightningkite.lightningserver.auth.id
+import com.lightningkite.lightningserver.auth.require
+import com.lightningkite.lightningserver.definition.builder.ServerBuilder
+import com.lightningkite.lightningserver.typed.ModelRestEndpoints
+import com.lightningkite.lightningserver.typed.auth
+import com.lightningkite.lightningserver.typed.modelInfo
+import com.lightningkite.lightningserver.typed.startupOnce
+import com.lightningkite.lskiteuistarter.Server
+import com.lightningkite.lskiteuistarter.User
+import com.lightningkite.lskiteuistarter.UserAuth
 import com.lightningkite.lskiteuistarter.UserAuth.RoleCache.userRole
+import com.lightningkite.lskiteuistarter.UserRole
+import com.lightningkite.lskiteuistarter._id
+import com.lightningkite.lskiteuistarter.email
+import com.lightningkite.lskiteuistarter.role
+import com.lightningkite.services.database.Condition
+import com.lightningkite.services.database.ModelPermissions
+import com.lightningkite.services.database.condition
+import com.lightningkite.services.database.eq
+import com.lightningkite.services.database.insertOne
+import com.lightningkite.services.database.inside
+import com.lightningkite.services.database.or
+import com.lightningkite.services.database.updateRestrictions
+import com.lightningkite.toEmailAddress
 import kotlin.uuid.Uuid
 
 object UserEndpoints : ServerBuilder() {
@@ -55,7 +56,7 @@ object UserEndpoints : ServerBuilder() {
         info.table().deleteMany(condition { it.email.eq(email) })
         info.table().insertOne(
             User(
-                _id = Uuid.fromLongs(0L, 10L),
+                _id = Uuid.Companion.fromLongs(0L, 10L),
                 email = email,
                 name = "Joseph Root",
                 role = UserRole.Root
