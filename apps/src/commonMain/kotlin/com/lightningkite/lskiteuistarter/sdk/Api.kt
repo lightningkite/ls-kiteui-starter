@@ -5,17 +5,21 @@ package com.lightningkite.lskiteuistarter.sdk
 interface Api {
 	fun withHeaderCalculator(calculator: suspend () -> List<Pair<String, String>>): Api
 	/**
-	 * Example Endpoint
+	 * Example GET Endpoint
+	 * 
+	 * A simple endpoint that always returns 42. Demonstrates public endpoint pattern.
 	 * 
 	 * **Auth Requirements:** No Requirements
 	 * */
-	suspend fun exampleEndpoint(): kotlin.Int
+	suspend fun exampleGETEndpoint(): kotlin.Int
 	/**
-	 * Example Endpoint
+	 * Example POST Endpoint
+	 * 
+	 * Adds 42 to the input number. Demonstrates authenticated endpoint pattern.
 	 * 
 	 * **Auth Requirements:** User with root access
 	 * */
-	suspend fun exampleEndpoint(input: kotlin.Int): kotlin.Int
+	suspend fun examplePOSTEndpoint(input: kotlin.Int): kotlin.Int
 
 	interface UploadEarlyEndpointApi {
 		/**
@@ -41,7 +45,7 @@ interface Api {
 
 	val user: com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lskiteuistarter.User, kotlin.uuid.Uuid>
 
-	interface UserAuthApi : com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lightningserver.sessions.Session<com.lightningkite.lskiteuistarter.User, kotlin.uuid.Uuid>, kotlin.uuid.Uuid>, com.lightningkite.lightningserver.sessions.proofs.AuthClientEndpoints<com.lightningkite.lskiteuistarter.User, kotlin.uuid.Uuid> {
+	interface UserAuthApi : com.lightningkite.lightningserver.sessions.proofs.AuthClientEndpoints<com.lightningkite.lskiteuistarter.User, kotlin.uuid.Uuid>, com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lightningserver.sessions.Session<com.lightningkite.lskiteuistarter.User, kotlin.uuid.Uuid>, kotlin.uuid.Uuid> {
 
 		interface EmailApi : com.lightningkite.lightningserver.sessions.proofs.ProofClientEndpoints.Email {
 			/**
@@ -59,7 +63,7 @@ interface Api {
 		}
 		val totp: TimeBasedOTPProof
 
-		interface PasswordProof : com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lightningserver.sessions.PasswordSecret, kotlin.uuid.Uuid>, com.lightningkite.lightningserver.sessions.proofs.ProofClientEndpoints.Password {
+		interface PasswordProof : com.lightningkite.lightningserver.sessions.proofs.ProofClientEndpoints.Password, com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lightningserver.sessions.PasswordSecret, kotlin.uuid.Uuid> {
 		}
 		val password: PasswordProof
 
@@ -88,6 +92,46 @@ interface Api {
 		suspend fun clearToken(id: kotlin.String): kotlin.Boolean
 	}
 	val fcmToken: FcmTokenApi
+
+	interface ChatRoomApi : com.lightningkite.lightningserver.typed.ClientModelRestEndpointsAndUpdatesWebsocket<com.lightningkite.lskiteuistarter.ChatRoom, kotlin.uuid.Uuid> {
+		/**
+		 * Leave a chat room
+		 * 
+		 * Removes the current user from the chat room's member list
+		 * 
+		 * **Auth Requirements:** User with root access
+		 * */
+		suspend fun leaveAChatRoom(input: kotlin.uuid.Uuid): com.lightningkite.lskiteuistarter.ChatRoom
+		/**
+		 * Join a chat room
+		 * 
+		 * Adds the current user to the chat room's member list
+		 * 
+		 * **Auth Requirements:** User with root access
+		 * */
+		suspend fun joinAChatRoom(input: kotlin.uuid.Uuid): com.lightningkite.lskiteuistarter.ChatRoom
+	}
+	val chatRoom: ChatRoomApi
+
+	interface MessageApi : com.lightningkite.lightningserver.typed.ClientModelRestEndpointsAndUpdatesWebsocket<com.lightningkite.lskiteuistarter.Message, kotlin.uuid.Uuid> {
+		/**
+		 * Edit a message
+		 * 
+		 * Updates the content of an existing message. Only the author can edit their messages.
+		 * 
+		 * **Auth Requirements:** User with root access
+		 * */
+		suspend fun editAMessage(input: com.lightningkite.lskiteuistarter.EditMessageRequest): com.lightningkite.lskiteuistarter.Message
+		/**
+		 * Send a message to a chat room
+		 * 
+		 * Creates a new message in the specified chat room. User must be a member of the room.
+		 * 
+		 * **Auth Requirements:** User with root access
+		 * */
+		suspend fun sendAMessageToAChatRoom(input: com.lightningkite.lskiteuistarter.SendMessageRequest): com.lightningkite.lskiteuistarter.Message
+	}
+	val message: MessageApi
 
 	interface MetaApi {
 		/**

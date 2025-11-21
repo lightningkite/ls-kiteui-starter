@@ -35,6 +35,7 @@ import com.lightningkite.services.cache.*
 import com.lightningkite.services.data.*
 import com.lightningkite.services.database.*
 import com.lightningkite.services.database.email
+import com.lightningkite.services.database.query
 import com.lightningkite.services.database.table
 import com.lightningkite.services.email.*
 import com.lightningkite.services.files.*
@@ -43,6 +44,7 @@ import com.lightningkite.services.sms.*
 import com.lightningkite.toEmailAddress
 import io.ktor.http.decodeURLPart
 import io.ktor.http.encodeURLPathPart
+import kotlinx.coroutines.flow.toList
 import kotlin.uuid.Uuid
 import kotlinx.html.html
 import kotlinx.html.stream.createHTML
@@ -95,6 +97,21 @@ object UserAuth : PrincipalType<User, Uuid>, ServerBuilder() {
 
         context(_: ServerRuntime) suspend fun Authentication<User>.userRole() = get(RoleCache)
         context(_: ServerRuntime) suspend fun AuthAccess<User>.userRole() = auth.userRole()
+    }
+    object RoomMembershipCache : AuthCacheKey<User, Set<Uuid>> {
+        override val id: String = "membership"
+        override val serializer: KSerializer<Set<Uuid>> = kotlinx.serialization.serializer()
+        override val expireAfter: Duration = 5.minutes
+
+        context(_: ServerRuntime)
+        override suspend fun calculate(input: Authentication<User>): Set<Uuid> {
+            return Server.chatRooms.info.table().find(
+                condition { it.memberIds.any { it eq input.id } }
+            ).toList().map { it._id }.toSet()
+        }
+
+        context(_: ServerRuntime) suspend fun Authentication<User>.roomMemberships() = get(RoomMembershipCache)
+        context(_: ServerRuntime) suspend fun AuthAccess<User>.roomMemberships() = auth.roomMemberships()
     }
 
     val authEndpoints = path.path("user") include SessionEndpoints

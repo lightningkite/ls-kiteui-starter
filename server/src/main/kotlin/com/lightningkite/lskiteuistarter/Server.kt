@@ -26,7 +26,9 @@ import com.lightningkite.services.notifications.*
 import com.lightningkite.services.notifications.fcm.FcmNotificationClient
 import com.lightningkite.lskiteuistarter.UserAuth.RoleCache.userRole
 import com.lightningkite.lskiteuistarter.data.AppReleaseEndpoints
+import com.lightningkite.lskiteuistarter.data.ChatRoomEndpoints
 import com.lightningkite.lskiteuistarter.data.FcmTokenEndpoints
+import com.lightningkite.lskiteuistarter.data.MessageEndpoints
 import com.lightningkite.lskiteuistarter.data.UserEndpoints
 
 object Server: ServerBuilder() {
@@ -63,13 +65,35 @@ object Server: ServerBuilder() {
     val localFileServer = path.path("files") include FileSystemEndpoints(files)
 
     val example = path.path("example-endpoint").get bind ApiHttpHandler(
-        summary = "Example Endpoint",
+        summary = "Example GET Endpoint",
+        description = "A simple endpoint that always returns 42. Demonstrates public endpoint pattern.",
         auth = noAuth,
+        examples = listOf(
+            ApiHttpHandler.Example(
+                input = Unit,
+                output = 42
+            )
+        ),
         implementation = { _: Unit -> 42 }
     )
+
     val example2 = path.path("example-endpoint").post bind ApiHttpHandler(
-        summary = "Example Endpoint",
+        summary = "Example POST Endpoint",
+        description = "Adds 42 to the input number. Demonstrates authenticated endpoint pattern.",
         auth = UserAuth.require(),
+        errorCases = listOf(
+            LSError(http = 401, detail = "unauthorized", message = "Authentication required")
+        ),
+        examples = listOf(
+            ApiHttpHandler.Example(
+                input = 5,
+                output = 47
+            ),
+            ApiHttpHandler.Example(
+                input = 100,
+                output = 142
+            )
+        ),
         implementation = { number: Int -> number + 42 }
     )
 
@@ -77,6 +101,8 @@ object Server: ServerBuilder() {
     val users = path.path("users") module UserEndpoints
     val authEndpoints = path.path("auth") module UserAuth
     val fcmTokens = path.path("fcmTokens") module FcmTokenEndpoints
+    val chatRooms = path.path("chat-rooms") module ChatRoomEndpoints
+    val messages = path.path("messages") module MessageEndpoints
 
     val multiplex = path.path("multiplex") bind MultiplexWebSocketHandler()
     val base = path bind QueryParamWebSocketHandler()
