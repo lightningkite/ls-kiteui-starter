@@ -64,3 +64,25 @@ data class FcmToken(
     val lastRegisteredAt: Instant = created,
     val userAgent: String? = null,
 ) : HasId<String>
+
+@Serializable
+@GenerateDataClassPaths
+data class ChatRoom(
+    override val _id: Uuid = Uuid.random(),
+    val name: String,
+    val description: String = "",
+    @Index @References(User::class) val createdBy: Uuid,
+    val memberIds: Set<Uuid> = setOf(),
+    val createdAt: Instant = Clock.System.now(),
+) : HasId<Uuid>
+
+@Serializable
+@GenerateDataClassPaths
+data class Message(
+    override val _id: Uuid = Uuid.random(),
+    @Index @References(ChatRoom::class) val chatRoomId: Uuid,
+    @Index @References(User::class) val authorId: Uuid,
+    val content: String,
+    val createdAt: Instant = Clock.System.now(),
+    val editedAt: Instant? = null,
+) : HasId<Uuid>

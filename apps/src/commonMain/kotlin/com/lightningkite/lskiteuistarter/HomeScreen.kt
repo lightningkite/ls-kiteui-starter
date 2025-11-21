@@ -37,6 +37,13 @@ class HomePage: Page {
             expanding.space()
 
             important.buttonTheme.button {
+                centered.text("Chat Rooms")
+                onClick {
+                    pageNavigator.navigate(ChatRoomsListPage())
+                }
+            }
+
+            important.buttonTheme.button {
                 centered.text("Test Notifications")
                 ::enabled { fcmToken() != null }
                 onClick {

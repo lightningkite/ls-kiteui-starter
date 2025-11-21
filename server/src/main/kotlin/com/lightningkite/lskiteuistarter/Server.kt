@@ -26,7 +26,9 @@ import com.lightningkite.services.notifications.*
 import com.lightningkite.services.notifications.fcm.FcmNotificationClient
 import com.lightningkite.lskiteuistarter.UserAuth.RoleCache.userRole
 import com.lightningkite.lskiteuistarter.data.AppReleaseEndpoints
+import com.lightningkite.lskiteuistarter.data.ChatRoomEndpoints
 import com.lightningkite.lskiteuistarter.data.FcmTokenEndpoints
+import com.lightningkite.lskiteuistarter.data.MessageEndpoints
 import com.lightningkite.lskiteuistarter.data.UserEndpoints
 
 object Server: ServerBuilder() {
@@ -77,6 +79,8 @@ object Server: ServerBuilder() {
     val users = path.path("users") module UserEndpoints
     val authEndpoints = path.path("auth") module UserAuth
     val fcmTokens = path.path("fcmTokens") module FcmTokenEndpoints
+    val chatRooms = path.path("chat-rooms") module ChatRoomEndpoints
+    val messages = path.path("messages") module MessageEndpoints
 
     val multiplex = path.path("multiplex") bind MultiplexWebSocketHandler()
     val base = path bind QueryParamWebSocketHandler()

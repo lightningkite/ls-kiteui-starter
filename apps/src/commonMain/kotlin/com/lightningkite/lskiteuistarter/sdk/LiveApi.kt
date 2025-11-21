@@ -39,7 +39,7 @@ class LiveApi(val fetcher: Fetcher) : Api {
 		}
 		override val totp = LiveTimeBasedOTPProof()
 
-		inner class LivePasswordProof : Api.UserAuthApi.PasswordProof, com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lightningserver.sessions.PasswordSecret, kotlin.uuid.Uuid> by com.lightningkite.lightningserver.typed.LiveClientModelRestEndpoints(fetcher, "auth/proof/password/secrets", com.lightningkite.lightningserver.sessions.PasswordSecret.serializer(), kotlin.uuid.Uuid.serializer()), com.lightningkite.lightningserver.sessions.proofs.ProofClientEndpoints.Password by com.lightningkite.lightningserver.sessions.proofs.LiveProofClientEndpoints.Password(fetcher, "auth/proof/password", ) {
+		inner class LivePasswordProof : Api.UserAuthApi.PasswordProof, com.lightningkite.lightningserver.sessions.proofs.ProofClientEndpoints.Password by com.lightningkite.lightningserver.sessions.proofs.LiveProofClientEndpoints.Password(fetcher, "auth/proof/password", ), com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lightningserver.sessions.PasswordSecret, kotlin.uuid.Uuid> by com.lightningkite.lightningserver.typed.LiveClientModelRestEndpoints(fetcher, "auth/proof/password/secrets", com.lightningkite.lightningserver.sessions.PasswordSecret.serializer(), kotlin.uuid.Uuid.serializer()) {
 		}
 		override val password = LivePasswordProof()
 
@@ -56,6 +56,14 @@ class LiveApi(val fetcher: Fetcher) : Api {
 			fetcher("fcmTokens/${fetcher.url(id, kotlin.String.serializer())}/clear", HttpMethod.POST, kotlin.Unit.serializer(), kotlin.Unit, kotlin.Boolean.serializer())
 	}
 	override val fcmToken = LiveFcmTokenApi()
+
+	inner class LiveChatRoomApi : Api.ChatRoomApi, com.lightningkite.lightningserver.typed.ClientModelRestUpdatesWebsocket<com.lightningkite.lskiteuistarter.ChatRoom, kotlin.uuid.Uuid> by com.lightningkite.lightningserver.typed.LiveClientModelRestUpdatesWebsocket(fetcher, "chat-rooms", com.lightningkite.lskiteuistarter.ChatRoom.serializer(), kotlin.uuid.Uuid.serializer()), com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lskiteuistarter.ChatRoom, kotlin.uuid.Uuid> by com.lightningkite.lightningserver.typed.LiveClientModelRestEndpoints(fetcher, "chat-rooms", com.lightningkite.lskiteuistarter.ChatRoom.serializer(), kotlin.uuid.Uuid.serializer()) {
+	}
+	override val chatRoom = LiveChatRoomApi()
+
+	inner class LiveMessageApi : Api.MessageApi, com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lskiteuistarter.Message, kotlin.uuid.Uuid> by com.lightningkite.lightningserver.typed.LiveClientModelRestEndpoints(fetcher, "messages", com.lightningkite.lskiteuistarter.Message.serializer(), kotlin.uuid.Uuid.serializer()), com.lightningkite.lightningserver.typed.ClientModelRestUpdatesWebsocket<com.lightningkite.lskiteuistarter.Message, kotlin.uuid.Uuid> by com.lightningkite.lightningserver.typed.LiveClientModelRestUpdatesWebsocket(fetcher, "messages", com.lightningkite.lskiteuistarter.Message.serializer(), kotlin.uuid.Uuid.serializer()) {
+	}
+	override val message = LiveMessageApi()
 
 	inner class LiveMetaApi : Api.MetaApi {
 		override suspend fun getServerHealth(): com.lightningkite.lightningserver.typed.ServerHealth =

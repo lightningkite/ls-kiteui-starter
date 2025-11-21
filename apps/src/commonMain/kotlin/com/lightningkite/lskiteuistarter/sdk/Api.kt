@@ -59,7 +59,7 @@ interface Api {
 		}
 		val totp: TimeBasedOTPProof
 
-		interface PasswordProof : com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lightningserver.sessions.PasswordSecret, kotlin.uuid.Uuid>, com.lightningkite.lightningserver.sessions.proofs.ProofClientEndpoints.Password {
+		interface PasswordProof : com.lightningkite.lightningserver.sessions.proofs.ProofClientEndpoints.Password, com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lightningserver.sessions.PasswordSecret, kotlin.uuid.Uuid> {
 		}
 		val password: PasswordProof
 
@@ -88,6 +88,14 @@ interface Api {
 		suspend fun clearToken(id: kotlin.String): kotlin.Boolean
 	}
 	val fcmToken: FcmTokenApi
+
+	interface ChatRoomApi : com.lightningkite.lightningserver.typed.ClientModelRestUpdatesWebsocket<com.lightningkite.lskiteuistarter.ChatRoom, kotlin.uuid.Uuid>, com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lskiteuistarter.ChatRoom, kotlin.uuid.Uuid> {
+	}
+	val chatRoom: ChatRoomApi
+
+	interface MessageApi : com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lskiteuistarter.Message, kotlin.uuid.Uuid>, com.lightningkite.lightningserver.typed.ClientModelRestUpdatesWebsocket<com.lightningkite.lskiteuistarter.Message, kotlin.uuid.Uuid> {
+	}
+	val message: MessageApi
 
 	interface MetaApi {
 		/**

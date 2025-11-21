@@ -80,7 +80,7 @@ object UserAuth : PrincipalType<User, Uuid>, ServerBuilder() {
         else -> super.fetchByProperty(property, value)
     }
 
-    override val precache: List<AuthCacheKey<User, *>> = listOf(RoleCache)
+    override val precache: List<AuthCacheKey<User, *>> = listOf(RoleCache, RoomMembershipCache)
 
 
     // caching
@@ -95,6 +95,24 @@ object UserAuth : PrincipalType<User, Uuid>, ServerBuilder() {
 
         context(_: ServerRuntime) suspend fun Authentication<User>.userRole() = get(RoleCache)
         context(_: ServerRuntime) suspend fun AuthAccess<User>.userRole() = auth.userRole()
+    }
+
+    object RoomMembershipCache : AuthCacheKey<User, Set<Uuid>> {
+        override val id: String = "room-membership"
+        override val serializer: KSerializer<Set<Uuid>> = kotlinx.serialization.serializer()
+        override val expireAfter: Duration = 5.minutes
+
+        context(_: ServerRuntime)
+        override suspend fun calculate(input: Authentication<User>): Set<Uuid> {
+            val rooms = mutableSetOf<Uuid>()
+            Server.chatRooms.info.table().find(
+                condition { it.memberIds.any { it eq input.id } }
+            ).collect { room -> rooms.add(room._id) }
+            return rooms
+        }
+
+        context(_: ServerRuntime) suspend fun Authentication<User>.roomMemberships() = get(RoomMembershipCache)
+        context(_: ServerRuntime) suspend fun AuthAccess<User>.roomMemberships() = auth.roomMemberships()
     }
 
     val authEndpoints = path.path("user") include SessionEndpoints

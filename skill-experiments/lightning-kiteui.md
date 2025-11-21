@@ -1,7 +1,7 @@
 ---
 name: KiteUI / Lightning Server Combo Development
 description: This skill should be used when the user wants to work with KiteUI and Lightning Server together.
-version: 1.0.0
+version: 1.0.2
 ---
 
 # Lightning Server & KiteUI Development Skill
@@ -35,6 +35,27 @@ project/
 3. **Never create views inside reactive scopes** - Only update properties
 4. **Based on SolidJS** - Uses reactive scopes that re-run when dependencies change
 
+### CRITICAL: Reactive Context Import Requirement
+
+**To call reactive functions like `currentSession()` in onClick handlers, you MUST import:**
+
+```kotlin
+import com.lightningkite.reactive.context.*
+```
+
+**NOT just:**
+```kotlin
+import com.lightningkite.reactive.context.reactiveScope  // NOT ENOUGH
+```
+
+Without the wildcard import, calling `currentSession()` or other reactive functions in `onClick {}` blocks will fail with confusing errors like:
+```
+Unresolved reference. None of the following candidates is applicable because of a receiver type mismatch:
+fun Action.invoke(): Unit
+```
+
+The wildcard import brings in the `invoke` extension that enables reactive context in lambdas.
+
 ### Correct Patterns
 
 #### ✅ DO: Create views once, update properties reactively
@@ -43,7 +64,7 @@ project/
 shownWhen { messages().isEmpty() }.centered.text("No messages")
 
 shownWhen { messages().isNotEmpty() }.recyclerView {
-    children(messages) { message ->
+    children(messages, id = { it._id }) { message ->
         text {
             ::content { message().content }  // Updates reactively
         }
@@ -367,10 +388,27 @@ RecyclerView doesn't know how many items to render until it knows how much space
 - `expanding.frame` = "take up available space AND scroll if content overflows"
 - RecyclerView needs size constraints from either `expanding`, `frame`, or a parent that provides size
 
-**About the `id` parameter:**
-- ✅ **Recommended:** `children(items, id = { it._id })` - Provides stable element identity for efficient updates
-- ⚠️ **Works but not recommended:** `children(items)` - Without id, KiteUI can't efficiently track element changes
+**CRITICAL: `id` parameter and single root view requirement:**
+- ✅ **REQUIRED:** `children(items, id = { it._id })` - The id parameter is required for proper element tracking
+- ❌ **Deprecated:** `children(items)` - Without id, shows deprecation warning and won't efficiently track changes
 - The `id` function should return a unique, stable identifier for each item
+- **The render block must produce exactly ONE root view** - no multiple views or manual `space()` calls
+- RecyclerView automatically respects theme gap settings for spacing between items
+
+```kotlin
+// ✅ CORRECT - One root view
+children(items, id = { it._id }) { item ->
+    card.button {
+        text { ::content { item().name } }
+    }
+}
+
+// ❌ WRONG - Multiple root views
+children(items, id = { it._id }) { item ->
+    card.button { /* ... */ }
+    space()  // ERROR - can't have multiple root views in children block
+}
+```
 
 ### Simple List Rendering with `forEach()`
 
@@ -454,13 +492,29 @@ button {
 
 ### Text Fields
 
+**CRITICAL: Standalone textInputs need fieldTheme:**
+
 ```kotlin
 val name = Signal("")
 
-textInput {
+// ✅ CORRECT - Standalone textInput with fieldTheme
+fieldTheme.textInput {
     content bind name
     hint = "Enter name"
     action = submitAction  // Triggered on Enter
+}
+
+// ✅ CORRECT - Wrapped in field()
+field {
+    textInput {
+        content bind name
+        hint = "Enter name"
+    }
+}
+
+// ❌ WRONG - Plain textInput without theming
+textInput {
+    content bind name  // Missing proper theming
 }
 ```
 
@@ -659,10 +713,14 @@ val info = database.modelInfo(
     permissions = { ModelPermissions.allowAll<ChatRoom>() }
 )
 
-// Combines REST CRUD with WebSocket updates!
-val rest = path.path("rest") include
-    ModelRestEndpoints(info) + ModelRestUpdatesWebsocket(info)
+// Register REST CRUD endpoints
+val rest = path include ModelRestEndpoints(info)
+
+// Register WebSocket updates separately (+ operator not available)
+val socketUpdates = path include ModelRestUpdatesWebsocket(info)
 ```
+
+**Note:** The `+` operator to combine these is NOT available. Register them separately.
 
 Clients automatically receive updates when data changes.
 
@@ -715,6 +773,16 @@ posts.updateOne(condition { it._id eq id }, modification {
 - `it.field assign value` - Set value
 - `it.field += 1` - Increment
 - `it.field -= 1` - Decrement
+
+**Set Operations:**
+When working with Set fields, use `.plus()` instead of `+` operator:
+```kotlin
+// ✅ CORRECT
+model.copy(memberIds = model.memberIds.plus(newMemberId))
+
+// ❌ WRONG - + operator is internal
+model.copy(memberIds = model.memberIds + newMemberId)
+```
 
 #### Complex Query Conditions
 
@@ -1326,6 +1394,28 @@ link {
 link {
     text { content = "View Profile" }
     to = { ProfilePage(userId) }
+}
+```
+
+### Navigation with appNav
+
+When using `appNav`, the top bar automatically provides a back button. Don't add manual back buttons:
+
+```kotlin
+// ❌ WRONG - Redundant manual back button
+row {
+    button {
+        icon(Icon.arrowBack, "Back")
+        onClick { pageNavigator.goBack() }
+    }
+    expanding.h2 { ::content { page().title } }
+}
+
+// ✅ CORRECT - appNav handles it automatically
+// Just define your page content, back button appears automatically in top bar
+col {
+    h2 { ::content { page().title } }
+    // ... your content
 }
 ```
 
@@ -2147,49 +2237,54 @@ val edit = path.path("edit").post bind ApiHttpHandler(
 ## Key Reminders
 
 ### Frontend (KiteUI)
-1. **Always regenerate SDK** after changing server endpoints AND update CachedApi.kt manually
-2. **Views created once**, properties update reactively - never create views inside reactive scopes
-3. **Use `.` not `-`** for operator chaining (KiteUI v7+)
-4. **Use `Action`** for async operations, not `launch {}`
-5. **Define Actions outside button scopes** in recyclerView renderers
-6. **Use `shownWhen`** for conditional rendering
-7. **Use `::content { }`** for reactive text binding
-8. **Use `dialog { close -> }`** for dialogs instead of manual Signal management
-9. **Icon syntax:** `icon(Icon.add, "Description")` or `icon { source = Icon.add }` - not all icon names exist
-10. **Radio buttons:** Use `.equalTo()` for clean binding: `checked bind selected.equalTo(value)`
-11. **RecyclerView children:** Always provide `id` parameter: `children(items, id = { it._id })`
-12. **RecyclerView MUST have size constraints** - Use `expanding.recyclerView` or put inside `frame`
-13. **Avoid redundant frames** - A frame with one child is redundant; use the child directly
-14. **Capture reactive values before dialogs** - Call `val x = reactive()` before `dialog {}`, not inside
-15. **Call `.invoke()`** on reactive lists in `remember {}`
-16. **Call `item()` to get value** from reactive reference in renderers
-17. **Reactive filtering** - Use `remember` to create derived reactive values
-18. **Lens extensions** - Use `.contains()`, `.notNull()`, `.asInt()`, etc. for common transformations
-19. **Async data loading** - Use `rememberSuspending` for automatic loading state management
-20. **Loading states** - Use `LateInitSignal` for manual loading indicators
-21. **Persistent state** - Use `PersistentProperty` for data that survives refreshes
-22. **Debounced input** - Use `.debounceWrite()` to rate-limit API calls
-23. **Background tasks** - Use `load {}` for coroutines tied to view lifecycle
-24. **Simple lists** - Use `forEach()` for small/static lists, `children()` for large/dynamic
-25. **Keyboard hints** - Set `keyboardHints` on textInput for email, password, etc.
-26. **TextInput actions** - Add `action` property for Enter key behavior
+1. **CRITICAL: Import reactive.context.*** - Must use `import com.lightningkite.reactive.context.*` to call reactive functions in onClick handlers, NOT just `reactiveScope`
+2. **Always regenerate SDK** after changing server endpoints AND update CachedApi.kt manually
+3. **Views created once**, properties update reactively - never create views inside reactive scopes
+4. **Use `.` not `-`** for operator chaining (KiteUI v7+)
+5. **Use `Action`** for async operations, not `launch {}`
+6. **Define Actions outside button scopes** in recyclerView renderers
+7. **Use `shownWhen`** for conditional rendering
+8. **Use `::content { }`** for reactive text binding
+9. **Use `dialog { close -> }`** for dialogs instead of manual Signal management
+10. **Icon syntax:** `icon(Icon.add, "Description")` or `icon { source = Icon.add }` - NOT `icon { Icon.add }`
+11. **Radio buttons:** Use `.equalTo()` for clean binding: `checked bind selected.equalTo(value)`
+12. **RecyclerView children:** MUST provide `id` parameter AND render block produces ONE view: `children(items, id = { it._id })`
+13. **RecyclerView gap:** Don't add manual `space()` calls - theme gap is automatic
+14. **RecyclerView MUST have size constraints** - Use `expanding.recyclerView` or put inside `frame`
+15. **Avoid redundant frames** - A frame with one child is redundant; use the child directly
+16. **Capture reactive values before dialogs** - Call `val x = reactive()` before `dialog {}`, not inside
+17. **Call `.invoke()`** on reactive lists in `remember {}`
+18. **Call `item()` to get value** from reactive reference in renderers
+19. **Reactive filtering** - Use `remember` to create derived reactive values
+20. **Lens extensions** - Use `.contains()`, `.notNull()`, `.asInt()`, etc. for common transformations
+21. **Async data loading** - Use `rememberSuspending` for automatic loading state management
+22. **Loading states** - Use `LateInitSignal` for manual loading indicators
+23. **Persistent state** - Use `PersistentProperty` for data that survives refreshes
+24. **Debounced input** - Use `.debounceWrite()` to rate-limit API calls
+25. **Background tasks** - Use `load {}` for coroutines tied to view lifecycle
+26. **Simple lists** - Use `forEach()` for small/static lists, `children()` for large/dynamic
+27. **Keyboard hints** - Set `keyboardHints` on textInput for email, password, etc.
+28. **TextInput actions** - Add `action` property for Enter key behavior
+29. **TextInput theming** - Use `fieldTheme.textInput` for standalone inputs OR wrap in `field()`
+30. **Navigation back button** - appNav provides automatic back button, don't add manual ones
 
 ### Backend (Lightning Server)
-24. **Never trust the client** - All security must be server-enforced, not client-side
-25. **Design permissions first** - Think about ModelPermissions before custom endpoints
-26. **Question `Condition.Always`** - It's rarely correct for multi-tenant data
-27. **Use AuthCacheKey** - Cache expensive derived auth data (roles, memberships)
-28. **Access tables via modelInfo** - Use `Server.modelName.info.table()` not `database().table<T>()`
-29. **Set membership in queries** - Use `it.memberIds.any { it eq userId }` for Set fields
-30. **postPermissionsForUser** - Use to enforce server-controlled field values (authorId, timestamps)
-31. **Test security** - Write tests that verify unauthorized access is blocked
-32. **Use `kotlin.time.Clock`** not `kotlinx.datetime.Clock`
-33. **WebSocket updates** - Combine `ModelRestEndpoints + ModelRestUpdatesWebsocket`
-34. **Error documentation** - Use `LSError` and `examples` in ApiHttpHandler
-35. **Database modifications** - Use `assign`, `+=`, `-=` in modification DSL
-36. **WebSocket pub/sub** - Use `topic()` for real-time broadcasting
-37. **Caching** - Use cache-aside pattern with TTL for expensive operations
-38. **Convert query results** - Use `.find().toList()` to get List from database queries
+31. **Never trust the client** - All security must be server-enforced, not client-side
+32. **Design permissions first** - Think about ModelPermissions before custom endpoints
+33. **Question `Condition.Always`** - It's rarely correct for multi-tenant data
+34. **Use AuthCacheKey** - Cache expensive derived auth data (roles, memberships)
+35. **Access tables via modelInfo** - Use `Server.modelName.info.table()` not `database().table<T>()`
+36. **Set membership in queries** - Use `it.memberIds.any { it eq userId }` for Set fields
+37. **Set operations in code** - Use `.plus()` not `+` operator: `set.plus(item)` NOT `set + item`
+38. **postPermissionsForUser** - Use to enforce server-controlled field values (authorId, timestamps)
+39. **Test security** - Write tests that verify unauthorized access is blocked
+40. **Use `kotlin.time.Clock`** not `kotlinx.datetime.Clock`
+41. **WebSocket registration** - Register separately: `val rest = path include ModelRestEndpoints(info)` THEN `val socketUpdates = path include ModelRestUpdatesWebsocket(info)` - NOT combined with `+`
+42. **Error documentation** - Use `LSError` and `examples` in ApiHttpHandler
+43. **Database modifications** - Use `assign`, `+=`, `-=` in modification DSL
+44. **WebSocket pub/sub** - Use `topic()` for real-time broadcasting
+45. **Caching** - Use cache-aside pattern with TTL for expensive operations
+46. **Convert query results** - Use `.find().toList()` to get List from database queries
 
 ### Testing
 39. **Server tests** - Use `Server.test()` with RAM database for fast tests
