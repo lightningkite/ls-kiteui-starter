@@ -17,7 +17,6 @@ import com.lightningkite.readable.*
 import com.lightningkite.services.data.*
 import com.lightningkite.services.database.*
 import com.lightningkite.services.files.*
-import io.sentry.Sentry
 import kotlin.uuid.Uuid
 
 class MainActivity : KiteUiActivity() {
@@ -37,7 +36,7 @@ class MainActivity : KiteUiActivity() {
 
         Throwable_report = { ex, ctx ->
             ex.printStackTrace2()
-            Sentry.captureException(ex)
+//            Sentry.captureException(ex)
         }
 
         with(viewWriter) {

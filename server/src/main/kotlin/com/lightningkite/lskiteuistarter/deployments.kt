@@ -60,11 +60,11 @@ object LkEnv : TerraformAwsServerlessDomainBuilder<Server>(Server) {
         files.awsS3Bucket(signedUrlDuration = 1.days)
         cache.awsDynamoDb()
         secretBasis.generated()
-        telemetrySettings.direct(OpenTelemetrySettings("console", reportFrequency = null))
+        telemetrySettings.direct(OpenTelemetrySettings("console", batching = null))
         cors.direct(CorsSettings(
-            limitToDomains = null,
-            limitToHeaders = null,
-            limitToMethods = null,
+            limitToDomains = listOf("*"),
+            limitToHeaders = listOf("*"),
+            limitToMethods = listOf("*"),
             allowCredentials = true,
             exposedHeaders = listOf(),
         ))
@@ -80,10 +80,6 @@ object DemoEnvDeploy {
 object DemoEnvEdit {
     @JvmStatic
     fun main(vararg args: String) = LkEnv.editVars()
-}
-object DemoShell {
-    @JvmStatic
-    fun main(vararg args: String): Unit = LkEnv.terraformShell()
 }
 object DemoEnvPrepare {
     @JvmStatic
