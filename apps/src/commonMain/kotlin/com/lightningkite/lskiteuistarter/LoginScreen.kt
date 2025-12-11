@@ -10,9 +10,11 @@ import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.centered
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.kiteui.views.l2.field
 import com.lightningkite.lightningserver.*
 import com.lightningkite.lightningserver.auth.AuthEndpoints
 import com.lightningkite.lightningserver.sessions.*
+import com.lightningkite.lskiteuistarter.sdk.ApiOption
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*
@@ -31,6 +33,12 @@ import kotlinx.coroutines.launch
 @Routable("/login")
 class LoginPage : Page, UseFullPage {
     override val title: Reactive<String> get() = Constant("Home")
+
+    companion object {
+        const val SECRET_FOR_API_SELECTOR = "i am a dev"
+    }
+    val backendSelectorEnabled = PersistentProperty("backendSelectorEnabled", false)
+
     override fun ViewWriter.render() {
 
         val authUI = remember {
@@ -55,10 +63,20 @@ class LoginPage : Page, UseFullPage {
         }
 
         frame {
+            reactive {
+                if(authUI().primaryIdentifier() == SECRET_FOR_API_SELECTOR) backendSelectorEnabled.value = true
+            }
+
             centered.sizedBox(SizeConstraints(maxWidth = 40.rem)).scrolling.col {
                 centered.h4("Lightning Server and KiteUI Template")
                 centered.text("This template is your bare bones starting point")
                 centered.text("Sign in to get started")
+
+                shownWhen { backendSelectorEnabled() }.field("Server") {
+                    select {
+                        bind(selectedApi, ApiOption.entries.toList().let(::Constant)) { it.apiName }
+                    }
+                }
 
                 frame {
                     reactive {

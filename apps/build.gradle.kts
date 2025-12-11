@@ -1,4 +1,5 @@
 import com.lightningkite.kiteui.KiteUiPluginExtension
+import java.nio.file.Files
 import java.util.*
 import com.lightningkite.deployhelpers.*
 import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnLockMismatchReport
@@ -162,6 +163,36 @@ rootProject.plugins.withType<org.jetbrains.kotlin.gradle.targets.js.yarn.YarnPlu
 configure<KiteUiPluginExtension> {
     this.packageName = "com.lightningkite.lskiteuistarter"
     this.iosProjectRoot = project.file("./ios/app")
+}
+
+// Create symlink for Kotlin/JS source maps to resolve correctly
+// Source maps reference paths like ../../../../../../src/jsMain/kotlin/... which resolve to build/js/packages/src/...
+// This symlink redirects those requests to the actual source location
+tasks.register("setupSourceMapSymlink") {
+    val packagesDir = rootProject.file("build/js/packages")
+    val symlinkPath = packagesDir.resolve("src")
+    val targetPath = rootProject.file("apps/src")
+
+    doLast {
+        if (!packagesDir.exists()) {
+            packagesDir.mkdirs()
+        }
+        if (symlinkPath.exists()) {
+            if (Files.isSymbolicLink(symlinkPath.toPath())) {
+                return@doLast // Already set up
+            }
+            symlinkPath.delete()
+        }
+        Files.createSymbolicLink(
+            symlinkPath.toPath(),
+            symlinkPath.parentFile.toPath().relativize(targetPath.toPath())
+        )
+        println("Created source map symlink: $symlinkPath -> $targetPath")
+    }
+}
+
+tasks.matching { it.name == "jsViteDev" || it.name == "jsBrowserDevelopmentRun" }.configureEach {
+    dependsOn("setupSourceMapSymlink")
 }
 
 fun env(name: String, profile: String) {
