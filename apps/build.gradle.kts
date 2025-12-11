@@ -10,7 +10,8 @@ plugins {
     alias(libs.plugins.serialization)
     alias(libs.plugins.kotlinCocoapods)
     alias(libs.plugins.comLightningKite.kiteuiPlugin)
-    alias(libs.plugins.vite)
+    alias(libs.plugins.kjsplain)
+    alias(libs.plugins.kfc)
     id("com.google.gms.google-services")
 }
 

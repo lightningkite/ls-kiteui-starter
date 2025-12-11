@@ -79,3 +79,5 @@ ksp = { id = "com.google.devtools.ksp", version = { ref = "ksp" } }
 serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version = { ref = "kotlin" } }
 shadow = { id = "com.github.johnrengelman.shadow", version = { ref = "shadow" } }
 vite = { id = "dev.opensavvy.vite.kotlin", version = { ref = "vite" } }
+kfc = { id = "io.github.turansky.kfc.application", version = "16.0.0" }
+kjsplain = { id = "org.jetbrains.kotlin.plugin.js-plain-objects", version = "2.2.21" }
