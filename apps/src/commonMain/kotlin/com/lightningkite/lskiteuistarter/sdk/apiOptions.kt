@@ -22,7 +22,8 @@ enum class ApiOption(val apiName: String, val http: String, val ws: String) {
 //    Production(" ", "https://", "wss://"),
 //    Staging("Staging", "https://", "wss://"),
 //    Dev("Dev", "https://", "wss://"),
-    Local("Local", "http://localhost:8080", "ws://localhost:8080")
+    SameServer("SameServer", "", ""),
+    Local("Local", "http://localhost:8080", "ws://localhost:8080"),
     ;
 
     val baseFetcher
