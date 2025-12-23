@@ -38,7 +38,7 @@ ls-kiteui-starter/
 - `Server.kt` - Main server definition with endpoints, settings, and middleware
 - `Main.kt` - Entry point with CLI commands (`serve`, `sdk`)
 - `UserEndpoints.kt` - REST endpoints for User CRUD with role-based permissions
-- `AuthenticationEndpoints.kt` (UserAuth) - Authentication with email/password/TOTP/backup codes
+- `UserAuth.kt` (UserAuth) - Authentication with email/password/TOTP/backup codes
 - `FcmTokenEndpoints.kt` - Firebase Cloud Messaging token management
 - `Emails.kt` - Email template utilities
 
@@ -193,6 +193,42 @@ The project uses Firebase Cloud Messaging:
 - Android: `firebase-messaging-ktx` library
 - iOS: Native Firebase SDK via CocoaPods
 - Server: FCM admin SDK credentials in `settings.json` under `"notifications"`
+
+## Manual/Browser Testing
+
+The `testing/` directory contains scripts for AI-assisted browser testing. These use ports 8081 (backend) and 8951 (frontend) to avoid conflicts with other projects.
+
+### Quick Start
+
+```bash
+# One command to start everything:
+./testing/prepare-browser-test.sh
+```
+
+### Scripts
+
+```bash
+./testing/start-all.sh        # Start backend + frontend
+./testing/start-backend.sh    # Start backend on :8081
+./testing/start-frontend.sh   # Start frontend on :8951
+./testing/stop-all.sh         # Stop all servers
+./testing/api.sh GET /path    # Make API calls
+```
+
+### Chrome Integration (Claude Code)
+
+After running `prepare-browser-test.sh`, use Claude's Chrome MCP tools:
+
+1. `mcp__claude-in-chrome__tabs_context_mcp(createIfEmpty=true)`
+2. `mcp__claude-in-chrome__navigate(tabId=..., url='http://localhost:8951')`
+3. Inject session token if available (see `testing/.admin-token`)
+4. `mcp__claude-in-chrome__computer(action='screenshot')` for visual verification
+
+### Configuration
+
+- `testing/settings.testing.json` - Testing-specific settings (port 8081, debug mode)
+- `testing/.admin-token` - Admin session token (generated when debug mode enabled)
+- See `testing/README.md` for full documentation
 
 ## Important Notes
 

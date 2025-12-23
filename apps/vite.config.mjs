@@ -8,7 +8,7 @@ export default defineConfig({
         allowedHosts: ["jivie.lightningkite.com", "localhost:8941"],
         proxy: {
             '/api': {
-                target: 'http://localhost:8080',
+                target: 'http://localhost:8081',
                 // changeOrigin: true,
                 rewrite: (path) => path.replace(/^\/api/, ''),
                 ws: true,

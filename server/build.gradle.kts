@@ -14,7 +14,7 @@ version = "1.0-SNAPSHOT"
 
 
 application {
-    mainClass.set("com.lightningite.template.MainKt")
+    mainClass.set("com.lightningkite.lskiteuistarter.MainKt")
 }
 
 dependencies {

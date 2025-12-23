@@ -22,7 +22,7 @@ enum class ApiOption(val apiName: String, val http: String, val ws: String) {
 //    Production(" ", "https://", "wss://"),
 //    Staging("Staging", "https://", "wss://"),
 //    Dev("Dev", "https://", "wss://"),
-    SameServer("Same Server", "", ""),
+    SameServer("Same Server", "/api", "/api"),
     Local("Local", "http://localhost:8080", "ws://localhost:8080"),
     ;
 

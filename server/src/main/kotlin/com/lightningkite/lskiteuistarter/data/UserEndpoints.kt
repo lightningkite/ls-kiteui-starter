@@ -2,7 +2,9 @@ package com.lightningkite.lskiteuistarter.data
 
 import com.lightningkite.lightningserver.auth.id
 import com.lightningkite.lightningserver.auth.require
+import com.lightningkite.lightningserver.definition.StartupTask
 import com.lightningkite.lightningserver.definition.builder.ServerBuilder
+import com.lightningkite.lightningserver.definition.generalSettings
 import com.lightningkite.lightningserver.typed.ModelRestEndpoints
 import com.lightningkite.lightningserver.typed.auth
 import com.lightningkite.lightningserver.typed.modelInfo
@@ -62,5 +64,12 @@ object UserEndpoints : ServerBuilder() {
                 role = UserRole.Root
             )
         )
+    }
+
+    // Debug admin token output - only when debug mode is enabled in settings
+    val debugAdminToken = path.path("debug-admin-token") bind StartupTask {
+        if (generalSettings().debug) {
+            println("Admin token: '${UserAuth.session.createSession(Uuid.fromLongs(0L, 10L)).second}'")
+        }
     }
 }

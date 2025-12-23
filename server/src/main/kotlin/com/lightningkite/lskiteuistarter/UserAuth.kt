@@ -13,52 +13,33 @@ import com.lightningkite.lightningserver.runtime.*
 import com.lightningkite.lightningserver.serialization.*
 import com.lightningkite.lightningserver.sessions.*
 import com.lightningkite.lightningserver.sessions.proofs.BackupCodeEndpoints
-import com.lightningkite.lightningserver.sessions.proofs.DirectProofMethod
 import com.lightningkite.lightningserver.sessions.proofs.EmailProofEndpoints
-import com.lightningkite.lightningserver.sessions.proofs.FinishProof
-import com.lightningkite.lightningserver.sessions.proofs.IdentificationAndPassword
 import com.lightningkite.lightningserver.sessions.proofs.PasswordProofEndpoints
 import com.lightningkite.lightningserver.sessions.proofs.PinHandler
-import com.lightningkite.lightningserver.sessions.proofs.Proof
-import com.lightningkite.lightningserver.sessions.proofs.StartedProofMethod
 import com.lightningkite.lightningserver.sessions.proofs.TimeBasedOTPProofEndpoints
-import com.lightningkite.lightningserver.sessions.proofs.code
 import com.lightningkite.lightningserver.sessions.proofs.extensions.constrainAttemptRate
 import com.lightningkite.lightningserver.sessions.proofs.proofMethods
 import com.lightningkite.lightningserver.settings.*
 import com.lightningkite.lightningserver.typed.*
-import com.lightningkite.lightningserver.typed.invoke
 import com.lightningkite.lightningserver.typed.sdk.module
 import com.lightningkite.lightningserver.websockets.*
 import com.lightningkite.lskiteuistarter.data.UserEndpoints
 import com.lightningkite.services.cache.*
 import com.lightningkite.services.data.*
 import com.lightningkite.services.database.*
-import com.lightningkite.services.database.email
-import com.lightningkite.services.database.table
 import com.lightningkite.services.email.*
 import com.lightningkite.services.files.*
 import com.lightningkite.services.notifications.*
 import com.lightningkite.services.sms.*
 import com.lightningkite.toEmailAddress
-import io.ktor.http.decodeURLPart
-import io.ktor.http.encodeURLPathPart
 import kotlin.uuid.Uuid
 import kotlinx.html.html
 import kotlinx.html.stream.createHTML
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.builtins.SetSerializer
-import kotlinx.serialization.builtins.nullable
 import kotlinx.serialization.builtins.serializer
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.encodeToString
-import kotlin.collections.plus
-import kotlin.text.compareTo
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Instant
-import kotlin.toString
 
 
 object UserAuth : PrincipalType<User, Uuid>, ServerBuilder() {
@@ -97,8 +78,6 @@ object UserAuth : PrincipalType<User, Uuid>, ServerBuilder() {
         context(_: ServerRuntime) suspend fun AuthAccess<User>.userRole() = auth.userRole()
     }
 
-    val authEndpoints = path.path("user") include SessionEndpoints
-
     private val proofs = path.path("proof")
 
     val pins = PinHandler(Server.cache, "pins")
@@ -107,6 +86,7 @@ object UserAuth : PrincipalType<User, Uuid>, ServerBuilder() {
     val totp = proofs.path("totp") module TimeBasedOTPProofEndpoints(Server.database, Server.cache)
     val password = proofs.path("password") module PasswordProofEndpoints(Server.database, Server.cache)
     val backupCodes = proofs.path("backup-codes") module BackupCodeEndpoints(Server.database, Server.cache)
+    val session = path.path("session") include SessionEndpoints()
 
     class EmailEndpoints(val pins: PinHandler) : ServerBuilder() {
         val proof = path include EmailProofEndpoints(
@@ -165,7 +145,7 @@ object UserAuth : PrincipalType<User, Uuid>, ServerBuilder() {
         )
     }
 
-    object SessionEndpoints : AuthEndpoints<User, Uuid>(
+    class SessionEndpoints : AuthEndpoints<User, Uuid>(
         principal = UserAuth,
         database = Server.database,
     ) {
@@ -186,5 +166,26 @@ object UserAuth : PrincipalType<User, Uuid>, ServerBuilder() {
 
         context(server: ServerRuntime)
         override suspend fun sessionStaleAfter(subject: User): Duration? = null
+
+        context(_: ServerRuntime)
+        suspend fun createSession(
+            subjectId: Uuid,
+            label: String? = null,
+            expires: Instant? = null,
+            stale: Instant? = null,
+            scopes: Set<GrantedScope> = setOf(GrantedScope.root),
+            oauthClient: String? = null,
+            derivedFrom: Uuid? = null,
+        ): Pair<Session<User, Uuid>, RefreshToken> {
+            return newSession(
+                subjectId = subjectId,
+                label = label,
+                expires = expires,
+                stale = stale,
+                scopes = scopes,
+                oauthClient = oauthClient,
+                derivedFrom = derivedFrom,
+            )
+        }
     }
 }
