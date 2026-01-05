@@ -7,8 +7,8 @@ actual fun getDefaultServerBackend(): ApiOption {
     return when {
 //        host.contains("lightningkite") -> ApiOption.Dev
 //        host.contains("staging") -> ApiOption.Staging
-        host.contains("localhost") -> ApiOption.Local
-        else -> ApiOption.Local
+        host.contains("localhost") -> ApiOption.SameServer  // Use Vite proxy
+        else -> ApiOption.SameServer
 //        else -> ApiOption.Production
     }
 }

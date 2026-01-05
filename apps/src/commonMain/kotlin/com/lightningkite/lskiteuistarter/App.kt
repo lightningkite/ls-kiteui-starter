@@ -99,8 +99,8 @@ fun ViewWriter.app(navigator: PageNavigator, dialog: PageNavigator) {
         ::navItems {
             listOf(
                 NavLink(title = { "Home" }, icon = { Icon.home }) { { HomePage() } },
-//                NavLink(title = { "Internal" }, icon = { Icon.home }) { { RootPage } },
-//                NavLink(title = { "Documentation" }, icon = { Icon.list }) { { DocSearchPage } },
+                NavLink(title = { "Support" }, icon = { Icon.chat }) { { SupportChatPage() } },
+                NavLink(title = { "Admin Support" }, icon = { Icon.settings }) { { AdminSupportPage() } },
             )
         }
 

@@ -11,7 +11,7 @@ kotlin = "2.2.21"
 kotlinerCli = "1.0.5"
 kotlinxSerializationCsvDurable = "0.2.21-1"
 ksp = "2.2.20-2.0.3"
-lightningServer = "5.0.0-prerelease-229"
+lightningServer = "5.0.0-prerelease-290-local"
 lightningServerKiteui = "8.0.0-prerelease-54"
 lkGradleHelpers = "4.0.6"
 markdown = "0.7.3"
@@ -19,7 +19,7 @@ playServicesLocation = "21.3.0"
 playServicesMaps = "19.2.0"
 qrcodeKotlin = "4.5.0"
 sentryKotlinMultiplatform = "0.19.0"
-serviceAbstractions = "0.0.1-69"
+serviceAbstractions = "0.0.1-107-local"
 sha2 = "0.8.0"
 shadow = "8.1.1"
 stripe = "30.0.0"
@@ -44,6 +44,7 @@ comLightningKite-lightningServer-sessions-shared = { module = "com.lightningkite
 comLightningKite-lightningServer-sessions-sms = { module = "com.lightningkite.lightningserver:sessions-sms", version = { ref = "lightningServer" } }
 comLightningKite-lightningServer-typed = { module = "com.lightningkite.lightningserver:typed", version = { ref = "lightningServer" } }
 comLightningKite-lightningServer-typed-shared = { module = "com.lightningkite.lightningserver:typed-shared", version = { ref = "lightningServer" } }
+comLightningKite-lightningServer-ai = { module = "com.lightningkite.lightningserver:ai", version = { ref = "lightningServer" } }
 comLightningKite-lightningServerClient = { module = "com.lightningkite.lightningserver:client", version = { ref = "lightningServerKiteui" } }
 comLightningKite-lightningServerClient-serverUtils = { module = "com.lightningkite.lightningserver:server-client-utils", version = { ref = "lightningServerKiteui" } }
 comLightningKite-services-database = { module = "com.lightningkite.services:database", version = { ref = "serviceAbstractions" } }
@@ -54,6 +55,7 @@ comLightningKite-services-database-shared = { module = "com.lightningkite.servic
 comLightningKite-services-email-javasmtp = { module = "com.lightningkite.services:email-javasmtp", version = { ref = "serviceAbstractions" } }
 comLightningKite-services-files-s3 = { module = "com.lightningkite.services:files-s3", version = { ref = "serviceAbstractions" } }
 comLightningKite-services-notifications-firebase = { module = "com.lightningkite.services:notifications-fcm", version = { ref = "serviceAbstractions" } }
+comLightningKite-services-ai-koog = { module = "com.lightningkite.services:ai-koog", version = { ref = "serviceAbstractions" } }
 desugarJdkLibs = { module = "com.android.tools:desugar_jdk_libs", version = { ref = "desugar_jdk_libsVersion" } }
 firebase-messaging-ktx = { module = "com.google.firebase:firebase-messaging-ktx", version = { ref = "firebaseMessagingKtx" } }
 kotlin-coroutines-play = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-play-services", version = { ref = "coroutines" } }

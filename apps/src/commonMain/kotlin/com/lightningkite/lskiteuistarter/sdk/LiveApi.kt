@@ -2,6 +2,7 @@ package com.lightningkite.lskiteuistarter.sdk
 
 import com.lightningkite.lightningserver.HttpMethod
 import com.lightningkite.lightningserver.typed.Fetcher
+import kotlinx.serialization.ContextualSerializer
 import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.builtins.ListSerializer
@@ -39,7 +40,7 @@ class LiveApi(val fetcher: Fetcher) : Api {
 		}
 		override val totp = LiveTimeBasedOTPProof()
 
-		inner class LivePasswordProof : Api.UserAuthApi.PasswordProof, com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lightningserver.sessions.PasswordSecret, kotlin.uuid.Uuid> by com.lightningkite.lightningserver.typed.LiveClientModelRestEndpoints(fetcher, "auth/proof/password/secrets", com.lightningkite.lightningserver.sessions.PasswordSecret.serializer(), kotlin.uuid.Uuid.serializer()), com.lightningkite.lightningserver.sessions.proofs.ProofClientEndpoints.Password by com.lightningkite.lightningserver.sessions.proofs.LiveProofClientEndpoints.Password(fetcher, "auth/proof/password", ) {
+		inner class LivePasswordProof : Api.UserAuthApi.PasswordProof, com.lightningkite.lightningserver.sessions.proofs.ProofClientEndpoints.Password by com.lightningkite.lightningserver.sessions.proofs.LiveProofClientEndpoints.Password(fetcher, "auth/proof/password", ), com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lightningserver.sessions.PasswordSecret, kotlin.uuid.Uuid> by com.lightningkite.lightningserver.typed.LiveClientModelRestEndpoints(fetcher, "auth/proof/password/secrets", com.lightningkite.lightningserver.sessions.PasswordSecret.serializer(), kotlin.uuid.Uuid.serializer()) {
 		}
 		override val password = LivePasswordProof()
 
@@ -64,4 +65,18 @@ class LiveApi(val fetcher: Fetcher) : Api {
 			fetcher("meta/bulk", HttpMethod.POST, MapSerializer(String.serializer(), com.lightningkite.lightningserver.typed.BulkRequest.serializer()), input, MapSerializer(String.serializer(), com.lightningkite.lightningserver.typed.BulkResponse.serializer()))
 	}
 	override val meta = LiveMetaApi()
+
+	inner class LiveSupportChatApi : Api.SupportChatApi {
+		override suspend fun approveToolRequest(id: kotlin.uuid.Uuid, input: com.lightningkite.lightningserver.ai.ToolApprovalRequest): com.lightningkite.lightningserver.ai.SystemChatMessage =
+			fetcher("support-chat/messages/${fetcher.url(id, kotlin.uuid.Uuid.serializer())}/approve", HttpMethod.POST, com.lightningkite.lightningserver.ai.ToolApprovalRequest.serializer(), input, com.lightningkite.lightningserver.ai.SystemChatMessage.serializer())
+		override suspend fun authorizeTool(id: kotlin.uuid.Uuid, input: com.lightningkite.lightningserver.ai.AuthorizeToolRequest): com.lightningkite.lightningserver.ai.SystemChatConversation =
+			fetcher("support-chat/conversations/${fetcher.url(id, kotlin.uuid.Uuid.serializer())}/authorize-tool", HttpMethod.POST, com.lightningkite.lightningserver.ai.AuthorizeToolRequest.serializer(), input, com.lightningkite.lightningserver.ai.SystemChatConversation.serializer())
+
+		override val conversations = com.lightningkite.lightningserver.typed.LiveClientModelRestEndpoints(fetcher, "support-chat/conversations", com.lightningkite.lightningserver.ai.SystemChatConversation.serializer(), kotlin.uuid.Uuid.serializer())
+
+		inner class LiveSystemChatMessagesApi : Api.SupportChatApi.SystemChatMessagesApi, com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lightningserver.ai.SystemChatMessage, kotlin.uuid.Uuid> by com.lightningkite.lightningserver.typed.LiveClientModelRestEndpoints(fetcher, "support-chat/messages", com.lightningkite.lightningserver.ai.SystemChatMessage.serializer(), kotlin.uuid.Uuid.serializer()), com.lightningkite.lightningserver.typed.ClientModelRestUpdatesWebsocket<com.lightningkite.lightningserver.ai.SystemChatMessage, kotlin.uuid.Uuid> by com.lightningkite.lightningserver.typed.LiveClientModelRestUpdatesWebsocket(fetcher, "support-chat/messages", com.lightningkite.lightningserver.ai.SystemChatMessage.serializer(), kotlin.uuid.Uuid.serializer()) {
+		}
+		override val messages = LiveSystemChatMessagesApi()
+	}
+	override val supportChat = LiveSupportChatApi()
 }

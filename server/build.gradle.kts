@@ -28,6 +28,7 @@ dependencies {
     api(libs.comLightningKite.services.notifications.firebase)
     api(libs.comLightningKite.lightningServer.core)
     api(libs.comLightningKite.lightningServer.typed)
+    api(libs.comLightningKite.lightningServer.ai)
     api(libs.comLightningKite.lightningServer.files)
     api(libs.comLightningKite.lightningServer.media)
     api(libs.comLightningKite.lightningServer.sessions)

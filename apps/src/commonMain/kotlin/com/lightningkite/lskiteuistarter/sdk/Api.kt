@@ -59,7 +59,7 @@ interface Api {
 		}
 		val totp: TimeBasedOTPProof
 
-		interface PasswordProof : com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lightningserver.sessions.PasswordSecret, kotlin.uuid.Uuid>, com.lightningkite.lightningserver.sessions.proofs.ProofClientEndpoints.Password {
+		interface PasswordProof : com.lightningkite.lightningserver.sessions.proofs.ProofClientEndpoints.Password, com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lightningserver.sessions.PasswordSecret, kotlin.uuid.Uuid> {
 		}
 		val password: PasswordProof
 
@@ -108,4 +108,30 @@ interface Api {
 		suspend fun bulkRequest(input: Map<String, com.lightningkite.lightningserver.typed.BulkRequest>): Map<String, com.lightningkite.lightningserver.typed.BulkResponse>
 	}
 	val meta: MetaApi
+
+	interface SupportChatApi {
+		/**
+		 * Approve Tool Request
+		 * 
+		 * Approves or rejects a pending tool request. Records who approved and when.
+		 * 
+		 * **Auth Requirements:** User with root access
+		 * */
+		suspend fun approveToolRequest(id: kotlin.uuid.Uuid, input: com.lightningkite.lightningserver.ai.ToolApprovalRequest): com.lightningkite.lightningserver.ai.SystemChatMessage
+		/**
+		 * Authorize Tool
+		 * 
+		 * Pre-authorize a tool for this conversation. Future calls won't require individual approval.
+		 * 
+		 * **Auth Requirements:** User with root access
+		 * */
+		suspend fun authorizeTool(id: kotlin.uuid.Uuid, input: com.lightningkite.lightningserver.ai.AuthorizeToolRequest): com.lightningkite.lightningserver.ai.SystemChatConversation
+
+		val conversations: com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lightningserver.ai.SystemChatConversation, kotlin.uuid.Uuid>
+
+		interface SystemChatMessagesApi : com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lightningserver.ai.SystemChatMessage, kotlin.uuid.Uuid>, com.lightningkite.lightningserver.typed.ClientModelRestUpdatesWebsocket<com.lightningkite.lightningserver.ai.SystemChatMessage, kotlin.uuid.Uuid> {
+		}
+		val messages: SystemChatMessagesApi
+	}
+	val supportChat: SupportChatApi
 }

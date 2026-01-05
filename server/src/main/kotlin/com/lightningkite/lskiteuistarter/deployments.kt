@@ -56,7 +56,7 @@ object LkEnv : TerraformAwsServerlessDomainBuilder<Server>(Server) {
 
         loggingSettings.direct(LoggingSettings())
         database.mongodbAtlasFree(orgId = "6323a65c43d66b56a2ea5aea")
-        email.awsSesSmtp(emergencyContact)
+        email.awsSesSmtp(emergencyContact.raw)
         files.awsS3Bucket(signedUrlDuration = 1.days)
         cache.awsDynamoDb()
         secretBasis.generated()

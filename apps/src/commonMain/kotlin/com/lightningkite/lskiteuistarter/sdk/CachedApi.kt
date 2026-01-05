@@ -2,6 +2,7 @@ package com.lightningkite.lskiteuistarter.sdk
 
 import com.lightningkite.lightningserver.db.*
 import kotlinx.serialization.builtins.*
+import kotlinx.serialization.serializer
 
 open class CachedApi(val uncached: Api) {
 	open val appReleases = ModelCache(uncached.appRelease, com.lightningkite.lskiteuistarter.AppRelease.serializer())

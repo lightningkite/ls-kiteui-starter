@@ -13,6 +13,7 @@ import com.lightningkite.lightningserver.serialization.*
 import com.lightningkite.lightningserver.typed.*
 import com.lightningkite.lightningserver.typed.sdk.module
 import com.lightningkite.lightningserver.websockets.*
+import com.lightningkite.services.ai.koog.LLMClientAndModel
 import com.lightningkite.services.cache.*
 import com.lightningkite.services.cache.dynamodb.DynamoDbCache
 import com.lightningkite.services.database.*
@@ -27,6 +28,7 @@ import com.lightningkite.services.notifications.fcm.FcmNotificationClient
 import com.lightningkite.lskiteuistarter.UserAuth.RoleCache.userRole
 import com.lightningkite.lskiteuistarter.data.AppReleaseEndpoints
 import com.lightningkite.lskiteuistarter.data.FcmTokenEndpoints
+import com.lightningkite.lskiteuistarter.data.SupportChatEndpoints
 import com.lightningkite.lskiteuistarter.data.UserEndpoints
 
 object Server: ServerBuilder() {
@@ -39,6 +41,7 @@ object Server: ServerBuilder() {
     val webUrl = setting("webUrl", "http://localhost:8080")
     val cors = setting("cors", CorsSettings())
     val files = setting("files", PublicFileSystem.Settings())
+    val llm = setting("llm", LLMClientAndModel.Settings(""))
 
     init {
         install(CorsInterceptor(cors))
@@ -84,4 +87,8 @@ object Server: ServerBuilder() {
         database,
         cache
     )
+
+    // AI Support Chat
+    val supportChat = SupportChatEndpoints(database, llm)
+    val supportChatEndpoints = path.path("support-chat") module supportChat
 }
