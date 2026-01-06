@@ -4,8 +4,8 @@ export default defineConfig({
     root: "kotlin",
     server: {
         host: true,
-        port: 8941,
-        allowedHosts: ["jivie.lightningkite.com", "localhost:8941"],
+        port: 8080,
+        allowedHosts: ["localhost:8080"],
         proxy: {
             '/api': {
                 target: 'http://localhost:8081',

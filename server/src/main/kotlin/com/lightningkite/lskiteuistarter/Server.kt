@@ -89,6 +89,5 @@ object Server: ServerBuilder() {
     )
 
     // AI Support Chat
-    val supportChat = SupportChatEndpoints(database, llm)
-    val supportChatEndpoints = path.path("support-chat") module supportChat
+    val supportChat = path.path("support-chat") module SupportChatEndpoints(database, llm)
 }

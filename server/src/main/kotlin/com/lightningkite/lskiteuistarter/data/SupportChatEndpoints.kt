@@ -85,6 +85,6 @@ class SupportChatEndpoints(
         conversation: SystemChatConversation
     ) = with(builder) {
         val user = auth.auth.fetch()
-        system("You are assisting: ${user.name} (${user.email})")
+        system("You are assisting: ${user.name} (${user.email}, user id '${user._id}').  Make sure you greet them by name, or at least by email address, to make it clear you know who they are.")
     }
 }
