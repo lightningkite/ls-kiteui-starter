@@ -3,15 +3,9 @@ package com.lightningkite.lskiteuistarter.data
 import com.lightningkite.lightningserver.auth.require
 import com.lightningkite.lightningserver.definition.builder.ServerBuilder
 import com.lightningkite.lightningserver.runtime.ServerRuntime
-import com.lightningkite.lightningserver.typed.AuthAccess
-import com.lightningkite.lightningserver.typed.ModelRestEndpoints
-import com.lightningkite.lightningserver.typed.modelInfo
-import com.lightningkite.lskiteuistarter.AppRelease
-import com.lightningkite.lskiteuistarter.Server
-import com.lightningkite.lskiteuistarter.User
-import com.lightningkite.lskiteuistarter.UserAuth
+import com.lightningkite.lightningserver.typed.*
+import com.lightningkite.lskiteuistarter.*
 import com.lightningkite.lskiteuistarter.UserAuth.RoleCache.userRole
-import com.lightningkite.lskiteuistarter.UserRole
 import com.lightningkite.services.database.Condition
 import com.lightningkite.services.database.ModelPermissions
 

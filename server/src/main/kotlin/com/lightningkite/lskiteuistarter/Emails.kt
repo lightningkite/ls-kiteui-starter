@@ -1,27 +1,5 @@
 package com.lightningkite.lskiteuistarter
 
-import com.lightningkite.lightningserver.*
-import com.lightningkite.lightningserver.auth.*
-import com.lightningkite.lightningserver.definition.*
-import com.lightningkite.lightningserver.definition.builder.*
-import com.lightningkite.lightningserver.deprecations.*
-import com.lightningkite.lightningserver.encryption.*
-import com.lightningkite.lightningserver.http.*
-import com.lightningkite.lightningserver.pathing.*
-import com.lightningkite.lightningserver.runtime.*
-import com.lightningkite.lightningserver.serialization.*
-import com.lightningkite.lightningserver.sessions.*
-import com.lightningkite.lightningserver.settings.*
-import com.lightningkite.lightningserver.typed.*
-import com.lightningkite.lightningserver.websockets.*
-import com.lightningkite.services.cache.*
-import com.lightningkite.services.data.*
-import com.lightningkite.services.database.*
-import com.lightningkite.services.email.*
-import com.lightningkite.services.files.*
-import com.lightningkite.services.notifications.*
-import com.lightningkite.services.sms.*
-import kotlin.uuid.Uuid
 import kotlinx.html.*
 
 
@@ -32,7 +10,7 @@ interface EmailContentBuilder {
     fun code(text: String)
 }
 
-fun HTML.emailBase(centralContent: EmailContentBuilder.()->Unit) {
+fun HTML.emailBase(centralContent: EmailContentBuilder.() -> Unit) {
     dir = Dir.ltr
     lang = "en"
     head {
@@ -67,7 +45,7 @@ fun HTML.emailBase(centralContent: EmailContentBuilder.()->Unit) {
                     style = "width:100%"
                     td {
                         style = "padding:32px;"
-                        centralContent(object: EmailContentBuilder {
+                        centralContent(object : EmailContentBuilder {
                             override fun header(text: String) = with(this@td) {
                                 h2 {
                                     style = "font-family: sans-serif"
@@ -101,7 +79,8 @@ fun HTML.emailBase(centralContent: EmailContentBuilder.()->Unit) {
                                                 ).entries.joinToString(";") { "${it.key}:${it.value}" }
                                                 a {
                                                     this.href = href
-                                                    style = "text-decoration: none;color: #FFFFFF;font-family: sans-serif;font-size:22px;line-height:40px;margin:auto auto;display:inline-block;font-weight:900;text-align:center;width:100%"
+                                                    style =
+                                                        "text-decoration: none;color: #FFFFFF;font-family: sans-serif;font-size:22px;line-height:40px;margin:auto auto;display:inline-block;font-weight:900;text-align:center;width:100%"
                                                     +text
                                                 }
                                             }
@@ -123,7 +102,8 @@ fun HTML.emailBase(centralContent: EmailContentBuilder.()->Unit) {
                                         tr {
                                             td {
                                                 p {
-                                                    style = "font-family: sans-serif;font-size:32px;line-height:40px;margin:0 auto;display:inline-block;font-weight:900;letter-spacing:6px;padding-bottom:30px;padding-top:20px;width:100%;text-align:center"
+                                                    style =
+                                                        "font-family: sans-serif;font-size:32px;line-height:40px;margin:0 auto;display:inline-block;font-weight:900;letter-spacing:6px;padding-bottom:30px;padding-top:20px;width:100%;text-align:center"
                                                     +text
                                                 }
                                             }

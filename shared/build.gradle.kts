@@ -1,4 +1,3 @@
-import com.lightningkite.deployhelpers.*
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -24,11 +23,11 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                api(libs.comLightningKite.lightningServer.core.shared)
-                api(libs.comLightningKite.lightningServer.typed.shared)
-                api(libs.comLightningKite.lightningServer.sessions.shared)
-                api(libs.comLightningKite.lightningServer.files.shared)
-                api(libs.comLightningKite.lightningServer.media.shared)
+                api(libs.lightningServer.core.shared)
+                api(libs.lightningServer.typed.shared)
+                api(libs.lightningServer.sessions.shared)
+                api(libs.lightningServer.files.shared)
+                api(libs.lightningServer.media.shared)
             }
             kotlin {
                 srcDir(file("build/generated/ksp/common/commonMain/kotlin"))
@@ -44,14 +43,14 @@ kotlin {
 
 dependencies {
     configurations.filter { it.name.startsWith("ksp") && it.name != "ksp" }.forEach {
-        add(it.name, libs.comLightningKite.services.database.processor)
+        add(it.name, libs.services.database.processor)
     }
 }
 
 
 android {
     namespace = "com.lightningkite.lskiteuistarter.shared"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         minSdk = 26

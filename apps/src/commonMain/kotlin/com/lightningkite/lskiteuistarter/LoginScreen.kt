@@ -6,29 +6,15 @@ import com.lightningkite.kiteui.models.SizeConstraints
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.navigation.pageNavigator
-import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.kiteui.reactive.PersistentProperty
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.centered
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.field
-import com.lightningkite.lightningserver.*
 import com.lightningkite.lightningserver.auth.AuthEndpoints
-import com.lightningkite.lightningserver.sessions.*
-import com.lightningkite.lskiteuistarter.sdk.ApiOption
-import com.lightningkite.reactive.context.*
+import com.lightningkite.lskiteuistarter.sdk.*
+import com.lightningkite.reactive.context.reactive
 import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
-import com.lightningkite.services.data.*
-import com.lightningkite.services.database.*
-import com.lightningkite.services.database.email
-import com.lightningkite.services.files.*
-import com.lightningkite.lskiteuistarter.sdk.currentSession
-import com.lightningkite.lskiteuistarter.sdk.selectedApi
-import com.lightningkite.lskiteuistarter.sdk.sessionToken
-import kotlin.uuid.Uuid
-import kotlinx.coroutines.launch
 
 @Routable("/login")
 class LoginPage : Page, UseFullPage {
@@ -37,6 +23,7 @@ class LoginPage : Page, UseFullPage {
     companion object {
         const val SECRET_FOR_API_SELECTOR = "i am a dev"
     }
+
     val backendSelectorEnabled = PersistentProperty("backendSelectorEnabled", false)
 
     override fun ViewWriter.render() {
@@ -64,7 +51,7 @@ class LoginPage : Page, UseFullPage {
 
         frame {
             reactive {
-                if(authUI().primaryIdentifier() == SECRET_FOR_API_SELECTOR) backendSelectorEnabled.value = true
+                if (authUI().primaryIdentifier() == SECRET_FOR_API_SELECTOR) backendSelectorEnabled.value = true
             }
 
             centered.sizedBox(SizeConstraints(maxWidth = 40.rem)).scrolling.col {

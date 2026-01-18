@@ -9,11 +9,8 @@ import com.lightningkite.lightningserver.typed.ModelRestEndpoints
 import com.lightningkite.lightningserver.typed.auth
 import com.lightningkite.lightningserver.typed.modelInfo
 import com.lightningkite.lightningserver.typed.startupOnce
-import com.lightningkite.lskiteuistarter.Server
-import com.lightningkite.lskiteuistarter.User
-import com.lightningkite.lskiteuistarter.UserAuth
+import com.lightningkite.lskiteuistarter.*
 import com.lightningkite.lskiteuistarter.UserAuth.RoleCache.userRole
-import com.lightningkite.lskiteuistarter.UserRole
 import com.lightningkite.lskiteuistarter._id
 import com.lightningkite.lskiteuistarter.email
 import com.lightningkite.lskiteuistarter.role
