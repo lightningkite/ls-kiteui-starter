@@ -12,6 +12,7 @@ import com.lightningkite.lightningserver.terraform.generated
 import com.lightningkite.services.LoggingSettings
 import com.lightningkite.services.cache.dynamodb.awsDynamoDb
 import com.lightningkite.services.database.mongodb.mongodbAtlasFree
+import com.lightningkite.services.email.javasmtp.awsSesDomain
 import com.lightningkite.services.email.javasmtp.awsSesSmtp
 import com.lightningkite.services.files.s3.awsS3Bucket
 import com.lightningkite.services.otel.OpenTelemetrySettings
@@ -56,7 +57,8 @@ object LkEnv : TerraformAwsServerlessDomainBuilder<Server>(Server) {
 
         loggingSettings.direct(LoggingSettings())
         database.mongodbAtlasFree(orgId = "6323a65c43d66b56a2ea5aea")
-        email.awsSesSmtp(emergencyContact)
+        awsSesDomain("email",emergencyContact)
+        email.awsSesSmtp("email")
         files.awsS3Bucket(signedUrlDuration = 1.days)
         cache.awsDynamoDb()
         secretBasis.generated()

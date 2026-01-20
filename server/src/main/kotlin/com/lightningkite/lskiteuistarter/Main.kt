@@ -16,8 +16,8 @@ import com.lightningkite.lightningserver.sessions.*
 import com.lightningkite.lightningserver.settings.*
 import com.lightningkite.lightningserver.typed.*
 import com.lightningkite.lightningserver.typed.sdk.FetcherSdk
-import com.lightningkite.lightningserver.typed.sdk.SDK.writeSdk
 import com.lightningkite.lightningserver.typed.sdk.CachingSdk
+import com.lightningkite.lightningserver.typed.sdk.SDK.writeUsingDefaultSettings
 import com.lightningkite.lightningserver.typed.sdk.plus
 import com.lightningkite.lightningserver.websockets.*
 import com.lightningkite.services.cache.*
@@ -64,10 +64,14 @@ fun serve() = engine { start(Netty) }
 
 fun sdk() = engine {
     Utils.logger.info { "Generating FetcherSdk" }
-    Server.writeSdk(
-        FetcherSdk + CachingSdk,
-        KFile("apps/src/commonMain/kotlin/com/lightningkite/lskiteuistarter/sdk"),
-        "com.lightningkite.lskiteuistarter.sdk",
+    FetcherSdk("com.lightningkite.lskiteuistarter.sdk").writeUsingDefaultSettings(
+        Server,
+        KFile("apps/src/commonMain/kotlin/com/lightningkite/lskiteuistarter/sdk")
+    )
+    Utils.logger.info { "Generating CachingSdk" }
+    CachingSdk("com.lightningkite.lskiteuistarter.sdk").writeUsingDefaultSettings(
+        Server,
+        KFile("apps/src/commonMain/kotlin/com/lightningkite/lskiteuistarter/sdk")
     )
     Utils.logger.info { "Done" }
 }
