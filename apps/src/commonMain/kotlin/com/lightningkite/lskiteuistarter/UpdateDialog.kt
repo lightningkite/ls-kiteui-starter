@@ -1,12 +1,7 @@
 package com.lightningkite.lskiteuistarter
 
-import com.lightningkite.kiteui.ExternalServices
-import com.lightningkite.kiteui.models.Align
-import com.lightningkite.kiteui.models.DialogSemantic
-import com.lightningkite.kiteui.models.rem
-import com.lightningkite.kiteui.navigation.Page
-import com.lightningkite.kiteui.navigation.dialogPageNavigator
-import com.lightningkite.kiteui.navigation.pageNavigator
+import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.navigation.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.toast

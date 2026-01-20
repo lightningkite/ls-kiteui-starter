@@ -1,35 +1,35 @@
 package com.lightningkite.lskiteuistarter
 
-import com.lightningkite.lightningserver.*
 import com.lightningkite.lightningserver.auth.*
 import com.lightningkite.lightningserver.cors.CorsInterceptor
 import com.lightningkite.lightningserver.cors.CorsSettings
-import com.lightningkite.lightningserver.definition.*
-import com.lightningkite.lightningserver.definition.builder.*
+import com.lightningkite.lightningserver.definition.Runtime
+import com.lightningkite.lightningserver.definition.builder.ServerBuilder
 import com.lightningkite.lightningserver.files.FileSystemEndpoints
 import com.lightningkite.lightningserver.files.UploadEarlyEndpoint
 import com.lightningkite.lightningserver.http.*
-import com.lightningkite.lightningserver.serialization.*
-import com.lightningkite.lightningserver.typed.*
+import com.lightningkite.lightningserver.plainText
+import com.lightningkite.lightningserver.serialization.registerBasicMediaTypeCoders
+import com.lightningkite.lightningserver.typed.ApiHttpHandler
+import com.lightningkite.lightningserver.typed.MetaEndpoints
 import com.lightningkite.lightningserver.typed.sdk.module
-import com.lightningkite.lightningserver.websockets.*
-import com.lightningkite.services.cache.*
+import com.lightningkite.lightningserver.websockets.MultiplexWebSocketHandler
+import com.lightningkite.lightningserver.websockets.QueryParamWebSocketHandler
+import com.lightningkite.lskiteuistarter.UserAuth.RoleCache.userRole
+import com.lightningkite.lskiteuistarter.data.*
+import com.lightningkite.services.cache.Cache
 import com.lightningkite.services.cache.dynamodb.DynamoDbCache
-import com.lightningkite.services.database.*
+import com.lightningkite.services.database.Database
 import com.lightningkite.services.database.jsonfile.JsonFileDatabase
 import com.lightningkite.services.database.mongodb.MongoDatabase
-import com.lightningkite.services.email.*
+import com.lightningkite.services.email.EmailService
 import com.lightningkite.services.email.javasmtp.JavaSmtpEmailService
-import com.lightningkite.services.files.*
+import com.lightningkite.services.files.PublicFileSystem
 import com.lightningkite.services.files.s3.S3PublicFileSystem
-import com.lightningkite.services.notifications.*
+import com.lightningkite.services.notifications.NotificationService
 import com.lightningkite.services.notifications.fcm.FcmNotificationClient
-import com.lightningkite.lskiteuistarter.UserAuth.RoleCache.userRole
-import com.lightningkite.lskiteuistarter.data.AppReleaseEndpoints
-import com.lightningkite.lskiteuistarter.data.FcmTokenEndpoints
-import com.lightningkite.lskiteuistarter.data.UserEndpoints
 
-object Server: ServerBuilder() {
+object Server : ServerBuilder() {
 
     // Settings
     val cache = setting("cache", Cache.Settings())
@@ -59,7 +59,11 @@ object Server: ServerBuilder() {
     val root = path.get bind HttpHandler {
         HttpResponse.plainText("Welcome to Lightning Server!")
     }
-    val uploadEarly = path.path("upload-early") module UploadEarlyEndpoint(files = files, database = database, fileScanner = Runtime.Constant(emptyList()))
+    val uploadEarly = path.path("upload-early") module UploadEarlyEndpoint(
+        files = files,
+        database = database,
+        fileScanner = Runtime.Constant(emptyList())
+    )
     val localFileServer = path.path("files") include FileSystemEndpoints(files)
 
     val example = path.path("example-endpoint").get bind ApiHttpHandler(
@@ -80,7 +84,8 @@ object Server: ServerBuilder() {
 
     val multiplex = path.path("multiplex") bind MultiplexWebSocketHandler()
     val base = path bind QueryParamWebSocketHandler()
-    val meta = path.path("meta") module MetaEndpoints("com.lightningkite.lskiteuistarter",
+    val meta = path.path("meta") module MetaEndpoints(
+        "com.lightningkite.lskiteuistarter",
         database,
         cache
     )

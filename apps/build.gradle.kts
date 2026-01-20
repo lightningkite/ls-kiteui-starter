@@ -1,7 +1,6 @@
 import com.lightningkite.kiteui.KiteUiPluginExtension
 import java.nio.file.Files
 import java.util.*
-import com.lightningkite.deployhelpers.*
 import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnLockMismatchReport
 import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnRootExtension
 
@@ -10,15 +9,13 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.serialization)
     alias(libs.plugins.kotlinCocoapods)
-    alias(libs.plugins.comLightningKite.kiteuiPlugin)
+    alias(libs.plugins.kiteui)
     alias(libs.plugins.kjsplain)
     alias(libs.plugins.kfc)
-    id("com.google.gms.google-services")
 }
 
 group = "com.lightningkite.lskiteuistarter"
 version = "1.0-SNAPSHOT"
-
 
 repositories {
     maven("https://jitpack.io")
@@ -44,12 +41,12 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                api(libs.comLightningKite.kiteui)
-                api(libs.comLightningKite.csvDurable)
-                api(libs.comLightningKite.lightningServer.core.shared)
-                api(libs.comLightningKite.lightningServer.typed.shared)
-                api(libs.comLightningKite.lightningServer.sessions.shared)
-                api(libs.comLightningKite.lightningServerClient)
+                api(libs.kiteui)
+                api(libs.csvDurable)
+                api(libs.lightningServer.core.shared)
+                api(libs.lightningServer.typed.shared)
+                api(libs.lightningServer.sessions.shared)
+                api(libs.lightningServer.client)
                 api(project(":shared"))
             }
         }
@@ -91,8 +88,8 @@ kotlin {
         framework {
             baseName = "apps"
             export(project(":shared"))
-            export(libs.comLightningKite.kiteui)
-            export(libs.comLightningKite.lightningServerClient)
+            export(libs.kiteui)
+            export(libs.lightningServer.client)
 //            podfile = project.file("../example-app-ios/Podfile")
         }
     }
@@ -147,10 +144,10 @@ android {
             }
         }
     }
-}
 
-dependencies {
-    coreLibraryDesugaring(libs.desugarJdkLibs)
+    dependencies {
+        coreLibraryDesugaring(libs.desugarJdkLibs)
+    }
 }
 
 rootProject.plugins.withType<org.jetbrains.kotlin.gradle.targets.js.yarn.YarnPlugin> {

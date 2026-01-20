@@ -1,38 +1,21 @@
 package com.lightningkite.lskiteuistarter
 
 import com.lightningkite.EmailAddress
-import com.lightningkite.lightningserver.*
+import com.lightningkite.lightningserver.NotFoundException
 import com.lightningkite.lightningserver.auth.*
-import com.lightningkite.lightningserver.definition.*
-import com.lightningkite.lightningserver.definition.builder.*
-import com.lightningkite.lightningserver.deprecations.*
-import com.lightningkite.lightningserver.encryption.*
-import com.lightningkite.lightningserver.http.*
-import com.lightningkite.lightningserver.pathing.*
-import com.lightningkite.lightningserver.runtime.*
-import com.lightningkite.lightningserver.serialization.*
+import com.lightningkite.lightningserver.definition.builder.ServerBuilder
+import com.lightningkite.lightningserver.http.post
+import com.lightningkite.lightningserver.runtime.ServerRuntime
 import com.lightningkite.lightningserver.sessions.*
-import com.lightningkite.lightningserver.sessions.proofs.BackupCodeEndpoints
-import com.lightningkite.lightningserver.sessions.proofs.EmailProofEndpoints
-import com.lightningkite.lightningserver.sessions.proofs.PasswordProofEndpoints
-import com.lightningkite.lightningserver.sessions.proofs.PinHandler
-import com.lightningkite.lightningserver.sessions.proofs.TimeBasedOTPProofEndpoints
+import com.lightningkite.lightningserver.sessions.proofs.*
 import com.lightningkite.lightningserver.sessions.proofs.extensions.constrainAttemptRate
-import com.lightningkite.lightningserver.sessions.proofs.proofMethods
-import com.lightningkite.lightningserver.settings.*
 import com.lightningkite.lightningserver.typed.*
 import com.lightningkite.lightningserver.typed.sdk.module
-import com.lightningkite.lightningserver.websockets.*
 import com.lightningkite.lskiteuistarter.data.UserEndpoints
-import com.lightningkite.services.cache.*
-import com.lightningkite.services.data.*
 import com.lightningkite.services.database.*
-import com.lightningkite.services.email.*
-import com.lightningkite.services.files.*
-import com.lightningkite.services.notifications.*
-import com.lightningkite.services.sms.*
+import com.lightningkite.services.email.Email
+import com.lightningkite.services.email.EmailAddressWithName
 import com.lightningkite.toEmailAddress
-import kotlin.uuid.Uuid
 import kotlinx.html.html
 import kotlinx.html.stream.createHTML
 import kotlinx.serialization.KSerializer
@@ -40,6 +23,7 @@ import kotlinx.serialization.builtins.serializer
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Instant
+import kotlin.uuid.Uuid
 
 
 object UserAuth : PrincipalType<User, Uuid>, ServerBuilder() {
@@ -55,7 +39,8 @@ object UserAuth : PrincipalType<User, Uuid>, ServerBuilder() {
     override suspend fun fetchByProperty(property: String, value: String): User? = when (property) {
         "email" -> UserEndpoints.info.table()
             .run {
-                findOne(condition { it.email eq value.toEmailAddress() }) ?: insertOne(User(email = value.toEmailAddress()))
+                findOne(condition { it.email eq value.toEmailAddress() })
+                    ?: insertOne(User(email = value.toEmailAddress()))
             }
 
         else -> super.fetchByProperty(property, value)
@@ -74,8 +59,10 @@ object UserAuth : PrincipalType<User, Uuid>, ServerBuilder() {
         context(_: ServerRuntime)
         override suspend fun calculate(input: Authentication<User>): UserRole = input.fetch().role ?: UserRole.NoOne
 
-        context(_: ServerRuntime) suspend fun Authentication<User>.userRole() = get(RoleCache)
-        context(_: ServerRuntime) suspend fun AuthAccess<User>.userRole() = auth.userRole()
+        context(_: ServerRuntime)
+        suspend fun Authentication<User>.userRole() = get(RoleCache)
+        context(_: ServerRuntime)
+        suspend fun AuthAccess<User>.userRole() = auth.userRole()
     }
 
     private val proofs = path.path("proof")
