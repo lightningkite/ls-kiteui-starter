@@ -7,7 +7,7 @@ actual fun getDefaultServerBackend(): ApiOption {
     return when {
 //        host.contains("lightningkite") -> ApiOption.Dev
 //        host.contains("staging") -> ApiOption.Staging
-        host.contains("localhost") -> ApiOption.Local
+        host.contains("localhost") -> ApiOption.SameServer
         else -> ApiOption.Local
 //        else -> ApiOption.Production
     }
