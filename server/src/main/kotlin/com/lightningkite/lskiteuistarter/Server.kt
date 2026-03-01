@@ -1,3 +1,4 @@
+// Main server definition. Add new endpoint modules here. — by Claude
 package com.lightningkite.lskiteuistarter
 
 import com.lightningkite.lightningserver.auth.*
@@ -81,6 +82,10 @@ object Server : ServerBuilder() {
     val users = path.path("users") module UserEndpoints
     val authEndpoints = path.path("auth") module UserAuth
     val fcmTokens = path.path("fcmTokens") module FcmTokenEndpoints
+
+    // by Claude — Organization/membership endpoints
+    val organizations = path.path("organizations") module OrganizationEndpoints
+    val memberships = path.path("memberships") module MembershipEndpoints
 
     val multiplex = path.path("multiplex") bind MultiplexWebSocketHandler()
     val base = path bind QueryParamWebSocketHandler()

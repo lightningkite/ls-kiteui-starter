@@ -1,3 +1,4 @@
+// by Claude — Deployment configuration template. Update all placeholder values for your project.
 package com.lightningkite.lskiteuistarter
 
 import com.lightningkite.lightningserver.cors.CorsSettings
@@ -30,34 +31,49 @@ import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.minutes
 
 
+// TODO: Update all placeholder values below for your project
 object LkEnv : TerraformAwsServerlessDomainBuilder<Server>(Server) {
-    override val displayName = "LS KiteUI Starter"
-    override val domain = "api.lskiteuistarter.cs.lightningkite.com"
-    override val domainZone = "cs.lightningkite.com"
+    // TODO: Change to your project's display name
+    override val displayName = "My App"
+
+    // TODO: Change to your API domain
+    override val domain = "api.myapp.example.com"
+
+    // TODO: Change to your Route53 hosted zone
+    override val domainZone = "example.com"
+
     override val terraformRoot: File = File("server/terraform/lk")
 
     override val handler: KClass<out AwsAdapter> = AwsHandler::class
     override val timeout: Duration = 5.minutes
 
-    override val storageBucket = "lightningkite-terraform"
+    // TODO: Change to your S3 bucket for Terraform state
+    override val storageBucket = "my-terraform-state-bucket"
     override val storageBucketPath: String
         get() = super.storageBucketPath
-    override val debug = true
-    override val emergencyContact = "joseph@lightningkite.com".toEmailAddress()
 
+    // TODO: Set to false for production
+    override val debug = true
+
+    // TODO: Change to your emergency contact email
+    override val emergencyContact = "you@example.com".toEmailAddress()
+
+    // TODO: Change to your preferred AWS region
     override val region = Region.US_WEST_2!!
 
-    override val secretsSource: SecretSource = AwsSecretSource(projectPrefix, region)
+    // TODO: Update AWS profile name if needed
+    override val secretsSource: SecretSource = AwsSecretSource("default", projectPrefix, region)
 
     override fun Server.settings() {
         require(TerraformProviderImport.mongodbAtlas)
         require(TerraformProvider(TerraformProviderImport.mongodbAtlas, null, JsonObject(emptyMap())))
-        println(this@LkEnv.terraformProviderImports)
-        println(this@LkEnv.terraformProviders)
 
         loggingSettings.direct(LoggingSettings())
-        database.mongodbAtlasFree(orgId = "6323a65c43d66b56a2ea5aea")
-        awsSesDomain("email",emergencyContact)
+
+        // TODO: Update MongoDB Atlas org ID
+        database.mongodbAtlasFree(orgId = "YOUR_MONGODB_ATLAS_ORG_ID")
+
+        awsSesDomain("email", emergencyContact)
         email.awsSesSmtp("email")
         files.awsS3Bucket(signedUrlDuration = 1.days)
         cache.awsDynamoDb()
@@ -71,7 +87,9 @@ object LkEnv : TerraformAwsServerlessDomainBuilder<Server>(Server) {
             exposedHeaders = listOf(),
         ))
         notifications.byVariable()
-        webUrl.direct("https://app.lskiteuistarter.cs.lightningkite.com")
+
+        // TODO: Change to your web app URL
+        webUrl.direct("https://app.myapp.example.com")
     }
 }
 

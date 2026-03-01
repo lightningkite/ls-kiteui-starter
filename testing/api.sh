@@ -1,22 +1,26 @@
 #!/bin/bash
-# Make authenticated API calls to the backend
+# by Claude - Make authenticated API calls to the backend
+#
 # Usage: ./testing/api.sh <method> <path> [json-body]
 #
 # Examples:
-#   ./testing/api.sh GET /auth/session/self
 #   ./testing/api.sh GET /meta/health
+#   ./testing/api.sh GET /auth/session/self
 #   ./testing/api.sh POST /users/query '{"condition":{"Always":true}}'
 #
 # Environment variables:
-#   API_URL - Override the API URL (default: http://localhost:8081)
+#   API_URL   - Override the API URL (default: http://localhost:$BACKEND_PORT)
 #   API_TOKEN - Override the token (default: read from .admin-token)
-#   VERBOSE - Set to 1 for verbose curl output
+#   VERBOSE   - Set to 1 for verbose curl output
 
 set -e
-cd "$(dirname "$0")/.."
 
-API_URL="${API_URL:-http://localhost:8081}"
-TOKEN_FILE="testing/.admin-token"
+# Initialize paths
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+export LK_TESTING_DIR="$SCRIPT_DIR"
+source "$SCRIPT_DIR/lib.sh"
+
+API_URL="${API_URL:-http://localhost:$BACKEND_PORT}"
 
 # Get method and path
 METHOD="${1:-GET}"
@@ -30,11 +34,11 @@ fi
 
 # Get token
 if [[ -z "$API_TOKEN" ]]; then
-    if [[ -f "$TOKEN_FILE" ]]; then
-        API_TOKEN=$(cat "$TOKEN_FILE")
+    if [[ -f "$ADMIN_TOKEN_FILE" ]]; then
+        API_TOKEN=$(cat "$ADMIN_TOKEN_FILE")
     else
         echo "WARNING: No token found. Making unauthenticated request." >&2
-        echo "Run ./testing/start-backend.sh to get a token." >&2
+        echo "Run ./testing/setup.sh to start servers and get a token." >&2
     fi
 fi
 
@@ -60,4 +64,4 @@ fi
 
 # Execute
 curl "${CURL_ARGS[@]}"
-echo ""  # Add newline after response
+echo ""

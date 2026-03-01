@@ -81,6 +81,7 @@ fun main(vararg args: String) = cli(
     available = listOf(
         ::serve,
         ::sdk,
+        ::seed,
     ),
     useInteractive = true,
 )

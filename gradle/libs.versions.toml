@@ -2,20 +2,23 @@
 agp = "8.12.3"
 desugar_jdk_libsVersion = "2.1.5"
 firebaseMessagingKtx = "24.1.2"
-graalVmNative = "0.11.3"
+graalVmNative = "0.11.4"
 jsPlainObjects = "2.3.0"
 kfc = "16.5.0"
-kiteui = "7.0.0-prerelease-113"
+kiteui = "7.0.0-prerelease-189"
 kotlin = "2.2.20"
 kotlinerCli = "1.0.5"
 kotlinxSerializationCsvDurable = "0.2.21-1"
 ksp = "2.2.20-2.0.4"
-lightningServer = "5.0.0-prerelease-322"
-lightningServerKiteui = "8.0.0-prerelease-85"
-serviceAbstractions = "0.0.1-131"
+lightningServer = "5.0.0-prerelease-355"
+lightningServerKiteui = "8.0.0-prerelease-109"
+serviceAbstractions = "0.0.1-158"
+coroutines = "1.10.2"
 shadow = "8.1.1"
 
 [libraries]
+coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = { ref = "coroutines" } }
+coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version = { ref = "coroutines" } }
 csvDurable = { module = "com.lightningkite:kotlinx-serialization-csv-durable", version = { ref = "kotlinxSerializationCsvDurable" } }
 kiteui = { module = "com.lightningkite.kiteui:library", version = { ref = "kiteui" } }
 lightningServer-core = { module = "com.lightningkite.lightningserver:core", version = { ref = "lightningServer" } }

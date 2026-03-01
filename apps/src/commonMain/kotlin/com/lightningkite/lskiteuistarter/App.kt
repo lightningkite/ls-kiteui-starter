@@ -1,3 +1,4 @@
+// Application root. Navigation links, theme config, and page registration. — by Claude
 package com.lightningkite.lskiteuistarter
 
 import com.lightningkite.kiteui.*
@@ -19,9 +20,21 @@ import com.lightningkite.reactive.core.Signal
 import com.lightningkite.services.database.*
 import kotlinx.coroutines.launch
 
-//val defaultTheme = brandBasedExperimental("bsa", normalBack = Color.white)
-val defaultTheme = Theme.flat2("default", Angle(0.55f))// brandBasedExperimental("bsa", normalBack = Color.white)
-val appTheme = Signal<Theme>(defaultTheme)
+// by Claude — Theme options for the app
+val themes = mapOf(
+    "Flat (Blue)" to Theme.flat2("flat-blue", Angle(0.55f)),
+    "Flat (Green)" to Theme.flat2("flat-green", Angle(0.33f)),
+    "Flat (Purple)" to Theme.flat2("flat-purple", Angle(0.75f)),
+    "Material" to Theme.material3("material3"),
+)
+val selectedThemeName = PersistentProperty("selectedTheme", "Flat (Blue)")
+val appTheme = Signal<Theme>(themes.values.first()).also {
+    // by Claude — sync persisted theme name to appTheme signal
+    AppScope.reactiveSuspending {
+        val name = selectedThemeName()
+        it.value = themes[name] ?: themes.values.first()
+    }
+}
 
 // Notification Items
 val fcmToken: Signal<String?> = Signal(null)
@@ -84,13 +97,15 @@ fun ViewWriter.app(navigator: PageNavigator, dialog: PageNavigator) {
     }
 
     navigator.navigate(LandingPage())
+    // by Claude — Updated app name and added Members nav link
     return appNav(navigator, dialog) {
-        appName = "KiteUI Sample App"
+        appName = "My App"
         ::navItems {
-            listOf(
+            listOfNotNull(
                 NavLink(title = { "Home" }, icon = { Icon.home }) { { HomePage() } },
-//                NavLink(title = { "Internal" }, icon = { Icon.home }) { { RootPage } },
-//                NavLink(title = { "Documentation" }, icon = { Icon.list }) { { DocSearchPage } },
+                if (currentSession() != null)
+                    NavLink(title = { "Members" }, icon = { Icon.group }) { { MembersPage() } }
+                else null,
             )
         }
 

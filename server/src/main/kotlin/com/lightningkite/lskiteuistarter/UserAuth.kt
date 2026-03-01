@@ -1,3 +1,4 @@
+// Authentication configuration and auth caches. Add new AuthCacheKey objects here. — by Claude
 package com.lightningkite.lskiteuistarter
 
 import com.lightningkite.EmailAddress
@@ -11,14 +12,18 @@ import com.lightningkite.lightningserver.sessions.proofs.*
 import com.lightningkite.lightningserver.sessions.proofs.extensions.constrainAttemptRate
 import com.lightningkite.lightningserver.typed.*
 import com.lightningkite.lightningserver.typed.sdk.module
+import com.lightningkite.lskiteuistarter.data.MembershipEndpoints
 import com.lightningkite.lskiteuistarter.data.UserEndpoints
 import com.lightningkite.services.database.*
 import com.lightningkite.services.email.Email
 import com.lightningkite.services.email.EmailAddressWithName
 import com.lightningkite.toEmailAddress
+import kotlinx.coroutines.flow.toList
 import kotlinx.html.html
 import kotlinx.html.stream.createHTML
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.builtins.SetSerializer
 import kotlinx.serialization.builtins.serializer
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
@@ -46,7 +51,7 @@ object UserAuth : PrincipalType<User, Uuid>, ServerBuilder() {
         else -> super.fetchByProperty(property, value)
     }
 
-    override val precache: List<AuthCacheKey<User, *>> = listOf(RoleCache)
+    override val precache: List<AuthCacheKey<User, *>> = listOf(RoleCache, MembershipsCache)
 
 
     // caching
@@ -64,6 +69,38 @@ object UserAuth : PrincipalType<User, Uuid>, ServerBuilder() {
         context(_: ServerRuntime)
         suspend fun AuthAccess<User>.userRole() = auth.userRole()
     }
+
+    // by Claude — Cache active memberships for permission checks
+    @Serializable
+    data class SimplifiedMembership(
+        val _id: Uuid,
+        val organization: Uuid,
+        val role: MemberRole,
+    )
+
+    object MembershipsCache : AuthCacheKey<User, Set<SimplifiedMembership>> {
+        override val id: String = "memberships"
+        override val serializer: KSerializer<Set<SimplifiedMembership>> = SetSerializer(SimplifiedMembership.serializer())
+        override val expireAfter: Duration = 5.minutes
+
+        context(_: ServerRuntime)
+        override suspend fun calculate(input: Authentication<User>): Set<SimplifiedMembership> {
+            return MembershipEndpoints.info.table()
+                .find(condition { (it.user eq input.id) and (it.deactivatedAt eq null) })
+                .toList()
+                .map { SimplifiedMembership(it._id, it.organization, it.role) }
+                .toSet()
+        }
+
+        context(_: ServerRuntime)
+        suspend fun Authentication<User>.memberships() = get(MembershipsCache)
+        context(_: ServerRuntime)
+        suspend fun AuthAccess<User>.memberships() = auth.memberships()
+    }
+
+    // by Claude — Feature flag stub; projects fill in logic
+    @Suppress("UNUSED_PARAMETER")
+    fun hasFeature(flag: FeatureFlag): Boolean = false
 
     private val proofs = path.path("proof")
 

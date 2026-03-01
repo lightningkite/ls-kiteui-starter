@@ -1,0 +1,20 @@
+# by Claude — Example local.properties. Copy to local.properties and fill in values.
+
+# Android signing (required for release builds)
+signingKeystore=local/keystore.jks
+signingPassword=
+signingAlias=
+signingAliasPassword=
+
+# Play Store publishing (required for ./gradlew :apps:publishAndroid)
+playStoreJsonKeyPath=local/play-store-key.json
+
+# iOS publishing (required for ./gradlew :apps:publishIos)
+ios.teamId=
+ios.ascKeyId=
+ios.ascIssuerId=
+ios.ascKeyPath=local/AuthKey_XYZ.p8
+ios.matchS3Bucket=
+ios.matchS3Region=us-west-2
+ios.matchPassword=
+ios.awsProfile=default

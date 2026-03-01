@@ -1,7 +1,8 @@
+// by Claude — Updated for AuthComponent new API with render(to:) pattern
 package com.lightningkite.lskiteuistarter
 
 import com.lightningkite.kiteui.Routable
-import com.lightningkite.kiteui.forms.AuthComponent
+import com.lightningkite.kiteui.auth.AuthComponent
 import com.lightningkite.kiteui.models.SizeConstraints
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.navigation.Page
@@ -30,28 +31,26 @@ class LoginPage : Page, UseFullPage {
 
         val authUI = remember {
             val api = selectedApi().api
-            val anon = AuthComponent(
+            AuthComponent(
                 endpoints = AuthEndpoints(
                     subjects = mapOf("User" to api.userAuth),
                     emailProof = api.userAuth.email,
                     oneTimePasswordProof = api.userAuth.totp,
                     backupCodeProof = api.userAuth.backupCode,
-//                    webAuthNProof = api.webAuthNProof,
-//                    webAuthNIncludePasskeyUI = true,
                     passwordProof = api.userAuth.password,
                 ),
-                subjectPath = "user",
-                subject = api.userAuth
-            ) { token ->
-                sessionToken set token
-                pageNavigator.reset(HomePage())
-            }
-            anon
+                subjectType = "User",
+                subject = api.userAuth,
+                onAuthentication = { token ->
+                    sessionToken set token
+                    pageNavigator.reset(HomePage())
+                }
+            )
         }
 
-        frame {
+        col {
             reactive {
-                if (authUI().primaryIdentifier() == SECRET_FOR_API_SELECTOR) backendSelectorEnabled.value = true
+                if (authUI().rawPrimaryInput() == SECRET_FOR_API_SELECTOR) backendSelectorEnabled.value = true
             }
 
             centered.sizedBox(SizeConstraints(maxWidth = 40.rem)).scrolling.col {
@@ -68,9 +67,7 @@ class LoginPage : Page, UseFullPage {
                 frame {
                     reactive {
                         clearChildren()
-                        with(authUI()) {
-                            render()
-                        }
+                        authUI().render(this@frame)
                     }
                 }
             }

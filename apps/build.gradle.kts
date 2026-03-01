@@ -216,3 +216,95 @@ fun env(name: String, profile: String) {
 }
 
 env("default", "default")
+
+// by Claude — Fastlane deploy tasks
+//
+// These tasks read credentials from local.properties and pass them as env vars
+// to the Fastlane subprocess, keeping local.properties as the single config file.
+//
+// Required local.properties keys:
+//   playStoreJsonKeyPath   – path to Google Play service account JSON key
+//   ios.teamId             – 10-char Apple Developer Team ID
+//   ios.ascKeyId           – App Store Connect API key ID
+//   ios.ascIssuerId        – App Store Connect API issuer ID
+//   ios.ascKeyPath         – path to the .p8 API key file (e.g. local/AuthKey_XYZ.p8)
+//   ios.matchS3Bucket      – S3 bucket name for Fastlane match certificate storage
+//   ios.matchS3Region      – S3 region (default: us-west-2)
+//   ios.matchPassword      – AES-256 passphrase match uses to encrypt files in S3
+//
+// Usage:
+//   ./gradlew :apps:publishAndroid          – build AAB + upload to Play internal track
+//   ./gradlew :apps:promoteAndroid          – promote Play internal → production
+//   ./gradlew :apps:setupMatch              – one-time: generate iOS cert + profile → S3
+//   ./gradlew :apps:publishIos              – match certs + build + upload to TestFlight
+//   ./gradlew :apps:submitIos               – submit latest TestFlight build for review
+// ─────────────────────────────────────────────────────────────────────────────
+
+val localProperties = project.rootProject.file("local.properties").takeIf { it.exists() }?.inputStream()?.use { stream ->
+    Properties().apply { load(stream) }
+}
+
+// Reads the .p8 key file and base64-encodes it for passing as an env var to Fastlane.
+// Returns empty string if the path isn't configured or the file doesn't exist yet.
+fun ascKeyContent(): String {
+    val path = localProperties?.getProperty("ios.ascKeyPath") ?: return ""
+    val file = rootProject.file(path)
+    return if (file.exists()) Base64.getEncoder().encodeToString(file.readBytes()) else ""
+}
+
+tasks.register<Exec>("publishAndroid") {
+    group = "deploy"
+    description = "Build signed AAB then upload to Play Store internal track via Fastlane"
+    dependsOn("bundleRelease")  // Gradle builds + signs; Fastlane only uploads
+    workingDir = rootProject.projectDir
+    environment("PLAY_STORE_JSON_KEY_PATH", localProperties?.getProperty("playStoreJsonKeyPath") ?: "")
+    commandLine("bundle", "exec", "fastlane", "android", "internal")
+}
+
+tasks.register<Exec>("promoteAndroid") {
+    group = "deploy"
+    description = "Promote the current Play Store internal track build to production via Fastlane"
+    workingDir = rootProject.projectDir
+    environment("PLAY_STORE_JSON_KEY_PATH", localProperties?.getProperty("playStoreJsonKeyPath") ?: "")
+    commandLine("bundle", "exec", "fastlane", "android", "promote_to_production")
+}
+
+// Shared AWS + match env vars for all iOS tasks - by Claude
+fun ExecSpec.iosEnvironment() {
+    val awsProfile = localProperties?.getProperty("ios.awsProfile") ?: ""
+    val s3Region   = localProperties?.getProperty("ios.matchS3Region") ?: "us-west-2"
+    if (awsProfile.isNotBlank()) environment("AWS_PROFILE", awsProfile)
+    environment("AWS_DEFAULT_REGION", s3Region)
+    environment("MATCH_S3_BUCKET",    localProperties?.getProperty("ios.matchS3Bucket") ?: "")
+    environment("MATCH_S3_REGION",    s3Region)
+    environment("MATCH_PASSWORD",     localProperties?.getProperty("ios.matchPassword") ?: "")
+    environment("ASC_KEY_ID",         localProperties?.getProperty("ios.ascKeyId") ?: "")
+    environment("ASC_ISSUER_ID",      localProperties?.getProperty("ios.ascIssuerId") ?: "")
+    environment("ASC_KEY_CONTENT",    ascKeyContent())
+}
+
+tasks.register<Exec>("setupMatch") {
+    group = "deploy"
+    description = "One-time setup: generate iOS distribution cert + provisioning profile and store in S3"
+    workingDir = rootProject.projectDir
+    iosEnvironment()
+    environment("IOS_TEAM_ID", localProperties?.getProperty("ios.teamId") ?: "")
+    commandLine("bundle", "exec", "fastlane", "ios", "setup_match")
+}
+
+tasks.register<Exec>("publishIos") {
+    group = "deploy"
+    description = "Sync match certs, build, and upload iOS app to TestFlight via Fastlane"
+    workingDir = rootProject.projectDir
+    iosEnvironment()
+    environment("IOS_TEAM_ID", localProperties?.getProperty("ios.teamId") ?: "")
+    commandLine("bundle", "exec", "fastlane", "ios", "beta")
+}
+
+tasks.register<Exec>("submitIos") {
+    group = "deploy"
+    description = "Submit the latest TestFlight build for App Store review via Fastlane"
+    workingDir = rootProject.projectDir
+    iosEnvironment()
+    commandLine("bundle", "exec", "fastlane", "ios", "submit")
+}

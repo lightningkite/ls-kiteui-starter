@@ -1,0 +1,123 @@
+# by Claude
+# All credentials arrive as env vars injected by the Gradle tasks in apps/build.gradle.kts,
+# which read them from local.properties. Do not hardcode secrets here.
+
+# ─────────────────────────────────────────────────────────────────────────────
+# ANDROID
+# ─────────────────────────────────────────────────────────────────────────────
+platform :android do
+
+  # Upload the already-built AAB to the Play Store internal testing track.
+  # The AAB is built and signed by Gradle before this lane is called
+  # (see the publishAndroid task in apps/build.gradle.kts).
+  #
+  # First submission to a brand-new app must be done manually via Play Console;
+  # all subsequent uploads use this lane.
+  lane :internal do
+    upload_to_play_store(
+      track:                   "internal",
+      aab:                     "apps/build/outputs/bundle/release/apps-release.aab",
+      json_key:                ENV["PLAY_STORE_JSON_KEY_PATH"],
+      skip_upload_apk:         true,
+      skip_upload_images:      true,
+      skip_upload_screenshots: true
+    )
+  end
+
+  # Promote the current internal build to production without rebuilding.
+  lane :promote_to_production do
+    upload_to_play_store(
+      track:                   "internal",
+      track_promote_to:        "production",
+      json_key:                ENV["PLAY_STORE_JSON_KEY_PATH"],
+      skip_upload_apk:         true,
+      skip_upload_aab:         true,
+      skip_upload_metadata:    true,
+      skip_upload_changelogs:  true,
+      skip_upload_images:      true,
+      skip_upload_screenshots: true
+    )
+  end
+
+end
+
+# ─────────────────────────────────────────────────────────────────────────────
+# IOS
+# ─────────────────────────────────────────────────────────────────────────────
+platform :ios do
+
+  # Sync certificates via match, build the app, and upload to TestFlight.
+  #
+  # One-time setup per Apple account: generates the distribution certificate and
+  # App Store provisioning profile and stores them encrypted in S3.
+  # Run via: ./gradlew :apps:setupMatch
+  lane :setup_match do
+    api_key = app_store_connect_api_key(
+      key_id:                ENV["ASC_KEY_ID"],
+      issuer_id:             ENV["ASC_ISSUER_ID"],
+      key_content:           ENV["ASC_KEY_CONTENT"],
+      is_key_content_base64: true
+    )
+    match(
+      type:         "appstore",
+      storage_mode: "s3",
+      s3_bucket:    ENV["MATCH_S3_BUCKET"],
+      s3_region:    ENV["MATCH_S3_REGION"],
+      team_id:      ENV["IOS_TEAM_ID"],
+      api_key:      api_key
+    )
+  end
+
+  # First time on a new machine: run ./gradlew :apps:setupMatch
+  # After that this lane is fully automated.
+  lane :beta do
+    api_key = app_store_connect_api_key(
+      key_id:                 ENV["ASC_KEY_ID"],
+      issuer_id:              ENV["ASC_ISSUER_ID"],
+      key_content:            ENV["ASC_KEY_CONTENT"],
+      is_key_content_base64:  true
+    )
+
+    # Pull the latest distribution cert and App Store provisioning profile from S3.
+    match(
+      type:         "appstore",
+      storage_mode: "s3",
+      s3_bucket:    ENV["MATCH_S3_BUCKET"],
+      s3_region:    ENV["MATCH_S3_REGION"],
+      team_id:      ENV["IOS_TEAM_ID"],
+      api_key:      api_key
+    )
+
+    build_app(
+      workspace:        "apps/ios/app.xcworkspace",
+      scheme:           "app",
+      export_method:    "app-store",
+      build_path:       "local/ios-build",
+      output_directory: "local/ios-output"
+    )
+
+    upload_to_testflight(
+      api_key:                          api_key,
+      skip_waiting_for_build_processing: true  # Check App Store Connect manually for processing status
+    )
+  end
+
+  # Submit the latest processed TestFlight build for App Store review.
+  lane :submit do
+    api_key = app_store_connect_api_key(
+      key_id:                ENV["ASC_KEY_ID"],
+      issuer_id:             ENV["ASC_ISSUER_ID"],
+      key_content:           ENV["ASC_KEY_CONTENT"],
+      is_key_content_base64: true
+    )
+
+    deliver(
+      api_key:           api_key,
+      submit_for_review: true,
+      automatic_release: false,
+      force:             true,  # Skip HTML review prompt
+      skip_screenshots:  true
+    )
+  end
+
+end

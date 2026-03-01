@@ -1,3 +1,4 @@
+// by Claude — Updated home screen with theme picker and logout
 package com.lightningkite.lskiteuistarter
 
 import com.lightningkite.kiteui.Routable
@@ -5,6 +6,7 @@ import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.navigation.pageNavigator
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.kiteui.views.l2.field
 import com.lightningkite.lskiteuistarter.sdk.currentSession
 import com.lightningkite.lskiteuistarter.sdk.sessionToken
 import com.lightningkite.reactive.context.invoke
@@ -24,6 +26,12 @@ class HomePage : Page {
 
         col {
             centered.h2("Welcome to your home page")
+
+            field("Theme") {
+                select {
+                    bind(selectedThemeName, Constant(themes.keys.toList())) { it }
+                }
+            }
 
             expanding.space()
 

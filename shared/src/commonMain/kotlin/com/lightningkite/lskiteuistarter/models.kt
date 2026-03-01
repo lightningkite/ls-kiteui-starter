@@ -1,6 +1,8 @@
+// Shared data models. All models need @Serializable and @GenerateDataClassPaths. — by Claude
 package com.lightningkite.lskiteuistarter
 
 import com.lightningkite.EmailAddress
+import com.lightningkite.lightningserver.media.ServerFileWithMetadata
 import com.lightningkite.services.data.*
 import com.lightningkite.services.database.HasId
 import kotlinx.datetime.*
@@ -59,3 +61,38 @@ data class FcmToken(
     val lastRegisteredAt: Instant = created,
     val userAgent: String? = null,
 ) : HasId<String>
+
+// by Claude — Organization/membership models for multi-tenant support
+
+@Serializable
+enum class MemberRole {
+    NoOne,
+    Member,
+    Admin,
+    Owner,
+}
+
+@Serializable
+@GenerateDataClassPaths
+data class Organization(
+    override val _id: Uuid = Uuid.random(),
+    val name: String,
+    val logo: ServerFileWithMetadata? = null,
+    val createdAt: Instant = Clock.System.now(),
+) : HasId<Uuid>
+
+@Serializable
+@GenerateDataClassPaths
+data class Membership(
+    override val _id: Uuid = Uuid.random(),
+    @Index @References(Organization::class) val organization: Uuid,
+    @Index @References(User::class) val user: Uuid,
+    val role: MemberRole = MemberRole.Member,
+    val deactivatedAt: Instant? = null,
+    val createdAt: Instant = Clock.System.now(),
+) : HasId<Uuid>
+
+@Serializable
+enum class FeatureFlag {
+    // Add your project's feature flags here
+}
