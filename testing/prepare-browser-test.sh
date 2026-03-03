@@ -56,15 +56,15 @@ if [[ -f "$TOKEN_FILE" ]]; then
     TOKEN=$(cat "$TOKEN_FILE")
 fi
 
-# Frontend is on port 8941 (configured in vite.config.mjs)
-FRONTEND_PORT=8941
+# Frontend is on port 8962 (configured in vite.config.mjs)
+FRONTEND_PORT=8962
 echo ""
 
 # Create a file with the injection code for easy copy-paste
 INJECT_FILE="testing/.browser-inject.js"
 cat > "$INJECT_FILE" << EOF
 // Paste this in browser console at http://localhost:${FRONTEND_PORT}
-// Uses SameServer API option so requests go through Vite proxy to backend on 8081
+// Uses SameServer API option so requests go through Vite proxy to backend on 8961
 localStorage.setItem('apiOption', '"SameServer"');
 localStorage.setItem('sessionToken', '"${TOKEN}"');
 location.reload();
@@ -72,13 +72,13 @@ EOF
 
 # Save URLs for easy access
 echo "http://localhost:${FRONTEND_PORT}" > testing/.frontend-url
-echo "http://localhost:8081" > testing/.backend-url
+echo "http://localhost:8961" > testing/.backend-url
 
 echo "============================================"
 echo "  BROWSER TEST ENVIRONMENT READY"
 echo "============================================"
 echo ""
-echo "  Backend:  http://localhost:8081"
+echo "  Backend:  http://localhost:8961"
 echo "  Frontend: http://localhost:${FRONTEND_PORT}"
 echo ""
 if [[ -n "$TOKEN" ]]; then
@@ -100,7 +100,7 @@ echo "     localStorage.setItem('apiOption', '\"SameServer\"');"
 echo "     localStorage.setItem('sessionToken', '\"${TOKEN}\"');"
 echo "     location.reload();"
 echo ""
-echo "  NOTE: Use 'SameServer' so requests go through Vite proxy to backend on 8081"
+echo "  NOTE: Use 'SameServer' so requests go through Vite proxy to backend on 8961"
 echo ""
 echo "  4. Take screenshots:"
 echo "     mcp__claude-in-chrome__computer(action='screenshot')"

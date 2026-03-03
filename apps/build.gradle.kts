@@ -37,6 +37,7 @@ kotlin {
             }
         }
     }
+    jvm("jvmSsr") // by Claude — headless JVM target for KiteUI uiTest() tests
 
     sourceSets {
         val commonMain by getting {
@@ -69,6 +70,8 @@ kotlin {
         val commonTest by getting {
             dependencies {
                 implementation(kotlin("test"))
+                implementation(libs.kiteui.test) // by Claude — KiteUI UI testing framework
+                implementation(libs.coroutines.test)
             }
         }
     }

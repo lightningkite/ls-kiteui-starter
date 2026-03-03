@@ -7,6 +7,7 @@ import com.lightningkite.lightningserver.auth.testAuth
 import com.lightningkite.lightningserver.runtime.test.test
 import com.lightningkite.lightningserver.settings.set
 import com.lightningkite.lightningserver.typed.test
+import com.lightningkite.lskiteuistarter.data.InventoryItemEndpoints
 import com.lightningkite.lskiteuistarter.data.MembershipEndpoints
 import com.lightningkite.lskiteuistarter.data.OrganizationEndpoints
 import com.lightningkite.lskiteuistarter.data.UserEndpoints
@@ -230,6 +231,79 @@ class ServerTest {
                     modification<User> { it.role assign UserRole.Admin }
                 )
             }
+        }
+    }
+
+    // by Claude — Inventory item CRUD test
+    @Test
+    fun inventoryItemCrud(): Unit = runBlocking {
+        Server.test(settings = { database set Database.Settings("ram") }) {
+            // Create user, org, membership
+            val user = UserEndpoints.info.table().insertOne(
+                User(email = "member@test.com".toEmailAddress(), name = "Member", role = UserRole.User)
+            )!!
+            val org = OrganizationEndpoints.info.table().insertOne(
+                Organization(name = "Test Org")
+            )!!
+            MembershipEndpoints.info.table().insertOne(
+                Membership(organization = org._id, user = user._id, role = MemberRole.Member)
+            )
+
+            // Insert item via table
+            val item = InventoryItemEndpoints.info.table().insertOne(
+                InventoryItem(organization = org._id, name = "Laptop", category = ItemCategory.Electronics, quantity = 10)
+            )!!
+
+            // Member can read item via endpoint
+            val memberAuth = UserAuth.testAuth(user)
+            val fetched = InventoryItemEndpoints.rest.detail.test(item._id, memberAuth, Unit)
+            assertEquals("Laptop", fetched.name)
+            assertEquals(ItemCategory.Electronics, fetched.category)
+            assertEquals(10, fetched.quantity)
+        }
+    }
+
+    // by Claude — Inventory item org-scoping test
+    @Test
+    fun inventoryItemOrgScoping(): Unit = runBlocking {
+        Server.test(settings = { database set Database.Settings("ram") }) {
+            // Create two users and two orgs
+            val userA = UserEndpoints.info.table().insertOne(
+                User(email = "usera@test.com".toEmailAddress(), name = "User A", role = UserRole.User)
+            )!!
+            val userB = UserEndpoints.info.table().insertOne(
+                User(email = "userb@test.com".toEmailAddress(), name = "User B", role = UserRole.User)
+            )!!
+            val orgA = OrganizationEndpoints.info.table().insertOne(
+                Organization(name = "Org A")
+            )!!
+            val orgB = OrganizationEndpoints.info.table().insertOne(
+                Organization(name = "Org B")
+            )!!
+
+            // User A is member of Org A, User B is member of Org B
+            MembershipEndpoints.info.table().insertOne(
+                Membership(organization = orgA._id, user = userA._id, role = MemberRole.Member)
+            )
+            MembershipEndpoints.info.table().insertOne(
+                Membership(organization = orgB._id, user = userB._id, role = MemberRole.Member)
+            )
+
+            // Insert item in Org A
+            InventoryItemEndpoints.info.table().insertOne(
+                InventoryItem(organization = orgA._id, name = "Widget", quantity = 5)
+            )
+
+            // User B should get empty list (org-scoped filtering)
+            val userBAuth = UserAuth.testAuth(userB)
+            val results = InventoryItemEndpoints.rest.list.test(userBAuth, Query<InventoryItem>())
+            assertTrue(results.isEmpty(), "User B should not see items from Org A")
+
+            // User A should see the item
+            val userAAuth = UserAuth.testAuth(userA)
+            val resultsA = InventoryItemEndpoints.rest.list.test(userAAuth, Query<InventoryItem>())
+            assertEquals(1, resultsA.size, "User A should see 1 item from their org")
+            assertEquals("Widget", resultsA.first().name)
         }
     }
 

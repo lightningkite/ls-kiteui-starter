@@ -12,4 +12,5 @@ open class CachedApi(val uncached: Api) {
 	open val fcmTokens = ModelCache(uncached.fcmToken, com.lightningkite.lskiteuistarter.FcmToken.serializer())
 	open val organizations = ModelCache(uncached.organization, com.lightningkite.lskiteuistarter.Organization.serializer())
 	open val memberships = ModelCache(uncached.membership, com.lightningkite.lskiteuistarter.Membership.serializer())
+	open val inventoryItems = ModelCache(uncached.inventoryItem, com.lightningkite.lskiteuistarter.InventoryItem.serializer())
 }

@@ -6,6 +6,8 @@ import kotlinx.serialization.Serializable
 import kotlin.time.Duration.Companion.seconds
 
 
+var apiOverride: Api? = null // by Claude — test seam for injecting mock API
+
 @Serializable
 enum class ApiOption(val apiName: String, val http: String, val ws: String) {
     //    Production(" ", "https://", "wss://"),
@@ -25,7 +27,7 @@ enum class ApiOption(val apiName: String, val http: String, val ws: String) {
             ws = ws,
             pingTime = 30.seconds,
         )*/
-    val api get() = LiveApi(baseFetcher)
+    val api get() = apiOverride ?: LiveApi(baseFetcher) // by Claude — check override first
     fun next(): ApiOption = ApiOption.entries[(ordinal + 1) % ApiOption.entries.size]
 }
 

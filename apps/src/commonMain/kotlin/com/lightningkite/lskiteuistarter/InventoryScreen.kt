@@ -1,4 +1,4 @@
-// by Claude — Members management screen
+// by Claude — Read-only inventory list screen
 package com.lightningkite.lskiteuistarter
 
 import com.lightningkite.kiteui.Routable
@@ -12,9 +12,9 @@ import com.lightningkite.reactive.context.reactive
 import com.lightningkite.reactive.core.*
 import com.lightningkite.services.database.*
 
-@Routable("/members")
-class MembersPage : Page {
-    override val title: Reactive<String> get() = Constant("Members")
+@Routable("/inventory")
+class InventoryPage : Page {
+    override val title: Reactive<String> get() = Constant("Inventory")
 
     override fun ViewWriter.render() {
         reactive {
@@ -24,33 +24,33 @@ class MembersPage : Page {
 
         val session = currentSessionNotNull
 
-        val memberships = remember {
+        val items = remember {
             val s = session()
-            s.memberships.list(Query(Condition.Always))()
+            s.inventoryItems.list(Query(Condition.Always))()
         }
 
         scrolling.col {
             centered.h2 {
-                debugName = "membersTitle" // by Claude — testId
-                content = "Members"
+                debugName = "inventoryTitle" // by Claude — testId
+                content = "Inventory"
             }
 
             col {
-                debugName = "membersList" // by Claude — testId
-                forEachById(memberships, id = { it._id }) { membershipReactive ->
+                debugName = "inventoryList" // by Claude — testId
+                forEachById(items, id = { it._id }) { itemReactive ->
                     card.row {
                         expanding.col {
-                            text { ::content { "User: ${membershipReactive().user}" } }
+                            text { ::content { itemReactive().name } }
                             subtext { ::content {
-                                val m = membershipReactive()
+                                val item = itemReactive()
                                 buildString {
-                                    append("Role: ${m.role.name}")
-                                    if (m.deactivatedAt != null) append(" (Deactivated)")
+                                    append("Category: ${item.category.name}")
+                                    if (item.notes != null) append(" — ${item.notes}")
                                 }
                             } }
                         }
                         col {
-                            subtext { ::content { "Org: ${membershipReactive().organization}" } }
+                            centered.h3 { ::content { "×${itemReactive().quantity}" } }
                         }
                     }
                 }

@@ -2,12 +2,12 @@
 # Start the backend server if not already running
 # Usage: ./testing/start-backend.sh
 #
-# Uses testing/settings.testing.json for port 8081 (to avoid conflict with instaclub on 8080)
+# Uses testing/settings.testing.json for port 8961 (to avoid conflict with instaclub on 8080)
 
 set -e
 cd "$(dirname "$0")/.."
 
-PORT=8081
+PORT=8961
 LOG_FILE="testing/.backend.log"
 TOKEN_FILE="testing/.admin-token"
 # Use absolute path since gradle's workingDir may differ

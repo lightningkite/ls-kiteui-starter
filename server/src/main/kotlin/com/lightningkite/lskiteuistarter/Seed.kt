@@ -4,6 +4,7 @@
 package com.lightningkite.lskiteuistarter
 
 import com.lightningkite.lightningserver.definition.generalSettings
+import com.lightningkite.lskiteuistarter.data.InventoryItemEndpoints
 import com.lightningkite.lskiteuistarter.data.MembershipEndpoints
 import com.lightningkite.lskiteuistarter.data.OrganizationEndpoints
 import com.lightningkite.lskiteuistarter.data.UserEndpoints
@@ -95,6 +96,15 @@ fun seed() = engine {
             Membership(organization = org2._id, user = user2._id, role = MemberRole.Member)
         )
         println("  Created 5 memberships across 2 organizations")
+
+        // by Claude — Inventory items seed data
+        val inventoryTable = InventoryItemEndpoints.info.table()
+        inventoryTable.insertOne(InventoryItem(organization = org1._id, name = "Laptop", category = ItemCategory.Electronics, quantity = 12))
+        inventoryTable.insertOne(InventoryItem(organization = org1._id, name = "Standing Desk", category = ItemCategory.Furniture, quantity = 8))
+        inventoryTable.insertOne(InventoryItem(organization = org1._id, name = "Notebook", category = ItemCategory.Office, quantity = 50))
+        inventoryTable.insertOne(InventoryItem(organization = org2._id, name = "Monitor", category = ItemCategory.Electronics, quantity = 20))
+        inventoryTable.insertOne(InventoryItem(organization = org2._id, name = "Keyboard", category = ItemCategory.Electronics, quantity = 35))
+        println("  Created 5 inventory items across 2 organizations")
 
         // Print admin token for easy testing
         val (_, token) = UserAuth.session.createSession(admin._id)

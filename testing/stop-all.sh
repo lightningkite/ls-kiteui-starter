@@ -6,10 +6,10 @@ cd "$(dirname "$0")/.."
 
 echo "Stopping servers..."
 
-# Stop backend on port 8081
-if lsof -i :8081 > /dev/null 2>&1; then
-    echo "Stopping backend on port 8081..."
-    PID=$(lsof -t -i :8081 2>/dev/null || true)
+# Stop backend on port 8961
+if lsof -i :8961 > /dev/null 2>&1; then
+    echo "Stopping backend on port 8961..."
+    PID=$(lsof -t -i :8961 2>/dev/null || true)
     if [[ -n "$PID" ]]; then
         kill $PID 2>/dev/null || true
         sleep 1
@@ -23,10 +23,10 @@ else
     echo "  Backend not running"
 fi
 
-# Stop frontend on port 8941
-if lsof -i :8941 > /dev/null 2>&1; then
-    echo "Stopping frontend on port 8941..."
-    PID=$(lsof -t -i :8941 2>/dev/null || true)
+# Stop frontend on port 8962
+if lsof -i :8962 > /dev/null 2>&1; then
+    echo "Stopping frontend on port 8962..."
+    PID=$(lsof -t -i :8962 2>/dev/null || true)
     if [[ -n "$PID" ]]; then
         kill $PID 2>/dev/null || true
         echo "  Frontend stopped"

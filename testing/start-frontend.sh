@@ -2,14 +2,14 @@
 # Start the Vite frontend dev server if not already running
 # Usage: ./testing/start-frontend.sh
 #
-# Uses port 8941 (configured in apps/vite.config.mjs)
-# Vite proxies /api requests to backend on port 8081
+# Uses port 8962 (configured in apps/vite.config.mjs)
+# Vite proxies /api requests to backend on port 8961
 
 set -e
 cd "$(dirname "$0")/.."
 
 LOG_FILE="testing/.frontend.log"
-PORT=8941
+PORT=8962
 
 # Check if Vite is already running
 if curl -s "http://localhost:$PORT/" 2>/dev/null | grep -q -E "(vite|KiteUI|html)"; then
@@ -43,7 +43,7 @@ for i in {1..120}; do
         echo "Frontend started successfully on http://localhost:$PORT"
         echo ""
         echo "IMPORTANT: In the browser, select 'SameServer' API option for testing"
-        echo "           (this uses the Vite proxy to reach the backend on port 8081)"
+        echo "           (this uses the Vite proxy to reach the backend on port 8961)"
         exit 0
     fi
 

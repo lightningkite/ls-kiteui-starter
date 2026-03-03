@@ -2,6 +2,7 @@
 package com.lightningkite.lskiteuistarter
 
 import com.lightningkite.kiteui.*
+import com.lightningkite.kiteui.aidriver.AiDriver
 import com.lightningkite.kiteui.exceptions.ExceptionToMessages
 import com.lightningkite.kiteui.exceptions.installLsError
 import com.lightningkite.kiteui.models.*
@@ -11,6 +12,7 @@ import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.confirmDanger
 import com.lightningkite.kiteui.views.l2.appNav
+import com.lightningkite.kiteui.views.produceOne
 import com.lightningkite.lskiteuistarter.extensions.toAppPlatform
 import com.lightningkite.lskiteuistarter.sdk.*
 import com.lightningkite.lskiteuistarter.utils.*
@@ -98,20 +100,33 @@ fun ViewWriter.app(navigator: PageNavigator, dialog: PageNavigator) {
 
     navigator.navigate(LandingPage())
     // by Claude — Updated app name and added Members nav link
-    return appNav(navigator, dialog) {
-        appName = "My App"
-        ::navItems {
-            listOfNotNull(
-                NavLink(title = { "Home" }, icon = { Icon.home }) { { HomePage() } },
-                if (currentSession() != null)
-                    NavLink(title = { "Members" }, icon = { Icon.group }) { { MembersPage() } }
-                else null,
-            )
-        }
+    val rootView = produceOne {
+        appNav(navigator, dialog) {
+            appName = "My App"
+            ::navItems {
+                listOfNotNull(
+                    NavLink(title = { "Home" }, icon = { Icon.home }) { { HomePage() } },
+                    if (currentSession() != null)
+                        NavLink(title = { "Members" }, icon = { Icon.group }) { { MembersPage() } }
+                    else null,
+                    if (currentSession() != null)  // by Claude
+                        NavLink(title = { "Inventory" }, icon = { Icon.list }) { { InventoryPage() } }
+                    else null,
+                )
+            }
 
-        ::exists {
-            navigator.currentPage() !is UseFullPage
+            ::exists {
+                navigator.currentPage() !is UseFullPage
+            }
         }
+    }
+    // by Claude — connect AI driver for LLM-driven UI testing (dev builds only)
+    if (Platform.isDevelopment) {
+        AiDriver.connect(
+            appName = "LS KiteUI Starter",
+            rootViewProvider = { rootView },
+            navigatorProvider = { navigator }
+        )
     }
 }
 

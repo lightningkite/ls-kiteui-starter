@@ -25,10 +25,14 @@ class HomePage : Page {
         }
 
         col {
-            centered.h2("Welcome to your home page")
+            centered.h2 {
+                debugName = "homeTitle" // by Claude — testId for UI testing
+                content = "Welcome to your home page"
+            }
 
             field("Theme") {
                 select {
+                    debugName = "themeSelect" // by Claude — testId
                     bind(selectedThemeName, Constant(themes.keys.toList())) { it }
                 }
             }
@@ -36,6 +40,7 @@ class HomePage : Page {
             expanding.space()
 
             important.buttonTheme.button {
+                debugName = "testNotificationsButton" // by Claude — testId
                 centered.text("Test Notifications")
                 ::enabled { fcmToken() != null }
                 onClick {
@@ -44,6 +49,7 @@ class HomePage : Page {
             }
 
             important.buttonTheme.button {
+                debugName = "logoutButton" // by Claude — testId
                 centered.text("Logout")
                 onClick {
                     try {

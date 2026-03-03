@@ -22,7 +22,7 @@ class LiveApi(val fetcher: Fetcher) : Api {
 
 	override val user = com.lightningkite.lightningserver.typed.LiveClientModelRestEndpoints(fetcher, "users", com.lightningkite.lskiteuistarter.User.serializer(), kotlin.uuid.Uuid.serializer())
 
-	inner class LiveUserAuthApi : Api.UserAuthApi, com.lightningkite.lightningserver.sessions.proofs.AuthClientEndpoints<com.lightningkite.lskiteuistarter.User, kotlin.uuid.Uuid> by com.lightningkite.lightningserver.sessions.proofs.LiveAuthClientEndpoints(fetcher, "auth/session", com.lightningkite.lskiteuistarter.User.serializer(), kotlin.uuid.Uuid.serializer()), com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lightningserver.sessions.Session<com.lightningkite.lskiteuistarter.User, kotlin.uuid.Uuid>, kotlin.uuid.Uuid> by com.lightningkite.lightningserver.typed.LiveClientModelRestEndpoints(fetcher, "auth/session/sessions", com.lightningkite.lightningserver.sessions.Session.serializer(com.lightningkite.lskiteuistarter.User.serializer(), kotlin.uuid.Uuid.serializer()), kotlin.uuid.Uuid.serializer()) {
+	inner class LiveUserAuthApi : Api.UserAuthApi, com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lightningserver.sessions.Session<com.lightningkite.lskiteuistarter.User, kotlin.uuid.Uuid>, kotlin.uuid.Uuid> by com.lightningkite.lightningserver.typed.LiveClientModelRestEndpoints(fetcher, "auth/session/sessions", com.lightningkite.lightningserver.sessions.Session.serializer(com.lightningkite.lskiteuistarter.User.serializer(), kotlin.uuid.Uuid.serializer()), kotlin.uuid.Uuid.serializer()), com.lightningkite.lightningserver.sessions.proofs.AuthClientEndpoints<com.lightningkite.lskiteuistarter.User, kotlin.uuid.Uuid> by com.lightningkite.lightningserver.sessions.proofs.LiveAuthClientEndpoints(fetcher, "auth/session", com.lightningkite.lskiteuistarter.User.serializer(), kotlin.uuid.Uuid.serializer()) {
 
 		inner class LiveEmailApi : Api.UserAuthApi.EmailApi, com.lightningkite.lightningserver.sessions.proofs.ProofClientEndpoints.Email by com.lightningkite.lightningserver.sessions.proofs.LiveProofClientEndpoints.Email(fetcher, "auth/proof/email", ) {
 			override suspend fun verifyNewEmail(input: com.lightningkite.EmailAddress): kotlin.String =
@@ -30,7 +30,7 @@ class LiveApi(val fetcher: Fetcher) : Api {
 		}
 		override val email = LiveEmailApi()
 
-		inner class LiveTimeBasedOTPProof : Api.UserAuthApi.TimeBasedOTPProof, com.lightningkite.lightningserver.sessions.proofs.ProofClientEndpoints.TimeBasedOTP by com.lightningkite.lightningserver.sessions.proofs.LiveProofClientEndpoints.TimeBasedOTP(fetcher, "auth/proof/totp", ), com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lightningserver.sessions.TotpSecret, kotlin.uuid.Uuid> by com.lightningkite.lightningserver.typed.LiveClientModelRestEndpoints(fetcher, "auth/proof/totp/secrets", com.lightningkite.lightningserver.sessions.TotpSecret.serializer(), kotlin.uuid.Uuid.serializer()) {
+		inner class LiveTimeBasedOTPProof : Api.UserAuthApi.TimeBasedOTPProof, com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lightningserver.sessions.TotpSecret, kotlin.uuid.Uuid> by com.lightningkite.lightningserver.typed.LiveClientModelRestEndpoints(fetcher, "auth/proof/totp/secrets", com.lightningkite.lightningserver.sessions.TotpSecret.serializer(), kotlin.uuid.Uuid.serializer()), com.lightningkite.lightningserver.sessions.proofs.ProofClientEndpoints.TimeBasedOTP by com.lightningkite.lightningserver.sessions.proofs.LiveProofClientEndpoints.TimeBasedOTP(fetcher, "auth/proof/totp", ) {
 		}
 		override val totp = LiveTimeBasedOTPProof()
 
@@ -55,6 +55,8 @@ class LiveApi(val fetcher: Fetcher) : Api {
 	override val organization = com.lightningkite.lightningserver.typed.LiveClientModelRestEndpoints(fetcher, "organizations", com.lightningkite.lskiteuistarter.Organization.serializer(), kotlin.uuid.Uuid.serializer())
 
 	override val membership = com.lightningkite.lightningserver.typed.LiveClientModelRestEndpoints(fetcher, "memberships", com.lightningkite.lskiteuistarter.Membership.serializer(), kotlin.uuid.Uuid.serializer())
+
+	override val inventoryItem = com.lightningkite.lightningserver.typed.LiveClientModelRestEndpoints(fetcher, "inventory-items", com.lightningkite.lskiteuistarter.InventoryItem.serializer(), kotlin.uuid.Uuid.serializer())
 
 	inner class LiveMetaApi : Api.MetaApi {
 		override suspend fun getServerHealth(): com.lightningkite.lightningserver.typed.ServerHealth =

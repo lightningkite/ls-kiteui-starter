@@ -86,6 +86,7 @@ object Server : ServerBuilder() {
     // by Claude — Organization/membership endpoints
     val organizations = path.path("organizations") module OrganizationEndpoints
     val memberships = path.path("memberships") module MembershipEndpoints
+    val inventoryItems = path.path("inventory-items") module InventoryItemEndpoints // by Claude
 
     val multiplex = path.path("multiplex") bind MultiplexWebSocketHandler()
     val base = path bind QueryParamWebSocketHandler()

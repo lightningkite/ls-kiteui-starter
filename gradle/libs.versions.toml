@@ -5,7 +5,7 @@ firebaseMessagingKtx = "24.1.2"
 graalVmNative = "0.11.4"
 jsPlainObjects = "2.3.0"
 kfc = "16.5.0"
-kiteui = "7.0.0-prerelease-189"
+kiteui = "7.0.0-prerelease-193-local"
 kotlin = "2.2.20"
 kotlinerCli = "1.0.5"
 kotlinxSerializationCsvDurable = "0.2.21-1"
@@ -21,6 +21,7 @@ coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", ve
 coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version = { ref = "coroutines" } }
 csvDurable = { module = "com.lightningkite:kotlinx-serialization-csv-durable", version = { ref = "kotlinxSerializationCsvDurable" } }
 kiteui = { module = "com.lightningkite.kiteui:library", version = { ref = "kiteui" } }
+kiteui-test = { module = "com.lightningkite.kiteui:test-utilities", version = { ref = "kiteui" } }
 lightningServer-core = { module = "com.lightningkite.lightningserver:core", version = { ref = "lightningServer" } }
 lightningServer-core-shared = { module = "com.lightningkite.lightningserver:core-shared", version = { ref = "lightningServer" } }
 lightningServer-engine-aws = { module = "com.lightningkite.lightningserver:engine-aws-serverless", version = { ref = "lightningServer" } }

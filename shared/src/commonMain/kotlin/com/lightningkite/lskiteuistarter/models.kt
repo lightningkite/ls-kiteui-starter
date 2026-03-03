@@ -92,6 +92,22 @@ data class Membership(
     val createdAt: Instant = Clock.System.now(),
 ) : HasId<Uuid>
 
+// by Claude — Inventory item model for inventory tracker test feature
+@Serializable
+enum class ItemCategory { Electronics, Office, Furniture, Other }
+
+@Serializable
+@GenerateDataClassPaths
+data class InventoryItem(
+    override val _id: Uuid = Uuid.random(),
+    @Index @References(Organization::class) val organization: Uuid,
+    val name: String,
+    val category: ItemCategory = ItemCategory.Other,
+    val quantity: Int = 0,
+    val notes: String? = null,
+    val createdAt: Instant = Clock.System.now(),
+) : HasId<Uuid>
+
 @Serializable
 enum class FeatureFlag {
     // Add your project's feature flags here
