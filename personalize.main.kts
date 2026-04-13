@@ -25,6 +25,10 @@
 import java.io.File
 import java.util.Locale
 
+// Detect OS for cross-platform gradle wrapper support
+private val isWindows = System.getProperty("os.name").lowercase().contains("windows")
+private val gradlewCommand = if (isWindows) "gradlew.bat" else "./gradlew"
+
 private val casingSeparatorRegex: Regex = Regex("([-_\\s]+([A-Z]*[a-z0-9]+))|([-_\\s]*[A-Z]+)")
 
 private inline fun String.caseAlter(crossinline update: (after: String) -> String): String =
@@ -60,7 +64,7 @@ fun updateKotlinFiles(config: Config) {
     val newSimpleDeclaration = config.appPackageName
 
     File(".").walk()
-        .filter { it.extension == "kt" && !it.path.contains("build") }
+        .filter { (it.extension == "kt" || it.name.endsWith(".gradle.kts")) && !it.path.contains("build") }
         .forEach { file ->
             val originalText = file.readText()
             var text = originalText
@@ -297,6 +301,21 @@ fun personalize(config: Config) {
     println("\nStep 6: Moving package directories...")
     movePackageDirectories(config)
 
+    // Step 7: Run KSP to generate database paths for the new package
+    println("\nStep 7: Running KSP to generate database paths...")
+    println("  Executing: $gradlewCommand :shared:kspKotlinJs")
+    val kspResult = ProcessBuilder(gradlewCommand, ":shared:kspKotlinJs")
+        .inheritIO()
+        .start()
+        .waitFor()
+
+    if (kspResult == 0) {
+        println("  ✓ KSP generation complete")
+    } else {
+        println("  ✗ KSP generation failed with exit code: $kspResult")
+        println("  You may need to run this manually: $gradlewCommand :shared:kspKotlinJs")
+    }
+
     println("\n✓ Personalization complete!")
     println("\n" + "=".repeat(60))
     println("IMPORTANT: Manual steps required")
@@ -313,7 +332,7 @@ fun personalize(config: Config) {
     println("   - Update local.properties with your signing configuration")
     println("\n4. Review Changes:")
     println("   - Check all modified files with: git status")
-    println("   - Test the build: ./gradlew build")
+    println("   - Test the build: $gradlewCommand build")
     println("\n" + "=".repeat(60))
 }
 
