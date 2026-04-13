@@ -17,6 +17,7 @@ import com.lightningkite.lightningserver.settings.*
 import com.lightningkite.lightningserver.typed.*
 import com.lightningkite.lightningserver.typed.sdk.FetcherSdk
 import com.lightningkite.lightningserver.typed.sdk.CachingSdk
+import com.lightningkite.lightningserver.typed.sdk.SDK.write
 import com.lightningkite.lightningserver.typed.sdk.SDK.writeUsingDefaultSettings
 import com.lightningkite.lightningserver.typed.sdk.plus
 import com.lightningkite.lightningserver.websockets.*
@@ -32,6 +33,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.server.netty.Netty
 import kotlinx.coroutines.runBlocking
 import java.io.File
+import kotlin.time.Clock
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.TimeSource
 import kotlin.uuid.Uuid
@@ -54,7 +56,7 @@ fun engine(setup: KtorEngine.() -> Unit) {
     val built = Server.build()
     println("Server built in ${before.elapsedNow()}")
 
-    engine = KtorEngine(built).apply {
+    engine = KtorEngine(built, Clock.lsKiteuiStarter).apply {
         settings.loadFromFile(settingsFile, internalSerializersModule)
         setup()
     }
@@ -63,18 +65,14 @@ fun engine(setup: KtorEngine.() -> Unit) {
 fun serve() = engine { start(Netty) }
 
 fun sdk() = engine {
+    val folder = KFile("apps/src/commonMain/kotlin/com/lightningkite/lskiteuistarter/sdk")
     Utils.logger.info { "Generating FetcherSdk" }
-    FetcherSdk("com.lightningkite.lskiteuistarter.sdk").writeUsingDefaultSettings(
-        Server,
-        KFile("apps/src/commonMain/kotlin/com/lightningkite/lskiteuistarter/sdk")
-    )
+    FetcherSdk("com.lightningkite.lskiteuistarter.sdk").write(folder)
     Utils.logger.info { "Generating CachingSdk" }
-    CachingSdk("com.lightningkite.lskiteuistarter.sdk").writeUsingDefaultSettings(
-        Server,
-        KFile("apps/src/commonMain/kotlin/com/lightningkite/lskiteuistarter/sdk")
-    )
+    CachingSdk("com.lightningkite.lskiteuistarter.sdk").write(folder)
     Utils.logger.info { "Done" }
 }
+
 fun main(vararg args: String) = cli(
     arguments = args,
     setup = ::setup,
@@ -87,7 +85,7 @@ fun main(vararg args: String) = cli(
 
 
 object Utils {
-    val logger: KLogger = KotlinLogging.logger("com.lightningtime")
+    val logger: KLogger = KotlinLogging.logger("com.lightningtime.lskiteuistarter")
 
     suspend fun <T> runForEach(seconds: Int, items: Collection<T>, action: suspend (T) -> Unit): List<T> {
         val loopStart = TimeSource.Monotonic.markNow()

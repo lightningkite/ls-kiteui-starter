@@ -22,6 +22,7 @@ import com.lightningkite.lskiteuistarter.UserAuth.RoleCache.userRole
 import com.lightningkite.lskiteuistarter.data.*
 import com.lightningkite.services.cache.Cache
 import com.lightningkite.services.cache.dynamodb.DynamoDbCache
+import com.lightningkite.services.data.MaxLength
 import com.lightningkite.services.database.Database
 import com.lightningkite.services.database.jsonfile.JsonFileDatabase
 import com.lightningkite.services.database.mongodb.MongoDatabase
@@ -34,8 +35,7 @@ import com.lightningkite.services.notifications.NotificationService
 import com.lightningkite.services.notifications.fcm.FcmNotificationClient
 
 object Server : ServerBuilder() {
-
-    override val annotationValidators: Runtime<AnnotationValidators> = Runtime {
+    override val annotationValidators: Runtime<AnnotationValidators> = Runtime.Cached {
         AnnotationValidators.StandardWithExternalModule() + AnnotationValidators.Files() + AnnotationValidators.Media()
     }
 

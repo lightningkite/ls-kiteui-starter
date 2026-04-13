@@ -143,7 +143,7 @@ fun ViewWriter.app(navigator: PageNavigator, dialog: PageNavigator) {
     }
 
     return appNav(navigator, dialog) {
-        appName = "Starter App"
+        appName = "LS KiteUI Starter"
         ::navItems {
             listOf(
                 NavLink(title = { "Home" }, icon = { Icon.home }) { { HomePage() } },

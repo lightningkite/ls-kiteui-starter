@@ -20,6 +20,7 @@ import com.lightningkite.services.terraform.TerraformProvider
 import com.lightningkite.services.terraform.TerraformProviderImport
 import com.lightningkite.services.terraform.byVariable
 import com.lightningkite.services.terraform.direct
+import com.lightningkite.snakeCase
 import com.lightningkite.toEmailAddress
 import kotlinx.serialization.json.JsonObject
 import software.amazon.awssdk.regions.Region
@@ -42,12 +43,13 @@ object LkEnv : TerraformAwsServerlessDomainBuilder<Server>(Server) {
     override val storageBucket = "lightningkite-terraform"
     override val storageBucketPath: String
         get() = super.storageBucketPath
+
     override val debug = true
     override val emergencyContact = "joseph@lightningkite.com".toEmailAddress()
 
     override val region = Region.US_WEST_2!!
 
-    override val secretsSource: SecretSource = AwsSecretSource(projectPrefix, region)
+    override val secretsSource: SecretSource = AwsSecretSource(projectPrefix, idPrefix = displayName.snakeCase(), region)
 
     override fun Server.settings() {
         require(TerraformProviderImport.mongodbAtlas)
