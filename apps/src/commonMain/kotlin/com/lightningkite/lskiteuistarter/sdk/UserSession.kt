@@ -1,11 +1,10 @@
 package com.lightningkite.lskiteuistarter.sdk
 
-import kotlin.uuid.Uuid
-
+import com.lightningkite.lskiteuistarter.User
 
 class UserSession(
     val api: Api,
-    val userId: Uuid,
+    val userId: User.ID,
 ) : CachedApi(api) {
 
 }
