@@ -64,7 +64,7 @@ fun updateKotlinFiles(config: Config) {
     val newSimpleDeclaration = config.appPackageName
 
     File(".").walk()
-        .filter { (it.extension == "kt" || it.name.endsWith(".gradle.kts")) && !it.path.contains("build") }
+        .filter { (it.extension == "kt" && !it.path.contains("build")) || it.name == "settings.gradle.kts" || it.name == "build.gradle.kts" }
         .forEach { file ->
             val originalText = file.readText()
             var text = originalText
