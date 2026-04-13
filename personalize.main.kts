@@ -41,7 +41,6 @@ fun String.camelCase(): String = caseAlter { it.capitalize() }.decapitalize()
 val oldPackage = "com.lightningkite.lskiteuistarter"
 val oldAppName = "LS KiteUI Starter"
 
-
 data class Config(
     val appName: String,
     val packageName: String = "com.${appName.camelCase()}",
@@ -140,6 +139,65 @@ fun updateFirebaseConfig(config: Config) {
     }
 }
 
+fun updateUserEndpoints(config: Config) {
+    // Look for the file at the OLD package path since directories haven't been moved yet
+    val userEndpointsFile = File("server/src/main/kotlin/${oldPackage.replace('.', '/')}/data/UserEndpoints.kt")
+    if (!userEndpointsFile.exists()) {
+        println("  ⚠ UserEndpoints.kt not found at ${userEndpointsFile.path}, skipping")
+        return
+    }
+
+    val originalText = userEndpointsFile.readText()
+    var text = originalText
+    var changesMade = false
+
+    // Update app store tester email
+    val appStoreTesterRegex = Regex(
+        """(email = )"[^"]*"(\.toEmailAddress\(\),\s*\n\s*name = "AppStoreTester")""",
+        RegexOption.MULTILINE
+    )
+    if (appStoreTesterRegex.containsMatchIn(text)) {
+        text = text.replace(appStoreTesterRegex) { match ->
+            """${match.groups[1]!!.value}"${config.appStoreTesterEmail}"${match.groups[2]!!.value}"""
+        }
+        changesMade = true
+        println("    - Set app store tester email to: ${config.appStoreTesterEmail}")
+    }
+
+    // Update initAdminUsers to add root user calls
+    val rootUserCalls = config.rootUsers.joinToString("\n        ") { email ->
+        "root(\"$email\".toEmailAddress())"
+    }
+
+    // Find the initAdminUsers function and add the root user calls after the root() helper function
+    val initAdminUsersRegex = Regex(
+        """(val initAdminUsers = path\.path\("initAdminUser"\) bind startupOnce\(Server\.database\) \{[\s\S]*?)\n(\s*)\}""",
+        RegexOption.MULTILINE
+    )
+
+    val match = initAdminUsersRegex.find(text)
+    if (match != null) {
+        val beforeClosing = match.groups[1]!!.value
+        val indent = match.groups[2]!!.value
+
+        // Check if root user calls already exist
+        if (!beforeClosing.contains("// Initialize root users")) {
+            text = text.replace(initAdminUsersRegex) {
+                "${beforeClosing}\n\n        // Initialize root users\n        ${rootUserCalls}\n${indent}}"
+            }
+            changesMade = true
+            println("    - Added ${config.rootUsers.size} root user(s): ${config.rootUsers.joinToString(", ")}")
+        }
+    }
+
+    if (changesMade) {
+        userEndpointsFile.writeText(text)
+        println("  ✓ Updated UserEndpoints.kt")
+    } else {
+        println("  - No changes needed")
+    }
+}
+
 fun movePackageDirectories(config: Config) {
     val oldParts = oldPackage.split(".")
     val newParts = config.packageName.split(".")
@@ -210,8 +268,6 @@ fun copyRecursively(source: File, target: File): Boolean {
     }
 }
 
-
-
 fun personalize(config: Config) {
     val newPackage = config.packageName
 
@@ -233,8 +289,12 @@ fun personalize(config: Config) {
     println("\nStep 4: Updating Firebase configuration...")
     updateFirebaseConfig(config)
 
-    // Step 5: Move directory structures
-    println("\nStep 5: Moving package directories...")
+    // Step 5: Update UserEndpoints with root users and app store tester
+    println("\nStep 5: Updating UserEndpoints...")
+    updateUserEndpoints(config)
+
+    // Step 6: Move directory structures (do this last so other updates can find files)
+    println("\nStep 6: Moving package directories...")
     movePackageDirectories(config)
 
     println("\n✓ Personalization complete!")
@@ -249,25 +309,27 @@ fun personalize(config: Config) {
     println("\n2. Server Configuration:")
     println("   - Update settings.json with your database, email, and notification settings")
     println("   - Add Firebase service account JSON for server-side notifications")
-    println("\n3. Regenerate SDK:")
-    println("   - Run: ./gradlew :server:generateSdk")
-    println("\n4. Update App Signing (optional):")
+    println("\n3. Update App Signing (optional):")
     println("   - Update local.properties with your signing configuration")
-    println("\n5. Review Changes:")
+    println("\n4. Review Changes:")
     println("   - Check all modified files with: git status")
     println("   - Test the build: ./gradlew build")
     println("\n" + "=".repeat(60))
 }
 
+fun personalize(
+    appName: String,
+    rootUsers: Set<String>,
+    packageName: String = "com.${appName.camelCase()}",
+    appStoreTesterEmail: String = "appstoretester@${packageName.split('.').take(2).reversed().joinToString(".")}",
+) =
+    personalize(Config(appName, packageName, rootUsers, appStoreTesterEmail))
+
 // Example usage:
-// Uncomment and modify the configuration below, then run: kotlinc -script personalize.main.kts
 
-
-val myConfig = Config(
+personalize(
     appName = "My Awesome App",
     packageName = "com.mycompany.myapp",
     rootUsers = setOf("admin@mycompany.com"),
     appStoreTesterEmail = "appstoretester@mycompany.com"
 )
-
-personalize(myConfig)
