@@ -93,10 +93,10 @@ object UserEndpoints : ServerBuilder() {
     val initAdminUsers = path.path("initAdminUser") bind startupOnce(Server.database) {
         suspend fun root(
             email: EmailAddress,
-            id: User.ID = User.ID(Uuid.random())
+            id: Uuid = Uuid.random()
         ): User = info.table().init(
             User(
-                _id = id,
+                _id = User.ID(id),
                 email = email,
                 name = email.raw.substringBefore('@').substringBefore('+'),
                 role = UserRole.Root

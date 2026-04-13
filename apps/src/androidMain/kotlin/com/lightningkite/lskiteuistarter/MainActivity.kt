@@ -41,8 +41,6 @@ class MainActivity : KiteUiActivity() {
 //            Sentry.captureException(ex)
         }
 
-        with(viewWriter) {
-            app(main, dialog)
-        }
+        viewWriter.app(main, dialog)
     }
 }
