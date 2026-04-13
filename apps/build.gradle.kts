@@ -1,14 +1,23 @@
 import com.lightningkite.kiteui.KiteUiPluginExtension
+import org.jetbrains.kotlin.gradle.plugin.cocoapods.CocoapodsExtension
+import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
 import java.nio.file.Files
 import java.util.*
 import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnLockMismatchReport
 import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnRootExtension
+import kotlin.collections.set
+
+// KMP currently doesn't disable iOS target and dependency resolution correctly when not on a mac.
+// So we work around it on non mac machines with this check
+val onMac = System.getProperty("os.name").contains("Mac", ignoreCase = true)
 
 plugins {
     alias(libs.plugins.androidApp)
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.serialization)
-    alias(libs.plugins.kotlinCocoapods)
+    if (System.getProperty("os.name").contains("Mac", ignoreCase = true)) {
+        alias(libs.plugins.kotlinCocoapods)
+    }
     alias(libs.plugins.kiteui)
     alias(libs.plugins.kjsplain)
     alias(libs.plugins.kfc)
@@ -24,9 +33,11 @@ repositories {
 kotlin {
     applyDefaultHierarchyTemplate()
     androidTarget()
-    iosX64()
-    iosArm64()
-    iosSimulatorArm64()
+    if (onMac) {
+        iosX64()
+        iosArm64()
+        iosSimulatorArm64()
+    }
     js {
         binaries.executable()
         browser {
@@ -55,8 +66,10 @@ kotlin {
                 api(libs.firebase.messaging.ktx)
             }
         }
-        val iosMain by getting {
-            dependencies {
+        if (onMac) {
+            val iosMain by getting {
+                dependencies {
+                }
             }
         }
         val jsMain by getting {
@@ -73,26 +86,31 @@ kotlin {
         }
     }
 
-    cocoapods {
-        // Required properties
-        // Specify the required Pod version here. Otherwise, the Gradle project version is used.
-        version = "1.0"
-        summary = "Some description for a Kotlin/Native module"
-        homepage = "Link to a Kotlin/Native module homepage"
-        ios.deploymentTarget = "14.0"
+    if (onMac) {
+        // We have to manually call this because the shortcut isn't available when plugin is not applied and gradle will
+        // fail even behind the if check
+        (this as ExtensionAware).extensions.configure<CocoapodsExtension>("cocoapods", {
+            // Required properties
+            // Specify the required Pod version here. Otherwise, the Gradle project version is used.
+            version = "1.0"
+            summary = "Some description for a Kotlin/Native module"
+            homepage = "Link to a Kotlin/Native module homepage"
+            ios.deploymentTarget = "14.0"
 
-        // Optional properties
-        // Configure the Pod name here instead of changing the Gradle project name
-        name = "apps"
+            // Optional properties
+            // Configure the Pod name here instead of changing the Gradle project name
+            name = "apps"
 
-        framework {
-            baseName = "apps"
-            export(project(":shared"))
-            export(libs.kiteui)
-            export(libs.lightningServer.client)
+            framework {
+                baseName = "apps"
+                export(project(":shared"))
+                export(libs.kiteui)
+                export(libs.lightningServer.client)
 //            podfile = project.file("../example-app-ios/Podfile")
-        }
+            }
+        })
     }
+
     compilerOptions {
         optIn.add("kotlin.time.ExperimentalTime")
         optIn.add("kotlin.uuid.ExperimentalUuidApi")

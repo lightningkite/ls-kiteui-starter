@@ -1,23 +1,28 @@
-package com.lightningkite.lskiteuistarter
+package com.lightningkite.lskiteuistarter.views
 
 import com.lightningkite.kiteui.Routable
-import com.lightningkite.kiteui.forms.AuthComponent
+import com.lightningkite.kiteui.auth.AuthComponent
 import com.lightningkite.kiteui.models.SizeConstraints
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.navigation.pageNavigator
 import com.lightningkite.kiteui.reactive.PersistentProperty
-import com.lightningkite.kiteui.views.ViewWriter
+import com.lightningkite.kiteui.views.ElementWriter
 import com.lightningkite.kiteui.views.centered
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.field
 import com.lightningkite.lightningserver.auth.AuthEndpoints
-import com.lightningkite.lskiteuistarter.sdk.*
+import com.lightningkite.lskiteuistarter.FullscreenPage
+import com.lightningkite.lskiteuistarter.sdk.ApiOption
+import com.lightningkite.lskiteuistarter.sdk.selectedApi
+import com.lightningkite.lskiteuistarter.sdk.sessionToken
 import com.lightningkite.reactive.context.reactive
-import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.core.Constant
+import com.lightningkite.reactive.core.Reactive
+import com.lightningkite.reactive.core.remember
 
 @Routable("/login")
-class LoginPage : Page, UseFullPage {
+class LoginPage : Page, FullscreenPage {
     override val title: Reactive<String> get() = Constant("Home")
 
     companion object {
@@ -26,8 +31,7 @@ class LoginPage : Page, UseFullPage {
 
     val backendSelectorEnabled = PersistentProperty("backendSelectorEnabled", false)
 
-    override fun ViewWriter.render() {
-
+    override fun ElementWriter.CanAddTheme.render() {
         val authUI = remember {
             val api = selectedApi().api
             val anon = AuthComponent(
@@ -40,18 +44,18 @@ class LoginPage : Page, UseFullPage {
 //                    webAuthNIncludePasskeyUI = true,
                     passwordProof = api.userAuth.password,
                 ),
-                subjectPath = "user",
+//                subjectPath = "user",
                 subject = api.userAuth
             ) { token ->
                 sessionToken set token
-                pageNavigator.reset(HomePage())
+                context.pageNavigator.reset(HomePage())
             }
             anon
         }
 
         frame {
             reactive {
-                if (authUI().primaryIdentifier() == SECRET_FOR_API_SELECTOR) backendSelectorEnabled.value = true
+                if (authUI().primaryIdentifier()?.value == SECRET_FOR_API_SELECTOR) backendSelectorEnabled.value = true
             }
 
             centered.sizedBox(SizeConstraints(maxWidth = 40.rem)).scrolling.col {
@@ -65,16 +69,13 @@ class LoginPage : Page, UseFullPage {
                     }
                 }
 
-                frame {
+                frame auth@{
                     reactive {
                         clearChildren()
-                        with(authUI()) {
-                            render()
-                        }
+                        authUI().render(this@auth)
                     }
                 }
             }
         }
-
     }
 }

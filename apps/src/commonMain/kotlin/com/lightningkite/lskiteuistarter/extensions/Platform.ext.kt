@@ -1,6 +1,8 @@
 package com.lightningkite.lskiteuistarter.extensions
 
 import com.lightningkite.kiteui.Platform
+import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.lskiteuistarter.AppPlatform
 
 

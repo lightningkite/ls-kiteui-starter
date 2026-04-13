@@ -7,6 +7,8 @@ import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.navigation.PageNavigator
 import com.lightningkite.kiteui.printStackTrace2
 import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.lightningserver.*
 import com.lightningkite.lightningserver.sessions.*
 import com.lightningkite.reactive.context.*

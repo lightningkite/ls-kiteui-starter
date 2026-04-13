@@ -3,14 +3,16 @@ package com.lightningkite.lskiteuistarter.sdk
 import com.lightningkite.kiteui.exceptions.*
 import com.lightningkite.kiteui.reactive.PersistentProperty
 import com.lightningkite.kiteui.suppressConnectivityIssues
+import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.lightningserver.LsErrorException
 import com.lightningkite.lightningserver.auth.accessToken
 import com.lightningkite.lskiteuistarter.fcmToken
 import com.lightningkite.reactive.context.invoke
 import com.lightningkite.reactive.context.reactiveSuspending
 import com.lightningkite.reactive.core.*
-import kotlinx.coroutines.launch
 import kotlin.coroutines.cancellation.CancellationException
+import kotlinx.coroutines.launch
 
 
 val sessionToken = PersistentProperty<String?>("sessionToken", null)
@@ -68,11 +70,10 @@ suspend fun deregisterToken() {
     }
 }
 
-fun ExceptionToMessages.installLoggedOutErrors() {
-    this += ExceptionToMessage<LsErrorException>(
-        priority = 3.0f,
-        additionalCondition = { it.error.message == "Session has been terminated." }
-    ) {
+fun ExceptionHandlersTree.installLoggedOutErrors() {
+    this += ExceptionToMessage<LsErrorException>(3.0f) {
+        if (it.error.message != "Session has been terminated.") return@ExceptionToMessage null
+
         currentSessionFailed.invokeAll()
         ExceptionMessage(
             "Logged Out",

@@ -1,9 +1,11 @@
 package com.lightningkite.lskiteuistarter.sdk
 
 import com.lightningkite.kiteui.reactive.PersistentProperty
+import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.lightningserver.networking.BulkFetcher
-import kotlinx.serialization.Serializable
 import kotlin.time.Duration.Companion.seconds
+import kotlinx.serialization.Serializable
 
 
 @Serializable
@@ -30,6 +32,5 @@ enum class ApiOption(val apiName: String, val http: String, val ws: String) {
 }
 
 val selectedApi = PersistentProperty<ApiOption>("apiOption", getDefaultServerBackend())
-
 
 expect fun getDefaultServerBackend(): ApiOption

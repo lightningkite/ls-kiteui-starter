@@ -1,6 +1,8 @@
 package com.lightningkite.lskiteuistarter
 
 import com.lightningkite.kiteui.navigation.PageNavigator
+import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.direct.TextInput
 import com.lightningkite.kiteui.views.setup
 import com.lightningkite.lightningserver.*
