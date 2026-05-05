@@ -6,28 +6,17 @@ import com.lightningkite.kiteui.current
 import com.lightningkite.kiteui.exceptions.ExceptionHandler
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.rem
-import com.lightningkite.kiteui.views.ElementWriter
-import com.lightningkite.kiteui.views.buttonTheme
-import com.lightningkite.kiteui.views.card
-import com.lightningkite.kiteui.views.centered
-import com.lightningkite.kiteui.views.direct.button
-import com.lightningkite.kiteui.views.direct.col
-import com.lightningkite.kiteui.views.direct.h1
-import com.lightningkite.kiteui.views.direct.onClick
-import com.lightningkite.kiteui.views.direct.padded
-import com.lightningkite.kiteui.views.direct.row
-import com.lightningkite.kiteui.views.direct.sizeConstraints
-import com.lightningkite.kiteui.views.direct.text
-import com.lightningkite.kiteui.views.exceptionMessage
+import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.dialog
 import com.lightningkite.lskiteuistarter.extensions.toAppPlatform
-import com.lightningkite.lskiteuistarter.platform
 import com.lightningkite.lskiteuistarter.sdk.selectedApi
 import com.lightningkite.reactive.context.await
 import com.lightningkite.reactive.core.AppScope
 import com.lightningkite.services.database.Query
 import com.lightningkite.services.database.condition
 import com.lightningkite.services.database.eq
+import com.mycompany.myapp.platform
 import kotlinx.coroutines.launch
 
 private var appUpdateChecked = false

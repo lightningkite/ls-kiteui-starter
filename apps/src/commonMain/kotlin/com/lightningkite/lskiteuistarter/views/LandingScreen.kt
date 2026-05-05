@@ -20,13 +20,12 @@ class LandingPage : Page, FullscreenPage {
     override val title: Reactive<String> get() = Constant("Home")
     override fun ElementWriter.CanAddTheme.render() {
         launch {
-            delay(1)
             if (currentSession.await() != null) {
                 println("Have Session")
-                pageNavigator.reset(HomePage())
+                context.pageNavigator.reset(HomePage())
             } else {
                 println("NO Session")
-                pageNavigator.reset(LoginPage())
+                context.pageNavigator.reset(LoginPage())
             }
         }
         frame {

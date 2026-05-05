@@ -41,7 +41,7 @@ val appTheme = Signal(defaultTheme)
 
 // Notification Items
 val fcmToken: Signal<String?> = Signal(null)
-val setFcmToken = { token: String -> fcmToken.value = token } //This is for iOS. It is used in the iOS app. Do not remove.
+val setFcmToken = { token: String -> fcmToken.value = token } // This is for iOS. It is used in the iOS app. Do not remove.
 
 fun ViewWriter.app(navigator: PageNavigator, dialog: PageNavigator) {
     context.exceptionHandlers.installSmartHandlers()
