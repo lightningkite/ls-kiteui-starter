@@ -15,6 +15,7 @@ import com.lightningkite.services.data.snakeCase
 import com.lightningkite.services.data.toEmailAddress
 import com.lightningkite.services.database.mongodb.mongodbAtlasFree
 import com.lightningkite.services.email.javasmtp.awsSesDomain
+import com.lightningkite.services.email.javasmtp.awsSesDomainConfiguration
 import com.lightningkite.services.email.javasmtp.awsSesSmtp
 import com.lightningkite.services.files.s3.awsS3Bucket
 import com.lightningkite.services.otel.OpenTelemetrySettings
@@ -59,8 +60,8 @@ object LkEnv : TerraformAwsServerlessDomainBuilder<Server>(Server) {
 
         loggingSettings.direct(LoggingSettings())
         database.mongodbAtlasFree(orgId = "6323a65c43d66b56a2ea5aea")
-        awsSesDomain("email",emergencyContact)
-        email.awsSesSmtp("email")
+        val config = awsSesDomainConfiguration("email",emergencyContact)
+        email.awsSesSmtp(config)
         files.awsS3Bucket(signedUrlDuration = 1.days)
         cache.awsDynamoDb()
         secretBasis.generated()
@@ -77,15 +78,15 @@ object LkEnv : TerraformAwsServerlessDomainBuilder<Server>(Server) {
     }
 }
 
-object DemoEnvDeploy {
+object LkEnvDeploy {
     @JvmStatic
     fun main(vararg args: String) = LkEnv.deploy()
 }
-object DemoEnvEdit {
+object LkEnvEdit {
     @JvmStatic
     fun main(vararg args: String) = LkEnv.editVars()
 }
-object DemoEnvPrepare {
+object LkEnvPrepare {
     @JvmStatic
     fun main(vararg args: String): Unit = LkEnv.prepareTerraform().let(::println)
 }

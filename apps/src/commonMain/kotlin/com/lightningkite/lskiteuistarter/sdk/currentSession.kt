@@ -32,8 +32,7 @@ val currentSession: Reactive<UserSession?> = rememberSuspending {
             userId = self._id,
         )
     } catch (e: Exception) {
-        println("FAILED")
-        e.printStackTrace()
+        tokenLog.warn("Session fetch failed", e)
         null
     }
 }.also { currentSession ->

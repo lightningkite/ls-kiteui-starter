@@ -1,4 +1,3 @@
-// by Claude — CRUD endpoints for Organization with role-based permissions
 package com.lightningkite.lskiteuistarter.data
 
 import com.lightningkite.lightningserver.auth.id
@@ -27,7 +26,7 @@ object OrganizationEndpoints : ServerBuilder() {
             val isOrgAdmin = condition<Organization> { it._id inside adminOrgIds }
 
             ModelPermissions(
-                create = Condition.Always,  // Any authenticated user can create an org
+                create = systemAdmin,
                 read = systemAdmin or isMember,
                 update = systemAdmin or isOrgAdmin,
                 delete = systemAdmin,

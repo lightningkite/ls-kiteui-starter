@@ -17,14 +17,12 @@ import kotlinx.coroutines.launch
 
 @Routable("/")
 class LandingPage : Page, FullscreenPage {
-    override val title: Reactive<String> get() = Constant("Home")
+    override val title: Reactive<String> get() = Constant("Loading")
     override fun ElementWriter.CanAddTheme.render() {
         launch {
             if (currentSession.await() != null) {
-                println("Have Session")
                 context.pageNavigator.reset(HomePage())
             } else {
-                println("NO Session")
                 context.pageNavigator.reset(LoginPage())
             }
         }

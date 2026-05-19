@@ -23,7 +23,7 @@ import com.lightningkite.reactive.core.remember
 
 @Routable("/login")
 class LoginPage : Page, FullscreenPage {
-    override val title: Reactive<String> get() = Constant("Home")
+    override val title: Reactive<String> get() = Constant("Sign In")
 
     companion object {
         const val SECRET_FOR_API_SELECTOR = "i am a dev"

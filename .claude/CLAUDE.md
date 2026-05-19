@@ -7,9 +7,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 This is a Kotlin multiplatform starter project using KiteUI for the frontend and Lightning Server for the backend. It supports Android, iOS, and web (via JS) on the frontend, with a JVM-based backend server.
 
 **Key Technologies:**
-- **KiteUI** (v7.0.0): Lightning Kite's declarative UI framework for multiplatform apps
-- **Lightning Server** (v5.0.0): Backend framework with typed endpoints, sessions, and WebSocket support
-- **Service Abstractions** (v0.0.1): Database, file storage, notifications, and email abstractions
+- **KiteUI** (v8): Lightning Kite's declarative UI framework for multiplatform apps
+- **Lightning Server** (v5): Backend framework with typed endpoints, sessions, and WebSocket support
+- **Service Abstractions** (initial): Database, file storage, notifications, and email abstractions
 - Kotlin 2.2.20 with context parameters enabled
 - Firebase Cloud Messaging for push notifications
 - MongoDB/JSON file database support

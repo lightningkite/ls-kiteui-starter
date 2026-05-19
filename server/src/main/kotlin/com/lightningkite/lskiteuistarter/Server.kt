@@ -1,4 +1,3 @@
-// Main server definition. Add new endpoint modules here. — by Claude
 package com.lightningkite.lskiteuistarter
 
 import com.lightningkite.lightningserver.auth.*
@@ -14,7 +13,6 @@ import com.lightningkite.lightningserver.media.Media
 import com.lightningkite.lightningserver.plainText
 import com.lightningkite.lightningserver.serialization.StandardWithExternalModule
 import com.lightningkite.lightningserver.serialization.registerBasicMediaTypeCoders
-import com.lightningkite.lightningserver.typed.ApiHttpHandler
 import com.lightningkite.lightningserver.typed.MetaEndpoints
 import com.lightningkite.lightningserver.typed.sdk.module
 import com.lightningkite.lightningserver.websockets.MultiplexWebSocketHandler
@@ -75,23 +73,11 @@ object Server : ServerBuilder() {
     )
     val localFileServer = path.path("files") include FileSystemEndpoints(files)
 
-    val example = path.path("example-endpoint").get bind ApiHttpHandler(
-        summary = "Example Endpoint",
-        auth = noAuth,
-        implementation = { _: Unit -> 42 }
-    )
-    val example2 = path.path("example-endpoint").post bind ApiHttpHandler(
-        summary = "Example Endpoint",
-        auth = UserAuth.require(),
-        implementation = { number: Int -> number + 42 }
-    )
-
     val appReleases = path.path("app-releases") module AppReleaseEndpoints
     val users = path.path("users") module UserEndpoints
     val authEndpoints = path.path("auth") module UserAuth
     val fcmTokens = path.path("fcmTokens") module FcmTokenEndpoints
 
-    // by Claude — Organization/membership endpoints
     val organizations = path.path("organizations") module OrganizationEndpoints
     val memberships = path.path("memberships") module MembershipEndpoints
 

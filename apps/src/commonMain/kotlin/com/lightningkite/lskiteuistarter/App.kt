@@ -35,7 +35,6 @@ import com.lightningkite.services.database.condition
 import com.lightningkite.services.database.eq
 import kotlinx.coroutines.launch
 
-//val defaultTheme = brandBasedExperimental("bsa", normalBack = Color.white)
 val defaultTheme = Theme.flat2("default", Angle(0.55f))// brandBasedExperimental("bsa", normalBack = Color.white)
 val appTheme = Signal(defaultTheme)
 

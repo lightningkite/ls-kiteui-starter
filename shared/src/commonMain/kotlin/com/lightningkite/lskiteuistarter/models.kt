@@ -36,6 +36,8 @@ data class User(
     @Index(IndexUniqueness.Unique) val email: EmailAddress,
     val name: String,
     val role: UserRole = UserRole.User,
+    val createdAt: Instant = now(),
+    val updatedAt: Instant = now(),
 ) : HasId<User.ID> {
     @Serializable
     @JvmInline
@@ -85,7 +87,7 @@ data class Organization(
     override val _id: ID = ID(Uuid.random()),
     val name: String,
     val logo: ServerFileWithMetadata? = null,
-    val createdAt: Instant = Clock.System.now(),
+    val createdAt: Instant = now(),
 ) : HasId<Organization.ID> {
     @Serializable
     @JvmInline
@@ -103,7 +105,7 @@ data class Membership(
     @Index val user: User.ID,
     val role: MemberRole = MemberRole.Member,
     val deactivatedAt: Instant? = null,
-    val createdAt: Instant = Clock.System.now(),
+    val createdAt: Instant = now(),
 ) : HasId<Membership.ID> {
 
     @Serializable

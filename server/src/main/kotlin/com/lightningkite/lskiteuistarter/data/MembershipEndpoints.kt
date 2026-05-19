@@ -1,4 +1,3 @@
-// by Claude — CRUD endpoints for Membership with org-admin permissions
 package com.lightningkite.lskiteuistarter.data
 
 import com.lightningkite.lightningserver.auth.id

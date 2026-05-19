@@ -1,4 +1,3 @@
-// Authentication configuration and auth caches. Add new AuthCacheKey objects here. — by Claude
 package com.lightningkite.lskiteuistarter
 
 import com.lightningkite.lightningserver.NotFoundException
@@ -71,7 +70,6 @@ object UserAuth : PrincipalType<User, User.ID>, ServerBuilder() {
         suspend fun AuthAccess<User>.userRole() = auth.userRole()
     }
 
-    // by Claude — Cache active memberships for permission checks
     @Serializable
     data class SimplifiedMembership(
         val _id: Membership.ID,
@@ -99,7 +97,6 @@ object UserAuth : PrincipalType<User, User.ID>, ServerBuilder() {
         suspend fun AuthAccess<User>.memberships() = auth.memberships()
     }
 
-    // by Claude — Feature flag stub; projects fill in logic
     @Suppress("UNUSED_PARAMETER")
     fun hasFeature(flag: FeatureFlag): Boolean = false
 

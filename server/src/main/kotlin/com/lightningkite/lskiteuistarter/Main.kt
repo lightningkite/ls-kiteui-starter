@@ -34,6 +34,7 @@ fun engine(setup: KtorEngine.() -> Unit) {
 
     engine = KtorEngine(built, Clock.lsKiteuiStarter).apply {
         settings.loadFromFile(settingsFile, internalSerializersModule)
+        settings.ready()
         setup()
     }
 }
@@ -62,7 +63,7 @@ fun main(vararg args: String) = cli(
 
 
 object Utils {
-    val logger: KLogger = KotlinLogging.logger("com.lightningtime.lskiteuistarter")
+    val logger: KLogger = KotlinLogging.logger("com.lightningkite.lskiteuistarter")
 
     suspend fun <T> runForEach(seconds: Int, items: Collection<T>, action: suspend (T) -> Unit): List<T> {
         val loopStart = TimeSource.Monotonic.markNow()

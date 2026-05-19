@@ -1,4 +1,4 @@
-// by Claude — Populates a local database with sample data for development.
+// Populates a local database with sample data for development.
 // Run via: ./gradlew :server:serve --args="seed"
 // Only works when general.debug = true in settings.json.
 package com.lightningkite.lskiteuistarter
@@ -13,7 +13,6 @@ import kotlinx.coroutines.runBlocking
 import kotlin.uuid.Uuid
 
 fun seed() = engine {
-    val settings = this.settings
     if (!generalSettings().debug) {
         println("ERROR: Seed command requires general.debug = true in settings.json")
         return@engine
