@@ -1,24 +1,24 @@
-// by Claude — CRUD and permission-boundary tests for all endpoints
+// CRUD and permission-boundary tests for the new clinical model set.
 package com.lightningkite.lskiteuistarter
 
-import com.lightningkite.lightningserver.ForbiddenException
 import com.lightningkite.lightningserver.NotFoundException
 import com.lightningkite.lightningserver.auth.testAuth
 import com.lightningkite.lightningserver.runtime.test.test
 import com.lightningkite.lightningserver.settings.set
 import com.lightningkite.lightningserver.typed.test
-import com.lightningkite.lskiteuistarter.data.MembershipEndpoints
-import com.lightningkite.lskiteuistarter.data.OrganizationEndpoints
+import com.lightningkite.lskiteuistarter.data.ClinicEndpoints
+import com.lightningkite.lskiteuistarter.data.ClinicMembershipEndpoints
+import com.lightningkite.lskiteuistarter.data.PatientEndpoints
+import com.lightningkite.lskiteuistarter.data.PrescriptionEndpoints
+import com.lightningkite.lskiteuistarter.data.PrescriptionOrderEndpoints
 import com.lightningkite.lskiteuistarter.data.UserEndpoints
+import com.lightningkite.services.data.toEmailAddress
 import com.lightningkite.services.database.Database
-import com.lightningkite.services.database.Modification
 import com.lightningkite.services.database.Query
-import com.lightningkite.services.database.condition
-import com.lightningkite.services.database.eq
 import com.lightningkite.services.database.insertOne
 import com.lightningkite.services.database.modification
-import com.lightningkite.toEmailAddress
 import kotlinx.coroutines.runBlocking
+import kotlinx.datetime.LocalDate
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -27,205 +27,298 @@ import kotlin.test.assertTrue
 
 class ServerTest {
 
+    // ---- Helpers ----------------------------------------------------------
+
+    private fun user(email: String, first: String, last: String = "Last", role: UserRole = UserRole.User) =
+        User(email = email.toEmailAddress(), firstName = first, lastName = last, role = role)
+
+    private fun clinic(name: String = "Test Clinic") = Clinic(
+        name = name,
+        primaryAddress = VerifiedAddress(
+            address = Address(
+                recipient = name,
+                line1 = "1 Test St",
+                city = "Knoxville",
+                state = "TN",
+                zip = "37902",
+            ),
+        ),
+        billingContactEmail = "billing@test.com".toEmailAddress(),
+        billingContactName = "Bill Biller",
+        stripePaymentId = "pm_test",
+        stripePaymentType = PaymentType.Card,
+    )
+
+    private fun membership(clinicId: Clinic.ID, userId: User.ID, role: ClinicRole) = ClinicMembership(
+        clinic = clinicId,
+        user = userId,
+        role = role,
+        acceptedAt = now(),
+    )
+
+    private fun patient(clinicId: Clinic.ID, creator: User.ID, first: String = "Sam") = Patient(
+        clinic = clinicId,
+        firstName = first,
+        lastName = "Sample",
+        gender = Gender.U,
+        dateOfBirth = LocalDate(1990, 1, 1),
+        shippingAddress = VerifiedAddress(
+            address = Address(
+                recipient = "$first Sample",
+                line1 = "200 Patient Ln",
+                city = "Knoxville",
+                state = "TN",
+                zip = "37902",
+            ),
+        ),
+        createdBy = creator,
+    )
+
+    // ---- Tests ------------------------------------------------------------
+
     @Test
-    fun organizationCrud(): Unit = runBlocking {
+    fun clinicCrud(): Unit = runBlocking {
         Server.test(settings = { database set Database.Settings("ram") }) {
-            // Create admin user
             val admin = UserEndpoints.info.table().insertOne(
-                User(
-                    email = "admin@test.com".toEmailAddress(),
-                    name = "Admin",
-                    role = UserRole.Admin,
-                )
+                user("admin@test.com", "Admin", role = UserRole.Admin)
             )!!
+            val c = ClinicEndpoints.info.table().insertOne(clinic("Acme Health"))!!
 
-            // Create org via direct table insert (admin has system-level access)
-            val org = OrganizationEndpoints.info.table().insertOne(
-                Organization(name = "Test Org")
-            )!!
-
-            // Verify admin can read org
-            val fetched = OrganizationEndpoints.rest.detail.test(org._id, UserAuth.testAuth(admin), Unit)
-            assertEquals("Test Org", fetched.name)
+            val fetched = ClinicEndpoints.rest.detail.test(c._id, UserAuth.testAuth(admin), Unit)
+            assertEquals("Acme Health", fetched.name)
         }
     }
 
     @Test
-    fun membershipCrud(): Unit = runBlocking {
+    fun clinicMembershipCrud(): Unit = runBlocking {
         Server.test(settings = { database set Database.Settings("ram") }) {
-            // Create admin user and org
             val admin = UserEndpoints.info.table().insertOne(
-                User(
-                    email = "admin@test.com".toEmailAddress(),
-                    name = "Admin",
-                    role = UserRole.Admin,
-                )
+                user("admin@test.com", "Admin", role = UserRole.Admin)
             )!!
-            val org = OrganizationEndpoints.info.table().insertOne(
-                Organization(name = "Test Org")
+            val member = UserEndpoints.info.table().insertOne(user("member@test.com", "Member"))!!
+            val c = ClinicEndpoints.info.table().insertOne(clinic())!!
+
+            val m = ClinicMembershipEndpoints.info.table().insertOne(
+                membership(c._id, member._id, ClinicRole.MedicalAssistant)
             )!!
 
-            // Create a regular user
-            val member = UserEndpoints.info.table().insertOne(
-                User(
-                    email = "member@test.com".toEmailAddress(),
-                    name = "Member",
-                    role = UserRole.User,
-                )
-            )!!
+            assertNotNull(m)
+            assertEquals(c._id, m.clinic)
+            assertEquals(member._id, m.user)
+            assertEquals(ClinicRole.MedicalAssistant, m.role)
+            assertTrue(m.isActive, "Membership with acceptedAt should be active")
 
-            // Create membership
-            val membership = MembershipEndpoints.info.table().insertOne(
-                Membership(
-                    organization = org._id,
-                    user = member._id,
-                    role = MemberRole.Member,
-                )
-            )!!
-
-            assertNotNull(membership)
-            assertEquals(org._id, membership.organization)
-            assertEquals(member._id, membership.user)
-            assertEquals(MemberRole.Member, membership.role)
+            // Admin can read it via endpoint
+            val fetched = ClinicMembershipEndpoints.rest.detail.test(m._id, UserAuth.testAuth(admin), Unit)
+            assertEquals(member._id, fetched.user)
         }
     }
 
     @Test
-    fun organizationPermissions(): Unit = runBlocking {
+    fun clinicPermissions(): Unit = runBlocking {
         Server.test(settings = { database set Database.Settings("ram") }) {
-            // Set up: admin, regular user, org, and membership
             val admin = UserEndpoints.info.table().insertOne(
-                User(email = "admin@test.com".toEmailAddress(), name = "Admin", role = UserRole.Admin)
+                user("admin@test.com", "Admin", role = UserRole.Admin)
             )!!
-            val regularUser = UserEndpoints.info.table().insertOne(
-                User(email = "regular@test.com".toEmailAddress(), name = "Regular", role = UserRole.User)
-            )!!
-            val orgMember = UserEndpoints.info.table().insertOne(
-                User(email = "member@test.com".toEmailAddress(), name = "Member", role = UserRole.User)
-            )!!
+            val outsider = UserEndpoints.info.table().insertOne(user("out@test.com", "Out"))!!
+            val regularMember = UserEndpoints.info.table().insertOne(user("ma@test.com", "MA"))!!
+            val clinicAdmin = UserEndpoints.info.table().insertOne(user("cadmin@test.com", "CAdmin"))!!
 
-            val org = OrganizationEndpoints.info.table().insertOne(
-                Organization(name = "Private Org")
-            )!!
-
-            // Add orgMember as a Member (not admin) of the org
-            MembershipEndpoints.info.table().insertOne(
-                Membership(organization = org._id, user = orgMember._id, role = MemberRole.Member)
+            val c = ClinicEndpoints.info.table().insertOne(clinic("Private Clinic"))!!
+            ClinicMembershipEndpoints.info.table().insertOne(
+                membership(c._id, regularMember._id, ClinicRole.MedicalAssistant)
+            )
+            ClinicMembershipEndpoints.info.table().insertOne(
+                membership(c._id, clinicAdmin._id, ClinicRole.ClinicAdmin)
             )
 
             val adminAuth = UserAuth.testAuth(admin)
-            val regularAuth = UserAuth.testAuth(regularUser)
-            val memberAuth = UserAuth.testAuth(orgMember)
+            val outsiderAuth = UserAuth.testAuth(outsider)
+            val memberAuth = UserAuth.testAuth(regularMember)
+            val clinicAdminAuth = UserAuth.testAuth(clinicAdmin)
 
-            // Non-member can't read the org (returns NotFoundException since read filter hides it)
+            // Non-member can't read
             assertFailsWith<NotFoundException> {
-                OrganizationEndpoints.rest.detail.test(org._id, regularAuth, Unit)
+                ClinicEndpoints.rest.detail.test(c._id, outsiderAuth, Unit)
             }
 
-            // Member CAN read the org
-            val fetched = OrganizationEndpoints.rest.detail.test(org._id, memberAuth, Unit)
-            assertEquals("Private Org", fetched.name)
+            // Member CAN read
+            val fetched = ClinicEndpoints.rest.detail.test(c._id, memberAuth, Unit)
+            assertEquals("Private Clinic", fetched.name)
 
-            // Member (non-admin) can't update the org
+            // Non-clinic-admin member can't update name
             assertFailsWith<NotFoundException> {
-                OrganizationEndpoints.rest.modify.test(
-                    org._id, memberAuth,
-                    modification<Organization> { it.name assign "Renamed" }
+                ClinicEndpoints.rest.modify.test(
+                    c._id, memberAuth,
+                    modification<Clinic> { it.name assign "Renamed By Member" }
                 )
             }
 
-            // System admin CAN update the org
-            val updated = OrganizationEndpoints.rest.modify.test(
-                org._id, adminAuth,
-                modification<Organization> { it.name assign "Renamed Org" }
+            // Clinic admin CAN update name
+            val updatedByClinicAdmin = ClinicEndpoints.rest.modify.test(
+                c._id, clinicAdminAuth,
+                modification<Clinic> { it.name assign "Renamed By Clinic Admin" }
             )
-            assertEquals("Renamed Org", updated.name)
+            assertEquals("Renamed By Clinic Admin", updatedByClinicAdmin.name)
+
+            // System admin CAN update name
+            val updatedBySystemAdmin = ClinicEndpoints.rest.modify.test(
+                c._id, adminAuth,
+                modification<Clinic> { it.name assign "Renamed By System Admin" }
+            )
+            assertEquals("Renamed By System Admin", updatedBySystemAdmin.name)
         }
     }
 
     @Test
-    fun membershipPermissions(): Unit = runBlocking {
+    fun patientPermissions(): Unit = runBlocking {
         Server.test(settings = { database set Database.Settings("ram") }) {
-            val admin = UserEndpoints.info.table().insertOne(
-                User(email = "admin@test.com".toEmailAddress(), name = "Admin", role = UserRole.Admin)
-            )!!
-            val orgAdmin = UserEndpoints.info.table().insertOne(
-                User(email = "orgadmin@test.com".toEmailAddress(), name = "OrgAdmin", role = UserRole.User)
-            )!!
-            val regularMember = UserEndpoints.info.table().insertOne(
-                User(email = "member@test.com".toEmailAddress(), name = "Member", role = UserRole.User)
-            )!!
-            val outsider = UserEndpoints.info.table().insertOne(
-                User(email = "outsider@test.com".toEmailAddress(), name = "Outsider", role = UserRole.User)
-            )!!
+            val member = UserEndpoints.info.table().insertOne(user("ma@test.com", "MA"))!!
+            val clinicAdmin = UserEndpoints.info.table().insertOne(user("cadmin@test.com", "CAdmin"))!!
+            val outsider = UserEndpoints.info.table().insertOne(user("out@test.com", "Out"))!!
 
-            val org = OrganizationEndpoints.info.table().insertOne(
-                Organization(name = "Test Org")
-            )!!
-
-            // Set up: orgAdmin is Admin of the org, regularMember is a Member
-            MembershipEndpoints.info.table().insertOne(
-                Membership(organization = org._id, user = orgAdmin._id, role = MemberRole.Admin)
+            val c = ClinicEndpoints.info.table().insertOne(clinic())!!
+            ClinicMembershipEndpoints.info.table().insertOne(
+                membership(c._id, member._id, ClinicRole.MedicalAssistant)
             )
-            MembershipEndpoints.info.table().insertOne(
-                Membership(organization = org._id, user = regularMember._id, role = MemberRole.Member)
+            ClinicMembershipEndpoints.info.table().insertOne(
+                membership(c._id, clinicAdmin._id, ClinicRole.ClinicAdmin)
             )
 
-            val orgAdminAuth = UserAuth.testAuth(orgAdmin)
-            val memberAuth = UserAuth.testAuth(regularMember)
+            val memberAuth = UserAuth.testAuth(member)
+            val clinicAdminAuth = UserAuth.testAuth(clinicAdmin)
             val outsiderAuth = UserAuth.testAuth(outsider)
 
-            // Org admin CAN create a new membership
-            val newMembership = MembershipEndpoints.rest.insert.test(
-                orgAdminAuth,
-                Membership(organization = org._id, user = outsider._id, role = MemberRole.Member)
-            )
-            assertNotNull(newMembership)
+            // Member can create
+            val created = PatientEndpoints.rest.insert.test(memberAuth, patient(c._id, member._id))
+            assertEquals(c._id, created.clinic)
 
-            // Regular member can NOT create memberships (not org admin)
-            assertFailsWith<ForbiddenException> {
-                MembershipEndpoints.rest.insert.test(
-                    memberAuth,
-                    Membership(organization = org._id, user = admin._id, role = MemberRole.Member)
+            // Member can read
+            val fetched = PatientEndpoints.rest.detail.test(created._id, memberAuth, Unit)
+            assertEquals(created._id, fetched._id)
+
+            // Member can update (e.g. lastName)
+            val updated = PatientEndpoints.rest.modify.test(
+                created._id, memberAuth,
+                modification<Patient> { it.lastName assign "Updated" }
+            )
+            assertEquals("Updated", updated.lastName)
+
+            // Outsider cannot read
+            assertFailsWith<NotFoundException> {
+                PatientEndpoints.rest.detail.test(created._id, outsiderAuth, Unit)
+            }
+
+            // Regular member cannot delete (delete restricted to clinic admin)
+            assertFailsWith<NotFoundException> {
+                PatientEndpoints.rest.deleteItem.test(created._id, memberAuth, Unit)
+            }
+
+            // Clinic admin CAN delete
+            PatientEndpoints.rest.deleteItem.test(created._id, clinicAdminAuth, Unit)
+        }
+    }
+
+    @Test
+    fun prescriptionOrderSubmissionGate(): Unit = runBlocking {
+        Server.test(settings = { database set Database.Settings("ram") }) {
+            val prescriberUser = UserEndpoints.info.table().insertOne(user("rx@test.com", "Rx"))!!
+            val maUser = UserEndpoints.info.table().insertOne(user("ma@test.com", "MA"))!!
+
+            val c = ClinicEndpoints.info.table().insertOne(clinic())!!
+            ClinicMembershipEndpoints.info.table().insertOne(
+                membership(c._id, prescriberUser._id, ClinicRole.Prescriber)
+            )
+            ClinicMembershipEndpoints.info.table().insertOne(
+                membership(c._id, maUser._id, ClinicRole.MedicalAssistant)
+            )
+
+            val pat = PatientEndpoints.info.table().insertOne(patient(c._id, maUser._id))!!
+
+            // Use deterministic placeholder IDs for product/pharmacy — denormalized fields on the
+            // order are not validated by foreign-key checks, so this is fine.
+            val productId = Product.ID(kotlin.uuid.Uuid.fromLongs(0L, 1000L))
+            val pharmacyId = Pharmacy.ID(kotlin.uuid.Uuid.fromLongs(0L, 1002L))
+
+            val rx = PrescriptionEndpoints.info.table().insertOne(
+                Prescription(
+                    clinic = c._id,
+                    patient = pat._id,
+                    product = productId,
+                    prescribedBy = prescriberUser._id,
+                    form = Product.FormType.InjectableVial,
+                    strength = 2.5,
+                    instructions = "Once weekly.",
+                )
+            )!!
+
+            val order = PrescriptionOrderEndpoints.info.table().insertOne(
+                PrescriptionOrder(
+                    prescription = rx._id,
+                    pharmacy = pharmacyId,
+                    destination = pat.shippingAddress,
+                    quantity = 5.0,
+                    willLastDays = 35,
+                    clinic = c._id,
+                    patient = pat._id,
+                    product = productId,
+                    form = Product.FormType.InjectableVial,
+                    strength = 2.5,
+                    instructions = "Once weekly.",
+                    prescribedBy = prescriberUser._id,
+                    createdBy = maUser._id,
+                )
+            )!!
+
+            val maAuth = UserAuth.testAuth(maUser)
+            val prescriberAuth = UserAuth.testAuth(prescriberUser)
+
+            val review = ClinicianReview(
+                user = prescriberUser._id,
+                idEvent = "idme-event-stub",
+                approved = true,
+                at = now(),
+            )
+
+            // MA CANNOT set clinicianReview — they're not a Prescriber.
+            assertFailsWith<NotFoundException> {
+                PrescriptionOrderEndpoints.rest.modify.test(
+                    order._id, maAuth,
+                    modification<PrescriptionOrder> { it.clinicianReview assign review }
                 )
             }
 
-            // Outsider (not in org) can NOT see memberships in the org
-            // First remove the membership we just created for outsider so they're truly outside
-            MembershipEndpoints.info.table().deleteOne(condition<Membership> { it._id eq newMembership._id })
-            val outsiderResults = MembershipEndpoints.rest.list.test(
-                outsiderAuth,
-                Query<Membership>()
+            // Prescriber CAN set clinicianReview.
+            val signed = PrescriptionOrderEndpoints.rest.modify.test(
+                order._id, prescriberAuth,
+                modification<PrescriptionOrder> { it.clinicianReview assign review }
             )
-            assertTrue(outsiderResults.isEmpty(), "Outsider should not see any memberships")
+            assertNotNull(signed.clinicianReview)
+            assertEquals(prescriberUser._id, signed.clinicianReview!!.user)
         }
     }
 
     @Test
     fun userRoleEscalation(): Unit = runBlocking {
         Server.test(settings = { database set Database.Settings("ram") }) {
-            val regularUser = UserEndpoints.info.table().insertOne(
-                User(email = "user@test.com".toEmailAddress(), name = "User", role = UserRole.User)
-            )!!
-
+            val regularUser = UserEndpoints.info.table().insertOne(user("u@test.com", "User"))!!
             val userAuth = UserAuth.testAuth(regularUser)
 
             // User can read their own record
-            val self = UserEndpoints.rest.detail.test(regularUser._id, userAuth, Unit)
-            assertEquals("User", self.name)
+            val self = UserEndpoints.rest.endpoints.detail.test(regularUser._id, userAuth, Unit)
+            assertEquals("User", self.firstName)
 
-            // User can modify their own name
-            val updated = UserEndpoints.rest.modify.test(
+            // User can modify their own firstName
+            val updated = UserEndpoints.rest.endpoints.modify.test(
                 regularUser._id, userAuth,
-                modification<User> { it.name assign "Updated Name" }
+                modification<User> { it.firstName assign "Updated" }
             )
-            assertEquals("Updated Name", updated.name)
+            assertEquals("Updated", updated.firstName)
 
-            // User CANNOT escalate their own role — role.requires(admin)
-            // The updateRestrictions narrow the query condition so the record doesn't match,
-            // resulting in NotFoundException (the record "disappears" when attempting forbidden modifications).
+            // User CANNOT escalate to Admin — role.requires(admin).
+            // updateRestrictions narrow the query so the record "disappears" → NotFoundException.
             assertFailsWith<NotFoundException> {
-                UserEndpoints.rest.modify.test(
+                UserEndpoints.rest.endpoints.modify.test(
                     regularUser._id, userAuth,
                     modification<User> { it.role assign UserRole.Admin }
                 )
@@ -236,28 +329,37 @@ class ServerTest {
     @Test
     fun authFlow(): Unit = runBlocking {
         Server.test(settings = { database set Database.Settings("ram") }) {
-            // Create users with different roles
             val adminUser = UserEndpoints.info.table().insertOne(
-                User(email = "admin@test.com".toEmailAddress(), name = "Admin", role = UserRole.Admin)
+                user("admin@test.com", "Admin", role = UserRole.Admin)
             )!!
-            val regularUser = UserEndpoints.info.table().insertOne(
-                User(email = "user@test.com".toEmailAddress(), name = "User", role = UserRole.User)
-            )!!
+            val regularUser = UserEndpoints.info.table().insertOne(user("u@test.com", "User"))!!
+            val coClinicUser = UserEndpoints.info.table().insertOne(user("co@test.com", "Co"))!!
+            val outsider = UserEndpoints.info.table().insertOne(user("out@test.com", "Out"))!!
 
-            // Verify testAuth produces correct authentication
+            val c = ClinicEndpoints.info.table().insertOne(clinic())!!
+            ClinicMembershipEndpoints.info.table().insertOne(
+                membership(c._id, regularUser._id, ClinicRole.MedicalAssistant)
+            )
+            ClinicMembershipEndpoints.info.table().insertOne(
+                membership(c._id, coClinicUser._id, ClinicRole.MedicalAssistant)
+            )
+
             val adminAuth = UserAuth.testAuth(adminUser)
             val userAuth = UserAuth.testAuth(regularUser)
 
-            // Admin can list users they have permission to see
-            val adminResults = UserEndpoints.rest.list.test(adminAuth, Query<User>())
-            assertTrue(adminResults.isNotEmpty(), "Admin should see at least one user")
-            assertTrue(adminResults.any { it._id == adminUser._id }, "Admin should see themselves")
-            assertTrue(adminResults.any { it._id == regularUser._id }, "Admin should see the regular user")
+            // Admin sees all users
+            val adminResults = UserEndpoints.rest.endpoints.list.test(adminAuth, Query<User>())
+            assertTrue(adminResults.any { it._id == adminUser._id })
+            assertTrue(adminResults.any { it._id == regularUser._id })
+            assertTrue(adminResults.any { it._id == coClinicUser._id })
+            assertTrue(adminResults.any { it._id == outsider._id })
 
-            // Regular user can only see their own record
-            val userResults = UserEndpoints.rest.list.test(userAuth, Query<User>())
-            assertEquals(1, userResults.size, "Regular user should only see themselves")
-            assertEquals(regularUser._id, userResults.first()._id)
+            // Regular user sees themselves and co-clinic members but NOT the outsider
+            val userResults = UserEndpoints.rest.endpoints.list.test(userAuth, Query<User>())
+            val ids = userResults.map { it._id }.toSet()
+            assertTrue(ids.contains(regularUser._id), "Regular user should see themselves")
+            assertTrue(ids.contains(coClinicUser._id), "Regular user should see co-clinic member")
+            assertTrue(!ids.contains(outsider._id), "Regular user should NOT see outsider")
         }
     }
 }

@@ -14,6 +14,7 @@ import com.lightningkite.lightningserver.typed.auth
 import com.lightningkite.lightningserver.typed.modelInfo
 import com.lightningkite.lightningserver.typed.startupOnce
 import com.lightningkite.lskiteuistarter.*
+import com.lightningkite.lskiteuistarter.UserAuth.CoClinicUsersCache.coClinicUsers
 import com.lightningkite.lskiteuistarter.UserAuth.RoleCache.userRole
 import com.lightningkite.lskiteuistarter._id
 import com.lightningkite.lskiteuistarter.email
@@ -37,21 +38,26 @@ object UserEndpoints : ServerBuilder() {
         auth = UserAuth.require(),
         permissions = {
             val allowedRoles = UserRole.entries.filter { it <= auth.userRole() }
+            val isSystemAdmin = auth.userRole() >= UserRole.Admin
+            val myCoClinicUserIds = auth.coClinicUsers()
 
             val admin: Condition<User> =
-                if (auth.userRole() >= UserRole.Admin) condition { it.role inside allowedRoles }
+                if (isSystemAdmin) condition { it.role inside allowedRoles }
                 else Condition.Never
-
             val self = condition<User> { it._id eq auth.id }
+            val coClinic = condition<User> { it._id inside myCoClinicUserIds }
 
             ModelPermissions(
                 create = admin,
-                read = admin or self,
+                read = admin or self or coClinic,
                 update = admin or self,
                 updateRestrictions = updateRestrictions {
                     it.role.requires(admin) { it.inside(allowedRoles) }
+                    it.email.requires(admin or self)
+                    it.prescriber.requires(admin or self)
+                    it.createdAt.cannotBeModified()
                 },
-                delete = admin or self,
+                delete = admin,
             )
         }
     )
@@ -73,7 +79,8 @@ object UserEndpoints : ServerBuilder() {
             User(
                 _id = User.ID.AppStoreTester,
                 email = "appstoretester@lightningkite.com".toEmailAddress(),
-                name = "AppStoreTester",
+                firstName = "AppStore",
+                lastName = "Tester",
                 role = UserRole.User
             )
         )
@@ -98,7 +105,8 @@ object UserEndpoints : ServerBuilder() {
             User(
                 _id = User.ID(id),
                 email = email,
-                name = email.raw.substringBefore('@').substringBefore('+'),
+                firstName = email.raw.substringBefore('@').substringBefore('+'),
+                lastName = "",
                 role = UserRole.Root
             )
         )

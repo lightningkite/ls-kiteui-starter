@@ -1,0 +1,476 @@
+Product Requirements Document
+V1 MVP Specification
+PRODUCT
+AUTHOR
+STATUS
+
+HeroScript
+Jon Benson
+Draft v1.1  |  May 2026
+
+01  PROBLEM STATEMENT
+Background
+Gameday Men's Health is the nation's largest men's health clinic network with 400+ open locations. Each clinic is individually owned and is required to order prescriptions only from a small set of pre-approved network pharmacies. Today, each clinic maintains its own accounts and logins across roughly twelve different pharmacy portals. Staff manually log in to the correct portal to place each order, log back in to look up tracking numbers when patients call, and copy-paste those tracking numbers into text messages. Patients receive no automatic shipment notifications. The result is an antiquated, time-consuming, error-prone workflow on the clinic's single largest operating-expense category.
+Problem
+HeroScript replaces twelve pharmacy logins with one. For prescribers and their teams: a single portal, a unified product catalog, one order history, one customer-service relationship, and automated shipment notifications to patients. For pharmacies: one master account in place of 400 small ones, standardized ordering against a defined catalog, upstream compliance handling (DEA license tracking and expirations), simplified billing, and the consolidated volume of the entire Gameday network — which justifies preferred pricing. 
+Why now
+Clinics are actively asking for relief on their largest line-item expense. Pharmacies are asking for relief from hundreds of difficult low-volume accounts while wanting to retain the aggregate volume. Distribution is already solved: HeroScript launches with a built-in customer base inside the Gameday network and a co-founder/CEO who personally owns two of those clinics. Pain is acute, buyers are identified, suppliers are receptive, and ramp risk is low.
+02  GOALS & NON-GOALS
+Business goal
+Reduce per-prescription cost for Gameday clinics by aggregating network demand into preferred pharmacy pricing; lift patient retention by enabling reliable refill workflows; and build a defensible, recurring-revenue marketplace with a sustainable network-level margin.
+User goal
+Replace fragmented multi-portal ordering with a single, faster, more reliable workflow that automatically informs patients when their prescriptions ship.
+Non-goals
+• HeroScript will not function as an EMR or store clinical chart data beyond what is needed to route an order.
+• HeroScript will not recommend dosing, suggest medications, or make clinical decisions.
+• HeroScript will not bill insurance or adjudicate Rx claims.
+• HeroScript will not provide direct patient-facing clinical care or telehealth.
+03  SCOPE
+In scope (V1)
+Onboarding & access
+• HeroScript Ops provisions one Clinic Admin per clinic; the admin invites Prescribers and Medical Assistants and assigns roles and limits visibility and access by role/user (such as visibility to pricing).
+• Roles: Clinic Admin, Prescriber, Medical Assistant, HeroScript Support.
+• Multi-clinic prescribers supported (one prescriber can belong to multiple clinics; selects active clinic context when prescribing).
+• Email + password authentication with MFA for all clinic users.
+• ID.me identity verification step required at order submission for Prescribers for controlled substance prescriptions.
+Patients & data
+• Patient records entered manually once; persist for re-use and refill workflows.
+• Patient shipping address verification via USPS / Smarty / Lob (inline suggestion UI).
+Catalog, pharmacies & routing
+• Unified product catalog managed by HeroScript Ops.
+• Each product mapped to one or more eligible pharmacies, each with state-availability and a HeroScript-configured price (decoupled from underlying cost). Shipping is shown as a separate line item.
+• State-licensing matrix per pharmacy; system filters available pharmacies to those licensed to ship to the patient's state.
+• Clinician selects fulfilling pharmacy from the eligible list (unified catalog, manual pharmacy selection).
+• API-only pharmacy integration. HeroScript Ops configures each pharmacy (LifeFile and proprietary variants). Up to 6 pharmacies live at V1 launch (per founder direction); remaining integrations roll in across V1.x toward the full ~12.
+Order workflow
+• MA composes a draft order → Prescriber reviews, completes ID.me step-up, and submits → order routes to the selected pharmacy via API.
+• Order statuses tracked: Submitted → Accepted → In Process → Shipped (with tracking). "Delivered" is out of scope for V1; patients see Delivered status via the carrier tracking link.
+• Multi-shipment support: a single order may produce multiple Shipments, each with its own tracking number. Patient notifications and order detail views handle "package N of M" framing.
+Patient notifications
+• SMS to patient on each shipment shipped, with carrier, tracking link, multi-shipment context, and clinic contact for questions. Email if it does not significantly add scope.
+• Notifications never expose PHI beyond a tracking link. All patient communication directs questions back to the originating clinic (HeroScript and pharmacies do not field patient inquiries).
+Refills (lite)
+• System flags patients due for refill based on prior-order cadence. When order is placed, use rules to determine when refill will be needed (using dose vs vial size logic, BUD dates, and/or 28-day rule)
+• One-click reorder pre-fills the prior order's product, quantity, prescriber, and shipping address. Prescriber still submits (ID.me) for compliance if controlled substance included (need to flag controlled meds in the catalog).
+Compliance — V1
+• HIPAA-eligible AWS hosting under a signed BAA. Encryption at rest and in transit.
+• Role-based access control. Immutable audit log of all PHI access events and all order-state actions. 6-year retention.
+• DEA compliance: prescriber uploads DEA license image and DEA number at onboarding; HeroScript Ops manually verifies against the DEA database during V1; expiration date stored; system automatically blocks expired prescribers; renewal reminders sent at 60 / 30 / 7 days before expiration, then ordering of controlled substances disabled until updated license uploaded and verified.
+• BAAs executed with each integrated pharmacy and with the SMS / email provider (Twilio HIPAA tier or equivalent).
+Clinic-facing reporting
+• Order list with filters and search (status, date range, prescriber, patient, pharmacy).
+• Refill / reminder queue with one-click reorder.
+HeroScript Ops internal admin
+• Onboard clinics and users (create, deactivate, role changes).
+• Manage the unified product catalog and map products to fulfilling pharmacies. Each catalog item needs pre-created sigs that providers can use in the prescription. 
+• Manage pharmacies, API credentials, catalog ingestion, and the state-licensing matrix.
+• Monitor network-wide orders, intervene on stuck/failed orders (re-route, contact, cancel), all actions audit-logged.
+Billing & payment collection
+• HeroScript collects payment from clinics on a daily settlement cadence via credit card or ACH (no processor fee, preferred) or credit card (processor fee passed through to the clinic). PCI-compliant card handling, and a single integration covering both rails.
+• Pharmacy payouts handled offline by HeroScript Finance (outside the platform in V1).
+Platform
+• Desktop web application built on existing stacks where possible (Tight UI frontend + Server backend) — pending agency selection.
+Out of scope (V1)
+• Mobile-responsive UI and native mobile apps (V1 is desktop web only).
+• Patient portal / patient logins (V1 is notifications only).
+• Full HeroScript-managed payment rails (collecting from clinics AND paying pharmacies inside the platform).
+• EMR / practice-management integration (V1.5 target, planned shortly after V1).
+• Automated DEA verification via Verisys or equivalent (V2 target, weeks after V1).
+• Fully automated / scheduled recurring refills (V1 ships reminders + one-click reorder only).
+• Pharmacy self-service portal (V1 is API-only + HeroScript Ops-managed onboarding).
+• CSV exports and advanced analytics dashboards for clinics.
+• Insurance billing / Rx claims adjudication.
+• Telehealth or clinical consultation features.
+• Gameday franchisor SSO / shared identity provider.
+• Multi-language UI (English only in V1).
+Assumptions
+• V1 launches with ~10 pilot clinics from the Gameday network.
+• V1 launches with up to 6 integrated pharmacies (per founder direction); additional pharmacies ramp in across V1.x toward a total of ~12.
+• Pharmacy API documentation is available and has been collected for each launch pharmacy.
+• HeroScript Ops is staffed to handle manual DEA verification, pharmacy onboarding, and order intervention during pilot.
+• Pilot clinics commit to using HeroScript as their primary ordering tool.
+• Patient SMS / email consent is captured implicitly via the clinic's intake forms; clinic affirms consent at order entry. Twilio standard "Reply STOP to opt out" wording included on every message. Final legal review of intake consent language recommended before broad rollout.
+• Gameday franchisor provides tacit support of the pilot but is not in the build path; no integration or formal sign-off dependency.
+Dependencies
+• Pharmacy APIs: up to ~12 total integrations; up to 6 live at V1 launch. Mix of LifeFile-based and proprietary systems.
+• Address verification: USPS / Smarty / Lob.
+• SMS provider: Twilio HIPAA tier.
+• Email provider: SendGrid HIPAA tier (or equivalent), if email is shipped in V1.
+• Identity verification: ID.me (Prescriber step-up at submission; see Section 05 for cadence).
+• Payment processing: Priority Payments (ACH + card, daily settlement).
+• Hosting: HIPAA-eligible AWS account with executed BAA.
+• Gameday franchisor's tacit support of the pilot (no integration dependency in V1).
+04  SUCCESS METRICS
+Primary metric
+Total network pharmacy spend routed through HeroScript ($ per month).
+Secondary metrics
+• Average order volume per clinic (orders / clinic / month).
+• Total clinics signed up and total clinics actively ordering (≥1 order / month).
+• Percentage of clinics representing 50% of total order volume (concentration).
+• Percentage of orders requiring human intervention by HeroScript Ops.
+• Fulfillment speed — average and worst-case time from order submission to ship.
+Guardrail metrics
+• Help-desk tickets per 100 orders (initial target: < 5).
+• Order rejection rate by pharmacy (target: < 2%).
+• Address-verification failure / correction rate.
+• SMS tracking-link delivery success rate (delivered / sent).
+• DEA-expiration auto-block events (count, plus days early or late).
+• Mean time to detect and resolve a stuck order (Submitted with no movement > X hours).
+• Audit-log access events flagged for review (anomaly indicators).
+Measurement plan
+All events written to an append-only event log accessible to HeroScript Ops via downloadable raw CSV from the internal admin. A clinic-facing analytics dashboard is V2 scope; for V1, HeroScript Ops will produce weekly reports manually from the raw data.
+05  USERS & ROLES
+Roles and permissions
+Clinic Admin
+• Provisioned by HeroScript Ops at clinic onboarding (one per clinic).
+• Invites users, assigns roles, manages clinic shipping addresses and clinic-level defaults.
+• Views all orders for own clinic(s); cannot submit prescriptions unless also a Prescriber.
+• Cannot access other clinics' data.
+Prescriber
+• Licensed clinician with DEA license on file.
+• Creates and submits orders. Can also review and submit MA-drafted orders.
+• Submission requires an ID.me identity-verification step.
+• Multi-clinic membership: a Prescriber can belong to multiple clinics and selects active clinic context when prescribing.
+• Automatic block on submission when DEA license is expired; renewal reminders at 60 / 30 / 7 days.
+Medical Assistant (MA)
+• Drafts orders on behalf of a Prescriber. Cannot submit.
+• Limited PHI access — own clinic's patients only.
+• Cannot manage users, catalog, or pharmacy configuration.
+HeroScript Ops Admin
+• HeroScript employees with access to internal admin: clinic & user onboarding, catalog, pharmacy integrations, and order monitoring + intervention.
+• Highest-privilege role. All actions audit-logged.
+• Sub-roles (Catalog, Pharmacy Ops, Support, Finance) defined post-V1 as the team grows.
+Pharmacy (system integration)
+• No UI in V1. Onboarded entirely by HeroScript Ops.
+• Receives orders via API; returns acceptance, status updates, and shipment / tracking data via API or webhook.
+Patient
+• Not a user of the application in V1.
+• Receives SMS (and optionally email) notifications with a tracking link on each shipment shipped.
+• Questions are routed back to the originating clinic — HeroScript and pharmacies do not field patient inquiries.
+Authentication & session policy
+Email + password with MFA required for all clinic users; password reset via verified email.
+Prescriber submission requires an ID.me identity verification step. Default cadence is per-submission (industry / EPCS norm for controlled substances). HeroScript intends to reduce this to once-per-session if legal counsel confirms it is acceptable for the V1 controlled-substance catalog — flagged as a Section 13 open item.
+HeroScript Ops Admin sessions enforce stronger MFA and short idle timeout. IP-allowlist optional but recommended.
+All sessions tracked in the audit log (login, logout, idle expiry, role escalation).
+06  KEY USER JOURNEYS
+Clinic onboarding
+HeroScript Ops creates the clinic record, captures clinic address(es), and provisions one Clinic Admin account.
+Clinic Admin receives activation email, sets password + MFA, signs into the portal.
+Clinic Admin invites Prescribers (Prescribers complete DEA upload during signup) and MAs.
+DEA collection & verification (V1 manual)
+Prescriber uploads DEA license image + DEA number during account activation.
+Account remains in pending-submission state until HeroScript Ops verifies the DEA against the DEA database and records the expiration.
+Once verified, Prescriber can submit orders.
+Order entry (MA)
+MA selects or creates a patient record.
+MA selects active clinic shipping address (or enters / verifies a custom patient shipping address via Smarty / Lob suggestions).
+System filters available pharmacies to those licensed to ship to the patient's state.
+MA selects product(s) from the unified catalog; system shows eligible pharmacies side-by-side with HeroScript price and shipping fee.
+MA picks fulfilling pharmacy and saves the draft for the Prescriber.
+Order submission (Prescriber)
+Prescriber sees pending drafts on the dashboard.
+Prescriber reviews patient + items, completes the ID.me step-up, and submits.
+Order is sent to the selected pharmacy via API. Audit log records actor, timestamp, payload hash.
+Pharmacy fulfillment & status updates
+Pharmacy returns Accepted (or Rejected with reason) via API.
+Pharmacy returns In Process and then Shipped events with per-shipment tracking numbers.
+For multi-item orders that ship as multiple packages, each Shipment is tracked independently.
+HeroScript updates the order detail view in real time (or near-real time, depending on webhook vs. polling).
+Patient notification
+On each Shipment Shipped event, HeroScript sends an SMS (and optionally email) to the patient with carrier, tracking link, "package N of M" context if applicable, and the originating clinic's contact info.
+No PHI in the message beyond the tracking link.
+Refill reminder & one-click reorder
+System flags patients approaching their refill window based on prior-order cadence (default 30 days; adjustable in V1.x).
+Clinic sees the patient in the refill queue.
+MA or Prescriber clicks Reorder; system pre-fills product, quantity, prescriber, and shipping address from the prior order.
+Prescriber submits with ID.me as in a standard order.
+DEA expiration handling
+System checks DEA and state medical license expiration daily.
+60 / 30 / 7-day reminders sent to Prescriber and Clinic Admin.
+On the expiration date, the Prescriber is blocked from order submission until a new license is uploaded and verified.
+HeroScript Ops intervention on a stuck order
+Ops monitor flags orders Submitted > X hours without acceptance, or any order returning Rejected.
+Ops opens the order, reviews API exchange logs, contacts pharmacy if needed, and either re-routes to an alternate eligible pharmacy or cancels with notes back to the clinic.
+All Ops actions audit-logged.
+07  FEATURE SPECIFICATIONS
+F1  Unified product catalog
+HeroScript Ops maintains a normalized product catalog (name, strength, form, SKU, image, description, controlled-substance flag).
+Each product has 1..N PharmacyMappings; each mapping carries: pharmacy ID, pharmacy SKU, HeroScript price (configurable, independent of cost), shipping fee, lead-time estimate, and an active flag.
+Catalog search and filter by name, category, controlled flag.
+F2  State-licensing matrix
+Each pharmacy carries a list of states it is licensed to ship to (with optional effective and expiration dates).
+Order entry filters available pharmacies by the patient's shipping-address state.
+Internal admin surface to view, edit, and audit changes to the matrix.
+F3  Order entry workflow
+Draft state owned by MA (or Prescriber). Multiple items per order.
+Eligible-pharmacy panel shows side-by-side price, shipping, and lead-time for the selected items.
+Validation: prescriber DEA active, patient address verified, pharmacy licensed in patient's state, all items available.
+F4  Prescriber submission + ID.me step-up
+Submission triggers an ID.me verification step. Default cadence is per-submission for controlled substances (industry / EPCS norm); HeroScript may reduce this to once-per-session if legal counsel confirms acceptability.
+On success, order moves to Submitted state and the pharmacy API is called.
+On failure or cancellation, order remains in pending submission.
+The system stores the ID.me verification ID with each submission for audit purposes.
+F5  Pharmacy integration adapter layer
+Each pharmacy implementation lives behind a common internal interface (placeOrder, fetchStatus, cancelOrder, fetchCatalog).
+Per-pharmacy adapters handle LifeFile and proprietary variants. Credentials and endpoints managed by HeroScript Ops.
+Retries with backoff, dead-letter queue for failed submissions, idempotency keys to prevent duplicates.
+F6  Order status & multi-shipment tracking
+Order has Status (Submitted / Accepted / In Process / Shipped / Rejected / Cancelled). "Delivered" is NOT tracked inside HeroScript in V1 — patients see Delivered status via the carrier tracking link.
+Order has 0..N Shipments. Each Shipment carries carrier, tracking number, status, ship date, contained items.
+Order Status derived from Shipment states (e.g., Order is Shipped when at least one Shipment ships; All-Shipped flag once final shipment ships).
+F7  Patient notifications
+On each Shipment Shipped event, send SMS (Twilio HIPAA tier) with tracking link, package N of M, and clinic contact info.
+Optional email on Shipped if it does not materially expand scope; same minimal payload.
+No PHI in message body. Link target is a carrier tracking page (not a HeroScript-hosted page in V1).
+F8  Address verification
+Inline suggestion UI during patient shipping-address entry using USPS / Smarty / Lob.
+Verified addresses stored on the patient record with last-verified timestamp.
+F9  DEA license management
+Prescriber profile carries DEA number, license image, status, expiration date, last-verified-by, last-verified-on.
+Daily expiration check; auto-block on expiry; reminder cadence 60 / 30 / 7 days.
+Manual verification UI in HeroScript Ops admin (V1). Verisys / equivalent integration is V2.
+F10  Refill reminder + one-click reorder
+Refill cadence default 28 days; configurable per product / per patient in V1.x.
+Calculate refill dates based on dosing (amount and frequency) vs vial size, BUD for the product, and/or 28-day rule (injectable medications expire 28 days after puncture).
+Clinic-facing refill queue lists patients approaching refill window.
+One-click reorder duplicates prior order (items, prescriber, shipping address); Prescriber submits with ID.me.
+F11  Clinic-facing order list & search
+Filterable by status, date range, prescriber, patient, pharmacy.
+Order detail view shows full timeline, shipment(s), tracking, API exchange summary (Ops-facing detail hidden from clinic).
+F12  HeroScript Ops internal admin
+Clinic onboarding + user management.
+Product catalog management + pharmacy mapping.
+Pharmacy onboarding: credentials, endpoint config, catalog ingestion, state-licensing matrix.
+Order monitor: network-wide view, stuck-order alerts, intervention actions (re-route, contact, cancel).
+DEA verification queue.
+Raw-event / audit-log download.
+F13  Billing & clinic payment collection (Stripe)
+HeroScript collects payment from clinics on a daily settlement cadence via ACH (no processor fee, preferred) or credit card (processor fee passed through to the clinic).
+Clinic admin sees daily settlement history in the portal: orders included, amount charged, payment method, status.
+Receipts / consolidated monthly statements emailed to the clinic billing contact.
+Pharmacy payouts handled offline in V1 by HeroScript Finance (out of platform).
+Priority Payments chosen as the V1 payment processor: ACH + card on a single integration, daily B2B-ready settlement, PCI-compliant card handling.
+F14  Audit logging
+All PHI access events and all order-state actions written to an immutable append-only log.
+Captured fields: actor, role, clinic context, action, target entity ID, timestamp, source IP, request ID, hash of payload.
+Retention: 6 years.
+08  SUGGESTED UI & SCREEN SPECS
+This section describes the V1 screens at a level intended to align developers, designers, and stakeholders before visual design begins. Wireframes are intentionally schematic — they show structure, key components, and primary actions, not final visual design. Annotated prototype screenshots from the founder will be inserted into the labeled placeholder slots.
+Screen 1  —  Clinic Dashboard
+Primary landing screen for clinic users.
+Top app bar: HeroScript branding, active clinic switcher (Prescribers with multi-clinic membership), notifications bell, user menu.
+Left navigation: Dashboard, Orders, Refill queue, Patients, Reports (V1.x), Settings.
+Main panel widgets: "Pending submission" (orders awaiting Prescriber sign-off), "Refill queue summary" (patients due in next 7 days, overdue count), "Recent activity" (last N status changes across own orders), "Quick actions" (Start new order).
+Empty states clearly worded for new clinics.
+Screen 2  —  Order Entry  (suggested wireframe below)
+Central workflow. MA composes; Prescriber reviews and submits. Built around three panels: patient + shipping at the top, eligible pharmacies in the middle, catalog and order summary at the bottom.
+
+Wireframe — Order Entry (schematic; final visual design TBD)
+Patient card: name, DOB, verified shipping address (or inline Smarty / Lob suggestions if unverified), active clinic badge.
+Eligible-pharmacy cards: only pharmacies licensed in the patient's state, with HeroScript price, shipping fee, and lead-time estimate. One pharmacy is selected at a time; selection is highlighted.
+Catalog area: search box + filterable rows showing product name, strength, and the price at the selected pharmacy. Products not stocked by the selected pharmacy clearly disabled.
+Order summary panel: items + shipping + total. Footer: "Save draft" (MA) and "Submit (ID.me)" (Prescriber). The submit button triggers the ID.me step-up modal before sending to the pharmacy API.
+Screen 3  —  Order Detail with Multi-Shipment Tracking  (suggested wireframe below)
+Single source of truth for a specific order. Surfaces multi-shipment lifecycle clearly because patients receive separate tracking per package.
+
+Wireframe — Order Detail with Multi-Shipment (schematic)
+Header card: order ID, patient, pharmacy, submitting prescriber, submitted timestamp, total, ID.me verification status, overall status badge with multi-shipment context ("Shipped 2 of 2").
+Status timeline: Submitted → Accepted → In Process → Shipped, with timestamps. Visual treatment of states that haven't occurred is muted.
+Shipments list: one entry per Shipment with carrier, tracking number, ship date, contained items, and SMS-delivery confirmation. Per-shipment status badge.
+Audit footer (Ops only): payload hash, last pharmacy API exchange ID. Hidden from clinic users.
+Screen 4  —  Refill Queue + One-Click Reorder  (suggested wireframe below)
+Triage view for patients approaching refill. Single-screen affordance to reorder.
+
+Wireframe — Refill Queue (schematic)
+Filter bar: patient search, date-window filter (due in N days), prescriber filter.
+Table rows: patient, last-order date, refill-due indicator (with overdue emphasis in red), prior pharmacy, prior items.
+Per-row "One-click reorder" button: opens the Order Entry screen pre-filled with the prior order's items, prescriber, and shipping address. Prescriber still submits with ID.me — the reorder shortcut never bypasses identity verification.
+Screen 5  —  HeroScript Ops: Network Order Monitor  (suggested wireframe below)
+Internal control room for HeroScript staff. Designed for fast triage and intervention.
+
+Wireframe — Ops Network Order Monitor (schematic)
+KPI tiles at top: Active orders, "Awaiting accept > 1h" (live threshold), Rejected today, Average ship time.
+Filterable table of network-wide orders: order ID, clinic, pharmacy, submitted timestamp, status, alert reason.
+Per-row actions: Re-route (pick alternate eligible pharmacy), Contact pharmacy (templated outreach), Cancel (with notes back to clinic). All actions write to the audit log.
+Side nav exposes: Clinics, Pharmacies, Catalog, Orders, DEA verification queue, Audit log.
+Screen 6  —  Prescriber Profile (DEA management)
+Prescriber's own profile view; also accessible to HeroScript Ops for verification.
+Identity block: name, role, clinic memberships (with switch-context affordance), ID.me linked-status indicator.
+DEA license card: DEA number, scanned license image, expiration date, verified-by, verified-on, status badge (Verified / Pending / Expired).
+Actions: Upload new license / Replace image. On upload, license goes into HeroScript Ops verification queue (V1 manual workflow); status reverts to Pending until Ops confirms.
+Reminder log: 60 / 30 / 7-day reminders that have been sent.
+Screen 7  —  Patient SMS Template (notification copy)
+The only patient-facing surface in V1. No PHI in the body beyond a tracking link.
+Sample copy (single-shipment): "Hi Sarah — your prescription from Gameday Logan has shipped via FedEx. Track it here: <link>. Questions? Call your clinic at (435) 555-0199."
+Sample copy (multi-shipment, first of two): "Hi Sarah — package 1 of 2 from your Gameday Logan order has shipped via FedEx. Track it: <link>. The second package will ship separately and you'll get a separate text."
+Sample copy (multi-shipment, second of two): "Hi Sarah — package 2 of 2 from your Gameday Logan order has shipped via UPS. Track it: <link>. Both packages are now on the way."
+Strict template: no medication names, no condition references, no dosing details. Pharmacy name not exposed to patient by default (questions go to clinic).
+09  DATA MODEL (HIGH LEVEL)
+Indicative entities and key attributes. Final schema to be defined by the development partner; this list is intended to scope the domain, not constrain implementation.
+Clinic
+Name, address(es), Gameday clinic ID (optional), default shipping address, status, billing contact.
+User
+Email, role (ClinicAdmin / Prescriber / MA / OpsAdmin), MFA settings, status, last login.
+ClinicMembership
+User ↔ Clinic many-to-many; role per clinic; active flag. Supports multi-clinic Prescribers.
+Prescriber profile
+DEA number, license image, license status, expiration, last-verified-by, last-verified-on, ID.me linkage.
+Patient
+Name, DOB, phone, email, addresses, consent flags (SMS / email), created-by clinic, created-at, last order at.
+Pharmacy
+Name, API integration adapter type, credentials reference, base catalog, status.
+PharmacyStateLicense
+Pharmacy ↔ state, effective date, expiration date, notes.
+Product
+Canonical name, strength, form, SKU, image, controlled-substance flag.
+ProductPharmacyMapping
+Product ↔ Pharmacy, pharmacy SKU, price, shipping fee, lead time, active flag.
+Order
+Clinic, prescriber, MA (creator), patient, selected pharmacy, items, status, totals, submitted-at, ID.me verification ID.
+OrderItem
+Order ↔ Product, quantity, unit price, shipping line.
+Shipment
+Order ↔ shipped package; carrier, tracking number, status, ship date, contained items.
+Notification
+Order / Shipment reference, channel, recipient, status (sent / delivered / failed), provider message ID.
+AuditLogEvent
+Actor, role, clinic context, action, target, timestamp, source IP, request ID, payload hash.
+Invoice
+Clinic, period, line items (referencing orders), total, status, sent / paid timestamps.
+10  INTEGRATIONS
+Pharmacy APIs
+Total: up to ~12 integrations (V1 launches with up to 6 live; remaining roll in across V1.x).
+Mix of LifeFile-based and proprietary systems; each LifeFile pharmacy may have customizations requiring per-pharmacy adapter work.
+Bi-directional: HeroScript submits orders out, ingests acceptance / status / tracking back via API or webhook.
+API documentation already collected for most launch pharmacies (to be shared with dev partner).
+Address verification
+USPS / Smarty / Lob — inline suggestion UI for patient shipping-address entry.
+Verified-address timestamp stored on patient record.
+SMS provider
+Twilio HIPAA tier (BAA required).
+Patient notifications on each Shipment Shipped event.
+Email provider (if shipped in V1)
+SendGrid HIPAA tier or equivalent (BAA required).
+Same trigger and minimal payload as SMS.
+Identity verification (Prescriber)
+ID.me at order submission.
+Re-verification cadence TBD with legal counsel.
+Hosting / infrastructure
+AWS HIPAA-eligible services under signed BAA.
+Encryption at rest (KMS) and in transit (TLS 1.2+).
+DEA verification (V2)
+V1: manual verification by HeroScript Ops against the DEA database.
+V2: integrate Verisys or equivalent third-party verification service for automated lookups and ongoing monitoring.
+Billing & payments (V1 scope)
+Invoice generation in-platform; collection method TBD (Stripe ACH / card most likely).
+Full HeroScript-as-merchant-of-record payment rails are V2.
+11  NON-FUNCTIONAL REQUIREMENTS
+Compliance (HIPAA)
+• HIPAA-eligible AWS services only; BAA in place before any PHI lands.
+• Encryption at rest and in transit; key management via AWS KMS.
+• Role-based access control; principle of least privilege.
+• Immutable append-only audit log with 6-year retention.
+• BAAs with every downstream PHI-touching vendor (pharmacies, Twilio, SendGrid, ID.me, Smarty/Lob).
+• No PHI in URLs, logs, error messages, or non-HIPAA telemetry.
+• No PHI sent to AI/LLM systems.
+Security
+• MFA for all clinic and Ops users; stronger MFA for Ops.
+• Session idle timeout; short for Ops.
+• Secrets stored in AWS Secrets Manager; no secrets in code or repos.
+• Per-environment isolation; production access gated and audited.
+• Annual penetration test; quarterly internal review (post-pilot).
+Performance
+• Page-to-interactive < 2 seconds for primary clinic flows under normal load.
+• Order submission round-trip (HeroScript → pharmacy adapter → ack) < 5 seconds typical; queued with retries if pharmacy is slow.
+• Notification dispatch within 1 minute of receiving Shipped event from pharmacy.
+Reliability
+• Target uptime 99.5% during V1 pilot; raise to 99.9% as the platform scales beyond the pilot cohort.
+• Daily encrypted backups; documented restore runbook.
+• Dead-letter queue and Ops alerting for failed pharmacy API calls.
+Scalability
+• Architected for 400 clinics, 12 pharmacies, and projected V1 → V2 order volume without re-platforming.
+• Stateless app tier behind a load balancer; database with read replicas as load grows.
+Accessibility & browser support
+• WCAG 2.1 AA target.
+• Latest two major versions of Chrome, Edge, Safari, and Firefox.
+• Desktop web only in V1; mobile-responsive deferred.
+Data retention
+• PHI and audit logs retained 6 years (HIPAA).
+• Patient deletion / data-portability requests handled out-of-band by HeroScript Ops in V1; user-facing flows are V2.
+Localization
+• English (US) only in V1.
+12  ROADMAP (V1 → V1.5 → V2)
+V1 (Pilot launch)
+• All features in Section 03 "In scope".
+• Pilot with ~10 Gameday clinics and up to 6 integrated pharmacies.
+• Manual DEA verification by HeroScript Ops; full HIPAA posture from day one.
+• Launch acceptance criteria: 10 pilot clinics live AND ≥6 pharmacies integrated AND ordering sustained for 2 consecutive weeks. Only when all three are met is V1 declared "shipped."
+V1.5 (Scale & iteration; weeks after V1)
+• Additional pharmacy integrations toward the full 6–12.
+• Refill cadence configurability; refill-queue improvements based on pilot feedback.
+• Mobile-responsive UI.
+• EMR / practice-management integration to ingest patient records (target shortly after V1 per founder direction).
+• Clinic-side CSV exports and basic analytics dashboard.
+V2
+• Automated DEA verification via Verisys or equivalent.
+• Fully automated / scheduled recurring refills with prescriber approval.
+• Full HeroScript-managed payment rails (collect from clinic, pay pharmacy).
+• Patient portal / patient accounts (consider only if user research justifies).
+• Pharmacy partner portal (self-service catalog + state licensing review).
+• Native mobile apps (only if pilot research justifies).
+13  OPEN QUESTIONS
+Items resolved during PRD development are listed in the Decisions Log immediately after this section. The items below remain genuinely open and should be closed before or during build kickoff.
+Which specific pharmacies fill the up-to-6 V1 slots, and in what order do they go live? Founder direction: total V1 = 6; specific names and sequencing still TBD.
+ID.me cadence — legal confirmation: can submission-time ID.me be reduced from per-submission (industry / EPCS norm) to once-per-session for the V1 controlled-substance catalog? Build flexible enough to support either; default to per-submission until legal counsel confirms otherwise.
+Internal-team transition: short-term agency build, then HeroScript in-house team — timing and overlap. Deferred for now; revisit during V1 pilot.
+Stripe pricing pass-through: when a clinic pays by credit card, do we pass through Stripe's exact processor fee, charge a flat markup (e.g., 3%), or absorb the fee into base pricing? Affects clinic-facing line items and finance accounting.
+DEA verification SLA: how fast does HeroScript Ops commit to verifying a new Prescriber's DEA license at onboarding (target hours, not days)? Determines whether onboarding is a blocking step for new clinics.
+Intake consent language review: legal sign-off on the existing Gameday clinic intake form's SMS / email consent wording before broad rollout. (V1 assumption is that the existing language is sufficient; risk is residual.)
+Refill cadence configurability: is the default 30-day refill window correct for the V1 catalog, or do certain products (e.g., longer-acting compounds) need product-specific defaults?
+Email notification scope: confirm whether email-on-shipped is in V1 or deferred. Current PRD: included if not significantly more work than SMS-only.
+Decisions Log (closed during PRD development)
+Trail of decisions made during this PRD's development, for reference.
+Payments scope — Clinic invoicing in scope for V1; HeroScript-managed full payment rails (collect from clinic + pay pharmacy) deferred to V2.
+Payment processor & cadence — Stripe; daily settlement; ACH (preferred, no processor fee) and credit card (processor fee pass-through to clinic).
+Patient UX — Notifications only in V1 (no patient portal / no patient login).
+Pharmacy UX — API-only in V1 (no pharmacy portal).
+Refills — Refill reminders + one-click reorder in V1; fully automated recurring refills deferred to V2.
+Clinic auth — HeroScript Ops provisions one Clinic Admin per clinic; admin invites team. SSO / franchisor IdP deferred.
+Patient data — Manual entry, records persist; EMR integration deferred to V1.5.
+Catalog model — Unified catalog with manual pharmacy selection by clinician.
+Multi-clinic prescribers — Supported in V1.
+Internal admin scope — Clinic onboarding, catalog management, pharmacy onboarding (incl. state-licensing matrix), and live order monitoring with intervention all in V1.
+DEA verification — Manual in V1; automated (Verisys or equivalent) targeted for V2 within weeks of V1 launch.
+Address verification — USPS / Smarty / Lob with inline suggestion UI.
+Order lifecycle — Submitted → Accepted → In Process → Shipped (with per-shipment tracking). "Delivered" out of scope for V1 (patients see Delivered via carrier link).
+Notifications — SMS to patient on each shipment shipped, with multi-shipment context ("package N of M") and clinic contact for questions. Email included if not significantly more scope.
+Clinic reporting — Order list with filters + Refill / reminder queue in V1.
+Compliance posture — Full HIPAA posture from day one (BAA-eligible AWS, encryption, RBAC, immutable audit log, 6-year retention).
+Platform — Desktop web only in V1; mobile-responsive UI and native apps deferred.
+Pharmacy onboarding — HeroScript-led; pharmacies have no UI in V1.
+Pricing display — Single all-in price per product per pharmacy (configurable in admin, decoupled from cost). Shipping shown as separate line item.
+V1 pharmacy count — Up to 6 pharmacies integrated at V1 launch; remaining ramp in across V1.x toward ~12.
+Patient consent — Implicit via clinic intake; clinic affirms at order entry; Twilio standard STOP/HELP wording on every message.
+Franchisor involvement — Tacit support; no data sharing or formal sign-off dependency in V1.
+Launch acceptance criteria — 10 pilot clinics live AND ≥6 pharmacies integrated AND ordering sustained for 2 consecutive weeks.
+Timeline — Defer to development partner's estimate after technical review of PRD, prototypes, and pharmacy API documentation.
+Prototype carryover — Annotated screenshots from founder will be inserted into the placeholder slots in Section 08; no prototype code carries forward to V1 build.
+14  REFERENCES & APPENDIX
+Prototype carryover
+Two existing prototypes are available (a Claude-assisted weekend build by the original technical co-founder, and a second AI-assisted prototype offered for purchase). The development partner will not use prototype code as a starting point; HeroScript likely to be built from scratch on a vetted framework. Jon will provide annotated screenshots of specific UX flows, screen layouts, or features from the prototypes that should be preserved or used as reference in V1.
+Glossary
+BAA
+Business Associate Agreement — HIPAA-required agreement with any vendor handling PHI on HeroScript's behalf.
+DEA
+Drug Enforcement Administration — license required to prescribe controlled substances; tracked per Prescriber with expiration.
+EMR
+Electronic Medical Records system — out of scope for V1; integration targeted for V1.5.
+LifeFile
+Common pharmacy-management software used by several network pharmacies; API capabilities vary by deployment.
+MA
+Medical Assistant — drafts orders for a Prescriber but cannot submit.
+PHI
+Protected Health Information — any patient-identifying health data; covered by HIPAA.
+Prescriber
+Licensed clinician authorized to submit orders; requires DEA on file and ID.me verification at submission.
+

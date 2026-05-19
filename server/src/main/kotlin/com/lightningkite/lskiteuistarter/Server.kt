@@ -78,8 +78,17 @@ object Server : ServerBuilder() {
     val authEndpoints = path.path("auth") module UserAuth
     val fcmTokens = path.path("fcmTokens") module FcmTokenEndpoints
 
-    val organizations = path.path("organizations") module OrganizationEndpoints
-    val memberships = path.path("memberships") module MembershipEndpoints
+    val clinics = path.path("clinics") module ClinicEndpoints
+    val clinicMemberships = path.path("clinicMemberships") module ClinicMembershipEndpoints
+    val patients = path.path("patients") module PatientEndpoints
+    val pharmacies = path.path("pharmacies") module PharmacyEndpoints
+    val products = path.path("products") module ProductEndpoints
+    val productPharmacyMappings = path.path("productPharmacyMappings") module ProductPharmacyMappingEndpoints
+    val prescriptions = path.path("prescriptions") module PrescriptionEndpoints
+    val prescriptionOrders = path.path("prescriptionOrders") module PrescriptionOrderEndpoints
+    val pharmacyOrders = path.path("pharmacyOrders") module PharmacyOrderEndpoints
+    val shipments = path.path("shipments") module ShipmentEndpoints
+    val clinicInvoices = path.path("clinicInvoices") module ClinicInvoiceEndpoints
 
     val multiplex = path.path("multiplex") bind MultiplexWebSocketHandler()
     val base = path bind QueryParamWebSocketHandler()

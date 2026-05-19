@@ -1,0 +1,74 @@
+{
+  "message": {
+    "id": 1700000001,
+    "sentTime": "2026-05-19T17:30:00Z"
+  },
+  "order": {
+    "general": {
+      "memo": "HeroScript sandbox test order",
+      "referenceId": "herxoscript-test-0001"
+    },
+    "practice": {
+      "id": 1042726
+    },
+    "prescriber": {
+      "npi": "1234567893",
+      "licenseState": "FL",
+      "licenseNumber": "ME12345",
+      "lastName": "Strange",
+      "firstName": "Stephen",
+      "address1": "177A Bleecker St",
+      "city": "Miami",
+      "state": "FL",
+      "zip": "33101",
+      "phone": "(305) 555-0101",
+      "email": "stephen.strange@example.com"
+    },
+    "patient": {
+      "lastName": "Parker",
+      "firstName": "Peter",
+      "gender": "m",
+      "dateOfBirth": "1995-08-10",
+      "address1": "20 Ingram St",
+      "city": "Miami",
+      "state": "FL",
+      "zip": "33101",
+      "country": "US",
+      "phoneMobile": "(305) 555-0102",
+      "email": "peter.parker@example.com"
+    },
+    "shipping": {
+      "recipientType": "patient",
+      "recipientLastName": "Parker",
+      "recipientFirstName": "Peter",
+      "recipientPhone": "(305) 555-0102",
+      "recipientEmail": "peter.parker@example.com",
+      "addressLine1": "20 Ingram St",
+      "city": "Miami",
+      "state": "FL",
+      "zipCode": "33101",
+      "country": "US",
+      "service": 6225
+    },
+    "billing": {
+      "payorType": "pat"
+    },
+    "rxs": [
+      {
+        "rxType": "new",
+        "drugName": "Acetaminophen",
+        "drugStrength": "500mg",
+        "drugForm": "Tablet",
+        "lfProductID": 305492221,
+        "quantity": "30",
+        "quantityUnits": "each",
+        "directions": "Take 1 tablet by mouth every 6 hours as needed for pain.",
+        "refills": 0,
+        "dateWritten": "2026-05-19",
+        "daysSupply": 30,
+        "scheduleCode": "O",
+        "uuid": "11111111-2222-4333-8444-555555555555"
+      }
+    ]
+  }
+}

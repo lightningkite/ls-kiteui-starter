@@ -10,7 +10,7 @@ import com.lightningkite.lightningserver.sessions.proofs.*
 import com.lightningkite.lightningserver.sessions.proofs.extensions.constrainAttemptRate
 import com.lightningkite.lightningserver.typed.*
 import com.lightningkite.lightningserver.typed.sdk.module
-import com.lightningkite.lskiteuistarter.data.MembershipEndpoints
+import com.lightningkite.lskiteuistarter.data.ClinicMembershipEndpoints
 import com.lightningkite.lskiteuistarter.data.UserEndpoints
 import com.lightningkite.lskiteuistarter.data.UserEndpoints.AppStoreTester
 import com.lightningkite.lskiteuistarter.data.UserEndpoints.info
@@ -45,13 +45,13 @@ object UserAuth : PrincipalType<User, User.ID>, ServerBuilder() {
     override suspend fun fetchByProperty(property: String, value: String): User? = when (property) {
         "email" -> User.info.table().run {
             findOne(condition { it.email eq value.toEmailAddress() })
-                ?: insertOne(User(email = value.toEmailAddress(), name = ""))
+                ?: insertOne(User(email = value.toEmailAddress(), firstName = "", lastName = ""))
         }
 
         else -> super.fetchByProperty(property, value)
     }
 
-    override val precache: List<AuthCacheKey<User, *>> = listOf(RoleCache, MembershipsCache)
+    override val precache: List<AuthCacheKey<User, *>> = listOf(RoleCache, ClinicMembershipsCache, CoClinicUsersCache)
 
 
     // caching
@@ -71,30 +71,82 @@ object UserAuth : PrincipalType<User, User.ID>, ServerBuilder() {
     }
 
     @Serializable
-    data class SimplifiedMembership(
-        val _id: Membership.ID,
-        val organization: Organization.ID,
-        val role: MemberRole,
+    data class SimplifiedClinicMembership(
+        val _id: ClinicMembership.ID,
+        val clinic: Clinic.ID,
+        val role: ClinicRole,
     )
 
-    object MembershipsCache : AuthCacheKey<User, Set<SimplifiedMembership>> {
-        override val id: String = "memberships"
-        override val serializer: KSerializer<Set<SimplifiedMembership>> = SetSerializer(SimplifiedMembership.serializer())
+    object ClinicMembershipsCache : AuthCacheKey<User, Set<SimplifiedClinicMembership>> {
+        override val id: String = "clinicMemberships"
+        override val serializer: KSerializer<Set<SimplifiedClinicMembership>> =
+            SetSerializer(SimplifiedClinicMembership.serializer())
         override val expireAfter: Duration = 5.minutes
 
         context(_: ServerRuntime)
-        override suspend fun calculate(input: Authentication<User>): Set<SimplifiedMembership> {
-            return MembershipEndpoints.info.table()
-                .find(condition { (it.user eq input.id) and (it.deactivatedAt eq null) })
+        override suspend fun calculate(input: Authentication<User>): Set<SimplifiedClinicMembership> {
+            return ClinicMembershipEndpoints.info.table()
+                .find(condition {
+                    (it.user eq input.id) and
+                    (it.deactivatedAt eq null) and
+                    (it.acceptedAt neq null)
+                })
                 .toList()
-                .map { SimplifiedMembership(it._id, it.organization, it.role) }
+                .map { SimplifiedClinicMembership(it._id, it.clinic, it.role) }
                 .toSet()
         }
 
         context(_: ServerRuntime)
-        suspend fun Authentication<User>.memberships() = get(MembershipsCache)
+        suspend fun Authentication<User>.clinicMemberships() = get(ClinicMembershipsCache)
         context(_: ServerRuntime)
-        suspend fun AuthAccess<User>.memberships() = auth.memberships()
+        suspend fun AuthAccess<User>.clinicMemberships() = auth.clinicMemberships()
+
+        context(_: ServerRuntime)
+        suspend fun Authentication<User>.clinicIds(): Set<Clinic.ID> =
+            clinicMemberships().map { it.clinic }.toSet()
+        context(_: ServerRuntime)
+        suspend fun AuthAccess<User>.clinicIds(): Set<Clinic.ID> = auth.clinicIds()
+
+        context(_: ServerRuntime)
+        suspend fun Authentication<User>.clinicAdminIds(): Set<Clinic.ID> =
+            clinicMemberships().filter { it.role == ClinicRole.ClinicAdmin }.map { it.clinic }.toSet()
+        context(_: ServerRuntime)
+        suspend fun AuthAccess<User>.clinicAdminIds(): Set<Clinic.ID> = auth.clinicAdminIds()
+
+        // ClinicAdmin is administrative-only and not DEA-licensed by definition;
+        // only ClinicRole.Prescriber may sign off on prescription submissions.
+        context(_: ServerRuntime)
+        suspend fun Authentication<User>.prescriberClinicIds(): Set<Clinic.ID> =
+            clinicMemberships().filter { it.role == ClinicRole.Prescriber }
+                .map { it.clinic }.toSet()
+        context(_: ServerRuntime)
+        suspend fun AuthAccess<User>.prescriberClinicIds(): Set<Clinic.ID> = auth.prescriberClinicIds()
+    }
+
+    object CoClinicUsersCache : AuthCacheKey<User, Set<User.ID>> {
+        override val id: String = "coClinicUsers"
+        override val serializer: KSerializer<Set<User.ID>> = SetSerializer(User.ID.serializer())
+        override val expireAfter: Duration = 5.minutes
+
+        context(_: ServerRuntime)
+        override suspend fun calculate(input: Authentication<User>): Set<User.ID> {
+            val myClinics = input.get(ClinicMembershipsCache).map { it.clinic }.toSet()
+            if (myClinics.isEmpty()) return emptySet()
+            return ClinicMembershipEndpoints.info.table()
+                .find(condition {
+                    (it.clinic inside myClinics) and
+                    (it.deactivatedAt eq null) and
+                    (it.acceptedAt neq null)
+                })
+                .toList()
+                .map { it.user }
+                .toSet()
+        }
+
+        context(_: ServerRuntime)
+        suspend fun Authentication<User>.coClinicUsers() = get(CoClinicUsersCache)
+        context(_: ServerRuntime)
+        suspend fun AuthAccess<User>.coClinicUsers() = auth.coClinicUsers()
     }
 
     @Suppress("UNUSED_PARAMETER")
@@ -115,7 +167,8 @@ object UserAuth : PrincipalType<User, User.ID>, ServerBuilder() {
             pin = pins,
             email = Server.email,
             emailTemplate = { to, pin ->
-                val name = User.info.table().findOne(condition { it.email eq to.toEmailAddress() })?.name
+                val user = User.info.table().findOne(condition { it.email eq to.toEmailAddress() })
+                val greeting = user?.displayName?.takeIf { it.isNotBlank() }
                 Email(
                     subject = "Log In Code",
                     to = listOf(EmailAddressWithName(to)),
@@ -124,7 +177,7 @@ object UserAuth : PrincipalType<User, User.ID>, ServerBuilder() {
                             header("Log In Code")
                             paragraph(
                                 buildString {
-                                    if (name != null) appendLine("Hi $name,")
+                                    if (greeting != null) appendLine("Hi $greeting,")
                                     append("Your log in code is:")
                                 }
                             )
@@ -149,7 +202,7 @@ object UserAuth : PrincipalType<User, User.ID>, ServerBuilder() {
                     Server.email().send(
                         Email(
                             subject = "New Email Verification",
-                            to = listOf(EmailAddressWithName(newEmail, self.name)),
+                            to = listOf(EmailAddressWithName(newEmail, self.displayName)),
                             html = {
                                 emailBase {
                                     header("New Email Verification")

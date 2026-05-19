@@ -1,0 +1,753 @@
+@file:UseContextualSerialization(Uuid::class, LocalDate::class, Instant::class)
+
+package com.heroscript.integrations.lifefile
+
+import io.ktor.client.HttpClient
+import io.ktor.client.call.body
+import io.ktor.client.plugins.auth.Auth
+import io.ktor.client.plugins.auth.providers.BasicAuthCredentials
+import io.ktor.client.plugins.auth.providers.basic
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.defaultRequest
+import io.ktor.client.request.accept
+import io.ktor.client.request.header
+import io.ktor.client.request.post
+import io.ktor.client.request.put
+import io.ktor.client.request.setBody
+import io.ktor.client.request.url
+import io.ktor.client.statement.HttpResponse
+import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
+import io.ktor.http.contentType
+import io.ktor.http.isSuccess
+import io.ktor.serialization.kotlinx.json.json
+import kotlinx.datetime.LocalDate
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.UseContextualSerialization
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
+import kotlin.time.Instant
+import kotlin.uuid.Uuid
+
+/**
+ * Life File pharmacy API client.
+ *
+ * Each pharmacy is a separate tenant — instantiate one [LifeFileClient] per pharmacy with its
+ * own [LifeFileConfig]. Hallandale and other Life File-hosted pharmacies share the API surface
+ * but issue distinct credentials and IDs.
+ *
+ * Only the four documented endpoints exist. The API has no read/list/catalog surface — product
+ * IDs, shipping-service IDs, and per-pharmacy status codes are distributed out-of-band (email
+ * from LF support) and must be mirrored in our own DB.
+ *
+ * Every `ASK:` annotation in this file is a question to put to LF support — the PDF either
+ * doesn't say or says it ambiguously.
+ */
+
+
+/* ====================================================================== *
+ *  Config + client
+ * ====================================================================== */
+
+/** Credentials and per-tenant IDs. All values issued by LF at integration activation. */
+data class LifeFileConfig(
+    /**
+     * Full base URL including version path, e.g. `https://host100-7.lifefile.net/lfapi/v1`.
+     * Host segment varies per pharmacy (different LF "hosts" — host100, host200, …).
+     * ASK: is the `v1` path segment stable across pharmacies on the same LF release, or
+     * do we have to track API version per pharmacy too?
+     */
+    val baseUrl: String,
+
+    /** HTTP Basic username. */
+    val username: String,
+
+    /** HTTP Basic password. */
+    val password: String,
+
+    /**
+     * `X-Vendor-ID` header. Docs example: 11324.
+     * ASK: what does "vendor" denote — the integrator (us), the pharmacy entity, or
+     * something narrower like a billing relationship? PDF never defines it.
+     */
+    val vendorId: Int,
+
+    /**
+     * `X-Location-ID` header. Docs example: 110033. Presumably a physical pharmacy location.
+     * ASK: can one pharmacy have multiple locations under the same vendor/network? If yes,
+     * how do we discover the location list — out-of-band only?
+     */
+    val locationId: Int,
+
+    /**
+     * `X-API-Network-ID` header. Docs example: 233582.
+     * ASK: what is an "API Network"? PDF never defines it. Best guess: a contractual
+     * grouping that wires vendor + location + practice together for a given integration.
+     */
+    val apiNetworkId: Int,
+
+    /**
+     * Embedded in every order as `order.practice.id`. PDF marks the `practice` block optional,
+     * but POST /order returns 403 ("does not include a Practice ID") without it.
+     * ASK: if a prescriber works across multiple practices on our platform, do we send a
+     * different `practice.id` per order? Does LF cross-validate practice.id against the NPI?
+     */
+    val practiceId: Int,
+)
+
+/** Thrown for any non-2xx HTTP response or any envelope with `type=error`. */
+class LifeFileApiException(
+    val httpStatus: HttpStatusCode,
+    val envelope: LifeFileEnvelope<JsonElement>?,
+) : RuntimeException("Life File API ${httpStatus.value}: ${envelope?.message ?: "no body"}")
+
+class LifeFileClient(
+    private val config: LifeFileConfig,
+    private val http: HttpClient = defaultClient(config),
+) {
+
+    /**
+     * POST /order. Returns the new LF order ID.
+     *
+     * @param messageId per-foreign-system message sequence ID — see [MessageEnvelope.id].
+     * @param sentTime when our system emitted the order; nullable per PDF.
+     */
+    suspend fun createOrder(
+        order: NewOrder,
+        messageId: Long,
+        sentTime: Instant? = null,
+    ): Long {
+        val body = CreateOrderRequest(
+            message = MessageEnvelope(id = messageId, sentTime = sentTime),
+            order = order.copy(practice = order.practice ?: Practice(id = config.practiceId)),
+        )
+        return http.post("order") { setBody(body) }.unwrap<CreateOrderData>().orderId
+    }
+
+    /** POST /order/link. */
+    suspend fun linkOrders(
+        masterOrderId: Long,
+        scope: LinkScope,
+        childOrderIds: List<Long>,
+    ) {
+        val body = LinkOrdersRequest(masterOrderId, scope, childOrderIds)
+        http.post("order/link") { setBody(body) }.requireOk()
+    }
+
+    /**
+     * PUT /order/{id}/status.
+     *
+     * @param statusId 5-char per-pharmacy alphanumeric code (sandbox values: "bc3f4", "bb0d3").
+     *   Per PDF: "the pharmacies limit significantly the status to which an order could be
+     *   changed" — i.e. workflow constraints apply, not every code is reachable from every state.
+     */
+    suspend fun updateOrderStatus(orderId: Long, statusId: String) {
+        http.put("order/$orderId/status") { setBody(StatusUpdate(statusId)) }.requireOk()
+    }
+
+    /** PUT /order/{id}/shipping. Replaces the order's shipping block. */
+    suspend fun updateOrderShipping(orderId: Long, shipping: Shipping) {
+        http.put("order/$orderId/shipping") { setBody(ShippingUpdate(shipping)) }.requireOk()
+    }
+
+    private suspend inline fun <reified T : Any> HttpResponse.unwrap(): T =
+        bodyOrThrow<T>().data ?: error("Life File returned success with no data")
+
+    private suspend fun HttpResponse.requireOk() {
+        bodyOrThrow<JsonElement>()
+    }
+
+    private suspend inline fun <reified T : Any> HttpResponse.bodyOrThrow(): LifeFileEnvelope<T> {
+        if (!status.isSuccess()) {
+            val err = runCatching { body<LifeFileEnvelope<JsonElement>>() }.getOrNull()
+            throw LifeFileApiException(status, err)
+        }
+        val env = body<LifeFileEnvelope<T>>()
+        if (env.type == ResponseType.error) {
+            @Suppress("UNCHECKED_CAST")
+            throw LifeFileApiException(status, env as LifeFileEnvelope<JsonElement>)
+        }
+        return env
+    }
+
+    companion object {
+        private fun defaultClient(config: LifeFileConfig): HttpClient = HttpClient {
+            expectSuccess = false
+            install(ContentNegotiation) {
+                json(Json {
+                    ignoreUnknownKeys = true
+                    explicitNulls = false
+                    encodeDefaults = false
+                })
+            }
+            install(Auth) {
+                basic {
+                    credentials { BasicAuthCredentials(config.username, config.password) }
+                    sendWithoutRequest { true }
+                }
+            }
+            defaultRequest {
+                url(config.baseUrl.trimEnd('/') + "/")
+                header("X-Vendor-ID", config.vendorId)
+                header("X-Location-ID", config.locationId)
+                header("X-API-Network-ID", config.apiNetworkId)
+                accept(ContentType.Application.Json)
+                contentType(ContentType.Application.Json)
+            }
+        }
+    }
+}
+
+
+/* ====================================================================== *
+ *  Response envelope (uniform across all endpoints)
+ * ====================================================================== */
+
+@Serializable
+enum class ResponseType { success, error }
+
+@Serializable
+data class LifeFileEnvelope<T>(
+    /** "success" or "error". */
+    val type: ResponseType,
+    /** Human-readable status or error message. */
+    val message: String,
+    /** Endpoint-specific payload; null for endpoints that don't return data. */
+    val data: T? = null,
+)
+
+@Serializable
+data class CreateOrderData(
+    /** LF-assigned order ID — store this for later status/shipping updates. */
+    val orderId: Long,
+)
+
+
+/* ====================================================================== *
+ *  Request bodies (wire shape)
+ * ====================================================================== */
+
+@Serializable
+data class CreateOrderRequest(
+    val message: MessageEnvelope,
+    val order: NewOrder,
+)
+
+@Serializable
+data class LinkOrdersRequest(
+    /** ID of the order that becomes the master (parent) of the link. */
+    val masterOrderLinkRequest: Long,
+    /** What aspect of the orders gets consolidated under the master. */
+    val masterOrderLinkScope: LinkScope,
+    /** Orders to attach as children of the master. */
+    val childOrders: List<Long>,
+)
+
+@Serializable
+private data class StatusUpdate(
+    /** Per-pharmacy 5-char status code. */
+    val status: String,
+)
+
+@Serializable
+private data class ShippingUpdate(
+    /** Full replacement shipping block (PUT semantics — see PDF §1.2). */
+    val shipping: Shipping,
+)
+
+
+/* ====================================================================== *
+ *  Domain types
+ * ====================================================================== */
+
+@Serializable
+data class MessageEnvelope(
+    /**
+     * "Unique identifier of the message sequence in the foreign system" (PDF).
+     * ASK: is this used for idempotency (re-sending same id is a no-op)? Per-tenant scope,
+     * or globally unique across all our integrations? What happens on collision?
+     */
+    val id: Long,
+    /**
+     * When our system emitted the order. PDF says `string` with no format; sandbox accepted
+     * ISO-8601 (`2026-05-19T17:30:00Z`).
+     * ASK: required format (RFC 3339 vs other)? Timezone handling (assume UTC if none)?
+     * Is this used for anything beyond logging (e.g. queue ordering, retry windows)?
+     */
+    val sentTime: Instant? = null,
+)
+
+@Serializable
+data class NewOrder(
+    val prescriber: Prescriber,
+    val patient: Patient,
+    /** Prescriptions on this order. PDF doesn't state min/max length. ASK: any cap per order? */
+    val rxs: List<Rx>,
+    val general: OrderGeneral? = null,
+    /**
+     * Required when any [rxs] entry has a controlled [Rx.scheduleCode] (2/3/4/5).
+     * ASK: max base64 size? Can/should one PDF cover multiple Rxs in one order, or one PDF
+     * per Rx? What does LF validate about the PDF (signature, ID.me attestation, NCPDP
+     * SCRIPT v2017 format, etc.)?
+     */
+    val document: OrderDocument? = null,
+    /** Filled in by [LifeFileClient.createOrder] from [LifeFileConfig.practiceId] when null. */
+    val practice: Practice? = null,
+    val shipping: Shipping? = null,
+    val billing: Billing? = null,
+    val clinical: List<Clinical>? = null,
+)
+
+@Serializable
+data class OrderGeneral(
+    /**
+     * Free-text note, max 120 chars.
+     * ASK: where does this surface — pharmacist worklist, patient-facing label, internal-only?
+     */
+    val memo: String? = null,
+
+    /**
+     * Our reference ID for this order, max 200 chars.
+     * ASK: does LF dedupe on this — i.e. is re-sending the same referenceId a no-op or an
+     * error, or does it just create a duplicate order?
+     */
+    val referenceId: String? = null,
+
+    /**
+     * Optional 5-char per-pharmacy status to set at creation. PDF quote: *"This mechanism
+     * does not make the order eligible for validation services. However order may still
+     * enter escalation configurations."*
+     * ASK: clarify — does setting statusId at creation skip pharmacist validation entirely?
+     * What are "escalation configurations"? What happens if we don't send statusId at all?
+     */
+    val statusId: String? = null,
+
+    /**
+     * If set, the new order is created already linked under this master order ID
+     * (equivalent to a follow-up POST /order/link).
+     * ASK: what does linking actually do operationally — one consolidated shipping label,
+     * combined invoice, both, something else? Does the child get its own LF order ID?
+     */
+    val masterOrderLinkRequest: Long? = null,
+
+    /** Scope of the auto-link triggered by [masterOrderLinkRequest]. */
+    val masterOrderLinkScope: LinkScope? = null,
+
+    /**
+     * Only meaningful when the order originated from a fax to the pharmacy.
+     * ASK: should we leave this null entirely for our API-only integration, or does LF want
+     * sentinel values (e.g. CSID = "HeroScript") so faxes can be distinguished downstream?
+     */
+    val fax: FaxMeta? = null,
+)
+
+@Serializable
+data class FaxMeta(
+    /** Automatic Number Identification — Caller ID of the originating fax line. Max 25 chars. */
+    val ani: String? = null,
+    /** Called Subscriber Identification — string identifier of the receiving fax. Max 50 chars. */
+    val csid: String? = null,
+    /** Direct Inward Dialing — fax number that was dialed. Max 25 chars. */
+    val did: String? = null,
+)
+
+@Serializable
+data class OrderDocument(
+    /** Base64-encoded signed Rx PDF. See [NewOrder.document] for open questions. */
+    val pdfBase64: String,
+)
+
+@Serializable
+data class Practice(
+    /**
+     * Numeric LF practice ID. See [LifeFileConfig.practiceId] for sourcing notes.
+     * ASK: how do we get practice IDs for prescribers who aren't tied to our configured
+     * practice (e.g. a covering prescriber from a different group)?
+     */
+    val id: Int,
+)
+
+@Serializable
+data class Prescriber(
+    /**
+     * National Provider Identifier — 10-digit US prescriber registry ID.
+     * ASK: does LF look this up against NPPES on submission, or just store it? What
+     * happens if NPI is valid format but not registered?
+     */
+    val npi: String,
+
+    /** Required. Max 30 chars. */
+    val lastName: String,
+
+    /**
+     * Max 30 chars. PDF marks optional (no asterisk).
+     * ASK: genuinely optional? Seems wrong for a prescriber identity.
+     */
+    val firstName: String? = null,
+
+    /** Max 20 chars. */
+    val middleName: String? = null,
+
+    /** 2-letter state abbreviation of the prescriber's medical license. */
+    val licenseState: String? = null,
+
+    /**
+     * State medical license number. Max 50 chars.
+     * ASK: does LF validate this against any state-board registry, or store-only?
+     */
+    val licenseNumber: String? = null,
+
+    /**
+     * DEA registration number, pattern `[A-Z]{2}[0-9]{7}`. Schema marks optional, but
+     * required in practice for any controlled-substance Rx (schedule 2-5).
+     * ASK: confirm LF rejects controlled-substance Rxs without a DEA on the prescriber.
+     */
+    val dea: String? = null,
+
+    /**
+     * Address line 1, max 60 chars.
+     * ASK: should this be the prescriber's clinic/practice address, their personal
+     * residence, or the DEA-registered address? Matters for controlled substances.
+     */
+    val address1: String? = null,
+
+    /** Address line 2, max 60 chars. */
+    val address2: String? = null,
+
+    /** Max 100 chars. */
+    val city: String? = null,
+
+    /** 2-letter state abbreviation. */
+    val state: String? = null,
+
+    /** Max 10 chars. */
+    val zip: String? = null,
+
+    /** Format `(987) 654-3210`. ASK: strict — does LF reject other formats like `987-654-3210`? */
+    val phone: String? = null,
+
+    /** Format `(987) 654-3210`. */
+    val fax: String? = null,
+
+    /** Max 100 chars. */
+    val email: String? = null,
+)
+
+@Serializable
+data class Patient(
+    /** Required. Max 30 chars. */
+    val lastName: String,
+    /** Required. Max 30 chars. */
+    val firstName: String,
+    /** Required. */
+    val gender: Gender,
+    /** Required. */
+    val dateOfBirth: LocalDate,
+
+    /** Max 20 chars. */
+    val middleName: String? = null,
+
+    /** Address line 1, max 60 chars. */
+    val address1: String? = null,
+    /** Address line 2, max 60 chars. */
+    val address2: String? = null,
+    /**
+     * Address line 3, max 60 chars.
+     * ASK: when is this used? Apartment-line overflow, "attention to", c/o?
+     */
+    val address3: String? = null,
+
+    /** Max 100 chars. */
+    val city: String? = null,
+    /** 2-letter state abbreviation. */
+    val state: String? = null,
+    /** Max 10 chars. */
+    val zip: String? = null,
+    /** 2-letter country code. ASK: ISO 3166-1 alpha-2 ("US")? Or LF's own list? */
+    val country: String? = null,
+
+    /** Format `(987) 654-3210`. */
+    val phoneHome: String? = null,
+    /**
+     * Format `(987) 654-3210`.
+     * ASK: which phone field does LF use for shipping-carrier handoff and SMS notifications,
+     * if any? Mobile is the natural choice but the PDF doesn't say.
+     */
+    val phoneMobile: String? = null,
+    /** Format `(987) 654-3210`. */
+    val phoneWork: String? = null,
+
+    /** Max 100 chars. */
+    val email: String? = null,
+)
+
+@Serializable
+data class Shipping(
+    /** Who's receiving — the clinic or the patient. Drives state-licensing checks on LF's side. */
+    val recipientType: RecipientType,
+
+    /**
+     * Max 30 chars.
+     * ASK: when [recipientType] = clinic, do we put a contact person here, or the clinic's
+     * legal name (broken into first/last somehow)? Where does the clinic *name itself* go?
+     */
+    val recipientLastName: String? = null,
+
+    /** Max 30 chars. See note on [recipientLastName]. */
+    val recipientFirstName: String? = null,
+
+    /** Format `(987) 654-3210`. Max 16 chars. */
+    val recipientPhone: String? = null,
+
+    /** Max 100 chars. */
+    val recipientEmail: String? = null,
+
+    /** Address line 1, max 60 chars. */
+    val addressLine1: String? = null,
+    /** Address line 2, max 60 chars. */
+    val addressLine2: String? = null,
+    /** Address line 3, max 60 chars. */
+    val addressLine3: String? = null,
+
+    /** Max 100 chars. */
+    val city: String? = null,
+
+    /** 2-letter state abbreviation. */
+    val state: String? = null,
+
+    /** Max 10 chars. Note the field name: `zipCode` here, `zip` on Patient/Prescriber. */
+    val zipCode: String? = null,
+
+    /** 2-letter country code. */
+    val country: String? = null,
+
+    /**
+     * Life File internal shipping-service ID. Per-pharmacy; sandbox values:
+     *   9 = pickup, 999 = delivery, 6223-6231 = FedEx tiers.
+     * Distributed out-of-band.
+     */
+    val service: Int? = null,
+
+    /**
+     * Life File internal handling-service ID.
+     * ASK: what is "handling service" vs "shipping service" — cold-chain packaging tier,
+     * controlled-substance packaging, hazmat? Where's the catalog of valid IDs?
+     */
+    val handlingService: Int? = null,
+)
+
+@Serializable
+data class Billing(
+    /**
+     * Who's billed: patient (`pat`) or doctor/clinic (`doc`).
+     * ASK: does LF actually drive payment processing from this flag, or is it just a label?
+     * Our PRD has us collecting payment from clinics via our own processor regardless —
+     * we need confirmation LF won't attempt to charge anyone based on this.
+     */
+    val payorType: PayorType,
+)
+
+@Serializable
+data class Rx(
+    /**
+     * Drug name. Required. Max 254 chars.
+     * ASK: when [lfProductID] is also set, does LF require this to match the catalog
+     * entry, or is `lfProductID` the source of truth and `drugName` ignored / used only
+     * for display?
+     */
+    val drugName: String,
+
+    /** new vs refill. PDF doesn't mark required but it almost certainly is in practice. */
+    val rxType: RxType? = null,
+
+    /**
+     * Rx number. PDF documents the type ("integer") and nothing else.
+     * ASK (major): what is this — LF's assigned Rx number from a prior fill, our internal
+     * Rx number, or something the pharmacist will assign? When is it required vs ignored?
+     * Likely relevant for [RxType.refill] but PDF doesn't say.
+     */
+    val rxNumber: Long? = null,
+
+    /** Drug strength text, e.g. "500mg". Max 254 chars. */
+    val drugStrength: String? = null,
+
+    /** Drug form, e.g. "Tablet", "Cream". Max 255 chars. */
+    val drugForm: String? = null,
+
+    /**
+     * Life File catalog product ID (e.g. sandbox 305492221 = Acetaminophen 500mg Tablet).
+     * Distributed out-of-band.
+     * ASK: are we *required* to send this if the product exists in the catalog, or can we
+     * omit it and rely on drugName/strength/form text? Does LF reject mismatches between
+     * lfProductID and the textual fields?
+     */
+    val lfProductID: Long? = null,
+
+    /**
+     * "foreign PMS ID" per PDF — presumably foreign Practice Management System ID.
+     * ASK: what specifically goes here? Our installation ID, a per-Rx ID from a third-party
+     * PMS we don't have, our own internal database ID? PDF is unhelpful.
+     */
+    val foreignPmsId: Long? = null,
+
+    /**
+     * Our internal Rx number, max 50 chars.
+     * ASK: how does this differ from [rxNumber]? Best guess: `foreignRxNumber` is the
+     * id from *our* system, `rxNumber` is LF's id assigned on a prior submission. Confirm.
+     */
+    val foreignRxNumber: String? = null,
+
+    /**
+     * Quantity prescribed, as STRING (max 45 chars).
+     * ASK: why string instead of number — to support fractional ("1.5"), ranges, or unit
+     * expressions ("1 tube")? What characters does LF accept; does it round?
+     */
+    val quantity: String? = null,
+
+    /**
+     * Quantity unit, max 45 chars. Examples in sandbox catalog: "each", "grams".
+     * ASK: fixed vocabulary or free text? Is there a canonical list (UCUM, NCPDP, LF-specific)?
+     */
+    val quantityUnits: String? = null,
+
+    /** Sig / patient directions, max 65535 chars. */
+    val directions: String? = null,
+
+    /**
+     * Number of refills.
+     * ASK: is this *remaining* refills after this fill, or *total authorized*? Convention
+     * varies by pharmacy system.
+     */
+    val refills: Int? = null,
+
+    /** Date the prescription was written. */
+    val dateWritten: LocalDate? = null,
+
+    /** Days supply. */
+    val daysSupply: Int? = null,
+
+    /** DEA schedule classification. */
+    val scheduleCode: ScheduleCode? = null,
+
+    /**
+     * Max 65535 chars.
+     * ASK (major): the PDF gives zero context for this field. Best guess: pharmacist
+     * justification for therapeutic substitution, or the clinical rationale required for
+     * a compounded drug under USP 503A. Confirm meaning and when it's required.
+     */
+    val clinicalDifferenceStatement: String? = null,
+
+    /**
+     * UUID v4. Required when [rxType] = [RxType.new]. Used for cross-retry deduplication.
+     * ASK: is this only consulted on new Rxs, or also tracked for refills?
+     */
+    val uuid: Uuid? = null,
+)
+
+@Serializable
+data class Clinical(
+    val type: ClinicalCategory,
+
+    /**
+     * Code in the relevant vocabulary, max 20 chars.
+     * ASK (major): which coding system per type? Likely RxNorm or NDC for medication,
+     * SNOMED-CT or ICD-10 for disease, RxNorm or UNII for medication allergies. PDF
+     * doesn't say. Without this we can't reliably populate from EMR data.
+     */
+    val code: String,
+
+    /** Human-readable description. */
+    val description: String,
+
+    /** Who reported this clinical fact. */
+    val source: ClinicalSource? = null,
+
+    /**
+     * For [ClinicalCategory.allergy]: the observed reaction. Max 255 chars.
+     * ASK: ignored for non-allergy types, or also meaningful?
+     */
+    val reaction: String? = null,
+
+    /** When the condition / allergy / medication began. */
+    val startDate: LocalDate? = null,
+
+    /** When it ended (null = ongoing). */
+    val endDate: LocalDate? = null,
+)
+
+
+/* ====================================================================== *
+ *  Enums (serialized values match LF wire format exactly)
+ * ====================================================================== */
+
+@Serializable
+enum class RecipientType {
+    /** Shipped to the prescribing clinic. */
+    clinic,
+    /** Shipped directly to the patient. */
+    patient,
+}
+
+@Serializable
+enum class Gender {
+    /** Male. */ m,
+    /** Female. */ f,
+    /** Animal — veterinary prescriptions. */ a,
+    /** Unknown. */ u,
+}
+
+@Serializable
+enum class PayorType {
+    /** Patient pays. */ pat,
+    /** Doctor / clinic pays. */ doc,
+}
+
+@Serializable
+enum class RxType {
+    /** New prescription — requires a UUID v4 in [Rx.uuid]. */
+    new,
+    /**
+     * Refill of an existing prescription.
+     * ASK: how does LF identify the original Rx — by [Rx.rxNumber], [Rx.foreignRxNumber],
+     * patient + drug match, or other?
+     */
+    refill,
+}
+
+@Serializable
+enum class ScheduleCode {
+    /** DEA Schedule II (e.g. testosterone — the bulk of TRT). */ @SerialName("2") TWO,
+    /** DEA Schedule III. */ @SerialName("3") THREE,
+    /** DEA Schedule IV. */ @SerialName("4") FOUR,
+    /** DEA Schedule V. */ @SerialName("5") FIVE,
+    /** Legend — Rx-only but not a DEA controlled substance. */ @SerialName("L") L,
+    /** Over-the-counter. */ @SerialName("O") O,
+}
+
+@Serializable
+enum class LinkScope {
+    /**
+     * Linked orders share billing — single invoice rolls up child orders under the master.
+     * ASK: confirm semantics.
+     */
+    Billing,
+    /**
+     * Linked orders share shipping — single label, one package.
+     * ASK: confirm — what happens if linked orders have different shipping addresses?
+     */
+    Shipping,
+    /** Both billing and shipping. */
+    All,
+}
+
+@Serializable
+enum class ClinicalCategory { allergy, disease, medication }
+
+@Serializable
+enum class ClinicalSource {
+    Doctor,
+    Patient,
+    @SerialName("Patient Agent/Guardian") PatientAgentOrGuardian,
+    Pharmacist,
+}
