@@ -1,4 +1,4 @@
-rootProject.name = "ls-kiteui-starter"
+rootProject.name = "lskiteuistarter"
 
 pluginManagement {
     repositories {

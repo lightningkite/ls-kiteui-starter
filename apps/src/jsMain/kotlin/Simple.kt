@@ -6,6 +6,7 @@ import com.lightningkite.kiteui.navigation.PageNavigator
 import com.lightningkite.kiteui.navigation.basePath
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.lightningserver.*
 import com.lightningkite.lightningserver.sessions.*
 import com.lightningkite.reactive.context.*
@@ -23,7 +24,7 @@ import org.w3c.dom.events.KeyboardEvent
 import org.w3c.files.BlobPropertyBag
 
 fun main() {
-    root(appTheme.value) {
+    root(appTheme) {
         app(PageNavigator { AutoRoutes }, PageNavigator { AutoRoutes })
     }
 }

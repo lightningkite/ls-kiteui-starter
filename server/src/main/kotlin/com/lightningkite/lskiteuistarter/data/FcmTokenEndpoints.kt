@@ -1,26 +1,16 @@
 package com.lightningkite.lskiteuistarter.data
 
 import com.lightningkite.lightningserver.ForbiddenException
-import com.lightningkite.lightningserver.NotFoundException
-import com.lightningkite.lightningserver.auth.*
+import com.lightningkite.lightningserver.auth.id
+import com.lightningkite.lightningserver.auth.noAuth
+import com.lightningkite.lightningserver.auth.require
 import com.lightningkite.lightningserver.definition.builder.ServerBuilder
 import com.lightningkite.lightningserver.http.post
 import com.lightningkite.lightningserver.pathing.arg1
-import com.lightningkite.lightningserver.typed.ApiHttpHandler
-import com.lightningkite.lightningserver.typed.ModelRestEndpoints
-import com.lightningkite.lightningserver.typed.auth
-import com.lightningkite.lightningserver.typed.modelInfo
+import com.lightningkite.lightningserver.typed.*
 import com.lightningkite.lskiteuistarter.*
 import com.lightningkite.lskiteuistarter.UserAuth.RoleCache.userRole
-import com.lightningkite.lskiteuistarter._id
-import com.lightningkite.lskiteuistarter.user
-import com.lightningkite.services.database.ModelPermissions
-import com.lightningkite.services.database.condition
-import com.lightningkite.services.database.deleteOneById
-import com.lightningkite.services.database.eq
-import com.lightningkite.services.database.get
-import com.lightningkite.services.database.modification
-import com.lightningkite.services.database.or
+import com.lightningkite.services.database.*
 import com.lightningkite.services.notifications.Notification
 import com.lightningkite.services.notifications.NotificationData
 
@@ -37,6 +27,7 @@ object FcmTokenEndpoints : ServerBuilder() {
                 delete = admin or mine,
             )
         })
+
     val rest = path include ModelRestEndpoints(info)
 
     val registerEndpoint = path.path("register").post bind ApiHttpHandler(
@@ -62,8 +53,8 @@ object FcmTokenEndpoints : ServerBuilder() {
         summary = "Test In-App Notifications",
         auth = UserAuth.require(),
         implementation = { _: Unit ->
-            val token = info.table().get(this.request.arg1) ?: throw NotFoundException("Token not found in database.")
-            if (token.user != auth.untypedId && auth.userRole() < UserRole.Admin) throw ForbiddenException("You don't own this token.")
+            val token = info.table().getOrNotFound(request.arg1)
+            if (token.user != auth.id && auth.userRole() < UserRole.Admin) throw ForbiddenException("You don't own this token.")
             Server.notifications().send(
                 listOf(token._id), NotificationData(
                     notification = Notification(

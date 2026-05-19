@@ -14,6 +14,8 @@ import com.lightningkite.lightningserver.typed.*
 import com.lightningkite.lightningserver.typed.sdk.module
 import com.lightningkite.lskiteuistarter.data.MembershipEndpoints
 import com.lightningkite.lskiteuistarter.data.UserEndpoints
+import com.lightningkite.lskiteuistarter.data.UserEndpoints.AppStoreTester
+import com.lightningkite.lskiteuistarter.data.UserEndpoints.info
 import com.lightningkite.services.database.*
 import com.lightningkite.services.email.Email
 import com.lightningkite.services.email.EmailAddressWithName
@@ -31,22 +33,21 @@ import kotlin.time.Instant
 import kotlin.uuid.Uuid
 
 
-object UserAuth : PrincipalType<User, Uuid>, ServerBuilder() {
+object UserAuth : PrincipalType<User, User.ID>, ServerBuilder() {
     // principal fields
 
     override val subjectSerializer: KSerializer<User> = User.serializer()
-    override val idSerializer: KSerializer<Uuid> = Uuid.serializer()
+    override val idSerializer: KSerializer<User.ID> = User.ID.serializer()
 
     context(server: ServerRuntime)
-    override suspend fun fetch(id: Uuid): User = UserEndpoints.info.table().get(id) ?: throw NotFoundException()
+    override suspend fun fetch(id: User.ID): User = User.info.table().get(id) ?: throw NotFoundException()
 
     context(server: ServerRuntime)
     override suspend fun fetchByProperty(property: String, value: String): User? = when (property) {
-        "email" -> UserEndpoints.info.table()
-            .run {
-                findOne(condition { it.email eq value.toEmailAddress() })
-                    ?: insertOne(User(email = value.toEmailAddress()))
-            }
+        "email" -> User.info.table().run {
+            findOne(condition { it.email eq value.toEmailAddress() })
+                ?: insertOne(User(email = value.toEmailAddress(), name = ""))
+        }
 
         else -> super.fetchByProperty(property, value)
     }
@@ -62,7 +63,7 @@ object UserAuth : PrincipalType<User, Uuid>, ServerBuilder() {
         override val expireAfter: Duration = 5.minutes
 
         context(_: ServerRuntime)
-        override suspend fun calculate(input: Authentication<User>): UserRole = input.fetch().role ?: UserRole.NoOne
+        override suspend fun calculate(input: Authentication<User>): UserRole = input.fetch().role
 
         context(_: ServerRuntime)
         suspend fun Authentication<User>.userRole() = get(RoleCache)
@@ -117,11 +118,11 @@ object UserAuth : PrincipalType<User, Uuid>, ServerBuilder() {
             pin = pins,
             email = Server.email,
             emailTemplate = { to, pin ->
-                val name = Server.users.info.table().findOne(condition { it.email eq to.toEmailAddress() })?.name
+                val name = User.info.table().findOne(condition { it.email eq to.toEmailAddress() })?.name
                 Email(
                     subject = "Log In Code",
                     to = listOf(EmailAddressWithName(to)),
-                    html = createHTML(true).html {
+                    html = {
                         emailBase {
                             header("Log In Code")
                             paragraph(
@@ -152,7 +153,7 @@ object UserAuth : PrincipalType<User, Uuid>, ServerBuilder() {
                         Email(
                             subject = "New Email Verification",
                             to = listOf(EmailAddressWithName(newEmail, self.name)),
-                            html = createHTML(true).html {
+                            html = {
                                 emailBase {
                                     header("New Email Verification")
                                     paragraph("Here is your verification passcode,")
@@ -169,14 +170,14 @@ object UserAuth : PrincipalType<User, Uuid>, ServerBuilder() {
         )
     }
 
-    class SessionEndpoints : AuthEndpoints<User, Uuid>(
+    class SessionEndpoints : AuthEndpoints<User, User.ID>(
         principal = UserAuth,
         database = Server.database,
     ) {
         context(server: ServerRuntime)
         override suspend fun requiredProofStrengthFor(subject: User): Int {
             // AppStoreTester
-            if (subject._id.toString() == "f00ffbaa-abf9-497d-a75a-442f1c77c1e9") return 10
+            if (subject._id == User.ID.AppStoreTester) return 10
 
             val methods = server.proofMethods
                 .filter { it.established(UserAuth, subject) }
@@ -190,26 +191,5 @@ object UserAuth : PrincipalType<User, Uuid>, ServerBuilder() {
 
         context(server: ServerRuntime)
         override suspend fun sessionStaleAfter(subject: User): Duration? = null
-
-        context(_: ServerRuntime)
-        suspend fun createSession(
-            subjectId: Uuid,
-            label: String? = null,
-            expires: Instant? = null,
-            stale: Instant? = null,
-            scopes: Set<GrantedScope> = setOf(GrantedScope.root),
-            oauthClient: String? = null,
-            derivedFrom: Uuid? = null,
-        ): Pair<Session<User, Uuid>, RefreshToken> {
-            return newSession(
-                subjectId = subjectId,
-                label = label,
-                expires = expires,
-                stale = stale,
-                scopes = scopes,
-                oauthClient = oauthClient,
-                derivedFrom = derivedFrom,
-            )
-        }
     }
 }
