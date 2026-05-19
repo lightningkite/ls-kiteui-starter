@@ -105,6 +105,7 @@ data class InventoryItem(
     val category: ItemCategory = ItemCategory.Other,
     val quantity: Int = 0,
     val notes: String? = null,
+    val photo: ServerFileWithMetadata? = null,
     val createdAt: Instant = Clock.System.now(),
 ) : HasId<Uuid>
 

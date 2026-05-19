@@ -5,14 +5,14 @@ firebaseMessagingKtx = "24.1.2"
 graalVmNative = "0.11.4"
 jsPlainObjects = "2.3.0"
 kfc = "16.5.0"
-kiteui = "7.0.0-prerelease-193-local"
+kiteui = "7.0.0-prerelease-281-local"
 kotlin = "2.2.20"
 kotlinerCli = "1.0.5"
 kotlinxSerializationCsvDurable = "0.2.21-1"
 ksp = "2.2.20-2.0.4"
-lightningServer = "5.0.0-prerelease-355"
-lightningServerKiteui = "8.0.0-prerelease-109"
-serviceAbstractions = "0.0.1-158"
+lightningServer = "5.0.0-prerelease-398-local"
+lightningServerKiteui = "8.0.0-prerelease-132"
+serviceAbstractions = "0.0.1-187"
 coroutines = "1.10.2"
 shadow = "8.1.1"
 
@@ -39,6 +39,7 @@ lightningServer-sessions-sms = { module = "com.lightningkite.lightningserver:ses
 lightningServer-typed = { module = "com.lightningkite.lightningserver:typed", version = { ref = "lightningServer" } }
 lightningServer-typed-shared = { module = "com.lightningkite.lightningserver:typed-shared", version = { ref = "lightningServer" } }
 lightningServer-client = { module = "com.lightningkite.lightningserver:client", version = { ref = "lightningServerKiteui" } }
+lightningServer-load-test = { module = "com.lightningkite.lightningserver:load-test", version = { ref = "lightningServer" } }
 lightningServer-client-serverUtils = { module = "com.lightningkite.lightningserver:server-client-utils", version = { ref = "lightningServerKiteui" } }
 services-database = { module = "com.lightningkite.services:database", version = { ref = "serviceAbstractions" } }
 services-database-jsonfile = { module = "com.lightningkite.services:database-jsonfile", version = { ref = "serviceAbstractions" } }

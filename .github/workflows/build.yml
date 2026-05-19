@@ -26,6 +26,9 @@ jobs:
       - name: Run server tests
         run: ./gradlew :server:test
 
+      - name: Run integration tests
+        run: ./gradlew :integration-tests:test
+
       - name: Build web frontend (development)
         run: ./gradlew :apps:jsBrowserDevelopmentWebpack
 
@@ -40,4 +43,5 @@ jobs:
           path: |
             server/build/reports/tests/
             apps/build/reports/tests/
+            integration-tests/build/reports/tests/
           retention-days: 14

@@ -2,9 +2,10 @@
 package com.lightningkite.lskiteuistarter
 
 import com.lightningkite.kiteui.*
-import com.lightningkite.kiteui.aidriver.AiDriver
+import com.lightningkite.kiteui.views.AiDriver
 import com.lightningkite.kiteui.exceptions.ExceptionToMessages
 import com.lightningkite.kiteui.exceptions.installLsError
+import com.lightningkite.kiteui.telemetry.Telemetry
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.PageNavigator
 import com.lightningkite.kiteui.navigation.dialogPageNavigator
@@ -99,6 +100,18 @@ fun ViewWriter.app(navigator: PageNavigator, dialog: PageNavigator) {
     }
 
     navigator.navigate(LandingPage())
+
+    // Install telemetry in production builds when an endpoint is configured.
+    // Set your OTLP credentials in the platform actuals under sdk/telemetryConfig.*.kt.
+    if (!Platform.isDevelopment) {
+        getDefaultTelemetryConfig()?.let { config ->
+            Telemetry(config.copy(
+                serviceName = "ls-kiteui-starter",
+                serviceVersion = Build.version,
+            )).install(navigator)
+        }
+    }
+
     // by Claude — Updated app name and added Members nav link
     val rootView = produceOne {
         appNav(navigator, dialog) {
@@ -124,8 +137,8 @@ fun ViewWriter.app(navigator: PageNavigator, dialog: PageNavigator) {
     if (Platform.isDevelopment) {
         AiDriver.connect(
             appName = "LS KiteUI Starter",
-            rootViewProvider = { rootView },
-            navigatorProvider = { navigator }
+            rootView = { rootView },
+            navigator = { navigator },
         )
     }
 }

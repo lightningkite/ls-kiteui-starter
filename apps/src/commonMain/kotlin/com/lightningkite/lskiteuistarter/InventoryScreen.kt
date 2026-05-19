@@ -7,6 +7,7 @@ import com.lightningkite.kiteui.navigation.pageNavigator
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.reactive.context.awaitOnce
 import com.lightningkite.lskiteuistarter.sdk.*
 import com.lightningkite.reactive.context.reactive
 import com.lightningkite.reactive.core.*
@@ -35,6 +36,13 @@ class InventoryPage : Page {
                 content = "Inventory"
             }
 
+            // by Claude — Add Item button
+            important.buttonTheme.button {
+                debugName = "addItemButton" // by Claude — testId
+                centered.text("Add Item")
+                onClick { pageNavigator.navigate(InventoryNewPage()) }
+            }
+
             col {
                 debugName = "inventoryList" // by Claude — testId
                 forEachById(items, id = { it._id }) { itemReactive ->
@@ -51,6 +59,14 @@ class InventoryPage : Page {
                         }
                         col {
                             centered.h3 { ::content { "×${itemReactive().quantity}" } }
+                        }
+                        // by Claude — Edit button for each item
+                        button {
+                            centered.text("Edit")
+                            onClick {
+                                val item: InventoryItem = itemReactive.awaitOnce()
+                                pageNavigator.navigate(InventoryEditPage(item._id.toString()))
+                            }
                         }
                     }
                 }
