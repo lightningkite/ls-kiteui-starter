@@ -1,7 +1,6 @@
 // Authentication configuration and auth caches. Add new AuthCacheKey objects here. — by Claude
 package com.lightningkite.lskiteuistarter
 
-import com.lightningkite.EmailAddress
 import com.lightningkite.lightningserver.NotFoundException
 import com.lightningkite.lightningserver.auth.*
 import com.lightningkite.lightningserver.definition.builder.ServerBuilder
@@ -16,10 +15,11 @@ import com.lightningkite.lskiteuistarter.data.MembershipEndpoints
 import com.lightningkite.lskiteuistarter.data.UserEndpoints
 import com.lightningkite.lskiteuistarter.data.UserEndpoints.AppStoreTester
 import com.lightningkite.lskiteuistarter.data.UserEndpoints.info
+import com.lightningkite.services.data.EmailAddress
+import com.lightningkite.services.data.toEmailAddress
 import com.lightningkite.services.database.*
 import com.lightningkite.services.email.Email
 import com.lightningkite.services.email.EmailAddressWithName
-import com.lightningkite.toEmailAddress
 import kotlinx.coroutines.flow.toList
 import kotlinx.html.html
 import kotlinx.html.stream.createHTML
@@ -74,8 +74,8 @@ object UserAuth : PrincipalType<User, User.ID>, ServerBuilder() {
     // by Claude — Cache active memberships for permission checks
     @Serializable
     data class SimplifiedMembership(
-        val _id: Uuid,
-        val organization: Uuid,
+        val _id: Membership.ID,
+        val organization: Organization.ID,
         val role: MemberRole,
     )
 
@@ -181,7 +181,7 @@ object UserAuth : PrincipalType<User, User.ID>, ServerBuilder() {
 
             val methods = server.proofMethods
                 .filter { it.established(UserAuth, subject) }
-                .filter { it.info.via != backupCodes.info.via }
+                .filter { it.info.via != UserAuth.backupCodes.info.via }
 
             return if (methods.size > 1) 20 else 10
         }
@@ -191,5 +191,26 @@ object UserAuth : PrincipalType<User, User.ID>, ServerBuilder() {
 
         context(server: ServerRuntime)
         override suspend fun sessionStaleAfter(subject: User): Duration? = null
+
+        context(_: ServerRuntime)
+        suspend fun createSession(
+            subjectId: User.ID,
+            label: String? = null,
+            expires: Instant? = null,
+            stale: Instant? = null,
+            scopes: Set<GrantedScope> = setOf(GrantedScope.root),
+            oauthClient: String? = null,
+            derivedFrom: Uuid? = null,
+        ): Pair<Session<User, User.ID>, RefreshToken> {
+            return newSession(
+                subjectId = subjectId,
+                label = label,
+                expires = expires,
+                stale = stale,
+                scopes = scopes,
+                oauthClient = oauthClient,
+                derivedFrom = derivedFrom,
+            )
+        }
     }
 }

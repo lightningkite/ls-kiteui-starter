@@ -1,6 +1,5 @@
 package com.lightningkite.lskiteuistarter.data
 
-import com.lightningkite.EmailAddress
 import com.lightningkite.lightningserver.auth.id
 import com.lightningkite.lightningserver.auth.require
 import com.lightningkite.lightningserver.definition.builder.ServerBuilder
@@ -19,6 +18,8 @@ import com.lightningkite.lskiteuistarter.UserAuth.RoleCache.userRole
 import com.lightningkite.lskiteuistarter._id
 import com.lightningkite.lskiteuistarter.email
 import com.lightningkite.lskiteuistarter.role
+import com.lightningkite.services.data.EmailAddress
+import com.lightningkite.services.data.toEmailAddress
 import com.lightningkite.services.database.Condition
 import com.lightningkite.services.database.ModelPermissions
 import com.lightningkite.services.database.Table
@@ -29,11 +30,10 @@ import com.lightningkite.services.database.insertOne
 import com.lightningkite.services.database.inside
 import com.lightningkite.services.database.or
 import com.lightningkite.services.database.updateRestrictions
-import com.lightningkite.toEmailAddress
 import kotlin.uuid.Uuid
 
 object UserEndpoints : ServerBuilder() {
-    private val info = Server.database.modelInfo(
+    val info = Server.database.modelInfo(
         auth = UserAuth.require(),
         permissions = {
             val allowedRoles = UserRole.entries.filter { it <= auth.userRole() }

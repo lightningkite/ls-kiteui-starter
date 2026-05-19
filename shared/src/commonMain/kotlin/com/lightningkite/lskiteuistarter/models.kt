@@ -1,7 +1,6 @@
 // Shared data models. All models need @Serializable and @GenerateDataClassPaths. — by Claude
 package com.lightningkite.lskiteuistarter
 
-import com.lightningkite.EmailAddress
 import com.lightningkite.lightningserver.media.ServerFileWithMetadata
 import com.lightningkite.services.data.*
 import com.lightningkite.services.database.HasId
@@ -57,15 +56,20 @@ enum class UserRole {
 @Serializable
 @GenerateDataClassPaths
 data class FcmToken(
-    @MaxLength(160, average = 142) override val _id: String,
+    @MaxLength(160, average = 142) override val _id: ID,
     @Index val user: User.ID,
     val active: Boolean = true,
     val created: Instant = now(),
     val lastRegisteredAt: Instant = created,
     val userAgent: String? = null,
-) : HasId<String>
-
-// by Claude — Organization/membership models for multi-tenant support
+) : HasId<FcmToken.ID> {
+    @Serializable
+    @JvmInline
+    @References(FcmToken::class)
+    value class ID(override val raw: String) : TypedId<String, ID> {
+        override fun toString(): String = raw
+    }
+}
 
 @Serializable
 enum class MemberRole {
@@ -78,22 +82,37 @@ enum class MemberRole {
 @Serializable
 @GenerateDataClassPaths
 data class Organization(
-    override val _id: Uuid = Uuid.random(),
+    override val _id: ID = ID(Uuid.random()),
     val name: String,
     val logo: ServerFileWithMetadata? = null,
     val createdAt: Instant = Clock.System.now(),
-) : HasId<Uuid>
+) : HasId<Organization.ID> {
+    @Serializable
+    @JvmInline
+    @References(Organization::class)
+    value class ID(override val raw: Uuid) : TypedId<Uuid, ID> {
+        override fun toString(): String = raw.toString()
+    }
+}
 
 @Serializable
 @GenerateDataClassPaths
 data class Membership(
-    override val _id: Uuid = Uuid.random(),
-    @Index @References(Organization::class) val organization: Uuid,
-    @Index @References(User::class) val user: Uuid,
+    override val _id: ID = ID(Uuid.random()),
+    @Index val organization: Organization.ID,
+    @Index val user: User.ID,
     val role: MemberRole = MemberRole.Member,
     val deactivatedAt: Instant? = null,
     val createdAt: Instant = Clock.System.now(),
-) : HasId<Uuid>
+) : HasId<Membership.ID> {
+
+    @Serializable
+    @JvmInline
+    @References(Membership::class)
+    value class ID(override val raw: Uuid) : TypedId<Uuid, ID> {
+        override fun toString(): String = raw.toString()
+    }
+}
 
 @Serializable
 enum class FeatureFlag {

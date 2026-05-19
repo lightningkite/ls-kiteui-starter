@@ -1,7 +1,7 @@
 package com.lightningkite.lskiteuistarter
 
-import com.lightningkite.ZonedDateTime
-import com.lightningkite.nowLocal
+import com.lightningkite.services.data.ZonedDateTime
+import com.lightningkite.services.data.nowLocal
 import kotlin.time.Clock
 import kotlin.time.Instant
 

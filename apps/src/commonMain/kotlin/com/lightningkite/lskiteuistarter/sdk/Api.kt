@@ -33,7 +33,7 @@ interface Api {
 			 * 
 			 * **Auth Requirements:** User with root access
 			 * */
-			suspend fun verifyNewEmail(input: com.lightningkite.EmailAddress): kotlin.String
+			suspend fun verifyNewEmail(input: com.lightningkite.services.data.EmailAddress): kotlin.String
 		}
 		val email: EmailApi
 
@@ -41,7 +41,7 @@ interface Api {
 		}
 		val totp: TimeBasedOTPProof
 
-		interface PasswordProof : com.lightningkite.lightningserver.sessions.proofs.ProofClientEndpoints.Password, com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lightningserver.sessions.PasswordSecret, kotlin.uuid.Uuid> {
+		interface PasswordProof : com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lightningserver.sessions.PasswordSecret, kotlin.uuid.Uuid>, com.lightningkite.lightningserver.sessions.proofs.ProofClientEndpoints.Password {
 		}
 		val password: PasswordProof
 
@@ -49,27 +49,31 @@ interface Api {
 	}
 	val userAuth: UserAuthApi
 
-	interface FcmTokenApi : com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lskiteuistarter.FcmToken, kotlin.String> {
+	interface FcmTokenApi : com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lskiteuistarter.FcmToken, com.lightningkite.lskiteuistarter.FcmToken.ID> {
 		/**
 		 * Register Token
 		 * 
 		 * **Auth Requirements:** User with root access
 		 * */
-		suspend fun registerToken(input: kotlin.String): com.lightningkite.services.database.EntryChange<com.lightningkite.lskiteuistarter.FcmToken>
+		suspend fun registerToken(input: com.lightningkite.lskiteuistarter.FcmToken.ID): com.lightningkite.services.database.EntryChange<com.lightningkite.lskiteuistarter.FcmToken>
 		/**
 		 * Test In-App Notifications
 		 * 
 		 * **Auth Requirements:** User with root access
 		 * */
-		suspend fun testInAppNotifications(id: kotlin.String): kotlin.String
+		suspend fun testInAppNotifications(id: com.lightningkite.lskiteuistarter.FcmToken.ID): kotlin.String
 		/**
 		 * Clear Token
 		 * 
 		 * **Auth Requirements:** No Requirements
 		 * */
-		suspend fun clearToken(id: kotlin.String): kotlin.Boolean
+		suspend fun clearToken(id: com.lightningkite.lskiteuistarter.FcmToken.ID): kotlin.Boolean
 	}
 	val fcmToken: FcmTokenApi
+
+	val organization: com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lskiteuistarter.Organization, com.lightningkite.lskiteuistarter.Organization.ID>
+
+	val membership: com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lskiteuistarter.Membership, com.lightningkite.lskiteuistarter.Membership.ID>
 
 	interface MetaApi {
 		/**

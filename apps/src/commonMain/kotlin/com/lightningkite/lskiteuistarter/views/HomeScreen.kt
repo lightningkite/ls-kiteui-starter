@@ -5,6 +5,7 @@ import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.navigation.pageNavigator
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.lskiteuistarter.FcmToken
 import com.lightningkite.lskiteuistarter.fcmToken
 import com.lightningkite.lskiteuistarter.sdk.currentSession
 import com.lightningkite.lskiteuistarter.sdk.sessionToken
@@ -31,7 +32,7 @@ class HomePage : Page {
                 centered.text("Test Notifications")
                 ::enabled { fcmToken() != null }
                 onClick {
-                    currentSession()?.api?.fcmToken?.testInAppNotifications(fcmToken()!!)
+                    currentSession()?.api?.fcmToken?.testInAppNotifications(FcmToken.ID(fcmToken()!!))
                 }
             }
 

@@ -7,8 +7,8 @@ import com.lightningkite.lightningserver.definition.generalSettings
 import com.lightningkite.lskiteuistarter.data.MembershipEndpoints
 import com.lightningkite.lskiteuistarter.data.OrganizationEndpoints
 import com.lightningkite.lskiteuistarter.data.UserEndpoints
+import com.lightningkite.services.data.toEmailAddress
 import com.lightningkite.services.database.insertOne
-import com.lightningkite.toEmailAddress
 import kotlinx.coroutines.runBlocking
 import kotlin.uuid.Uuid
 
@@ -29,7 +29,7 @@ fun seed() = engine {
         // Admin user
         val admin = usersTable.insertOne(
             User(
-                _id = Uuid.fromLongs(0L, 100L),
+                _id = User.ID(Uuid.fromLongs(0L, 100L)),
                 email = "admin@example.com".toEmailAddress(),
                 name = "Alice Admin",
                 role = UserRole.Admin,
@@ -43,7 +43,7 @@ fun seed() = engine {
         // Regular users
         val user1 = usersTable.insertOne(
             User(
-                _id = Uuid.fromLongs(0L, 101L),
+                _id = User.ID(Uuid.fromLongs(0L, 101L)),
                 email = "bob@example.com".toEmailAddress(),
                 name = "Bob Builder",
                 role = UserRole.User,
@@ -53,7 +53,7 @@ fun seed() = engine {
 
         val user2 = usersTable.insertOne(
             User(
-                _id = Uuid.fromLongs(0L, 102L),
+                _id = User.ID(Uuid.fromLongs(0L, 102L)),
                 email = "carol@example.com".toEmailAddress(),
                 name = "Carol Contractor",
                 role = UserRole.User,
@@ -64,7 +64,7 @@ fun seed() = engine {
         // Organizations
         val org1 = orgsTable.insertOne(
             Organization(
-                _id = Uuid.fromLongs(0L, 200L),
+                _id = Organization.ID(Uuid.fromLongs(0L, 200L)),
                 name = "Acme Corp",
             )
         )!!
@@ -72,7 +72,7 @@ fun seed() = engine {
 
         val org2 = orgsTable.insertOne(
             Organization(
-                _id = Uuid.fromLongs(0L, 201L),
+                _id = Organization.ID(Uuid.fromLongs(0L, 201L)),
                 name = "Widget Labs",
             )
         )!!

@@ -8,6 +8,7 @@ import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.lskiteuistarter.sdk.*
+import com.lightningkite.lskiteuistarter.views.LandingPage
 import com.lightningkite.reactive.context.reactive
 import com.lightningkite.reactive.core.*
 import com.lightningkite.services.database.*
@@ -16,10 +17,10 @@ import com.lightningkite.services.database.*
 class MembersPage : Page {
     override val title: Reactive<String> get() = Constant("Members")
 
-    override fun ViewWriter.render() {
+    override fun ElementWriter.CanAddTheme.render() {
         reactive {
             if (currentSession() == null)
-                pageNavigator.reset(LandingPage())
+                context.pageNavigator.reset(LandingPage())
         }
 
         val session = currentSessionNotNull
