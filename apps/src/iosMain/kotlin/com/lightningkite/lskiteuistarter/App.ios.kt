@@ -14,6 +14,6 @@ import kotlin.uuid.Uuid
 import platform.UIKit.UIViewController
 
 
-fun root(viewController: UIViewController) {
-    viewController.setup(appTheme) { app(PageNavigator { AutoRoutes }, PageNavigator { AutoRoutes }) }
+fun root(viewController: UIViewController, mainNav: PageNavigator, dialogNav: PageNavigator) {
+    viewController.setup(appTheme) { app(mainNav, dialogNav) }
 }
