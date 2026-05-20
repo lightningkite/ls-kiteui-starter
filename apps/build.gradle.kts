@@ -23,7 +23,7 @@ plugins {
     alias(libs.plugins.kfc)
 }
 
-group = "com.lightningkite.lskiteuistarter"
+group = "com.heroscript"
 version = "1.0-SNAPSHOT"
 
 repositories {
@@ -119,11 +119,11 @@ kotlin {
 }
 
 android {
-    namespace = "com.lightningkite.lskiteuistarter"
+    namespace = "com.heroscript"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.lightningkite.lskiteuistarter"
+        applicationId = "com.heroscript"
         minSdk = 26
         targetSdk = 36
         versionCode = 1
@@ -176,7 +176,7 @@ rootProject.plugins.withType<org.jetbrains.kotlin.gradle.targets.js.yarn.YarnPlu
 }
 
 configure<KiteUiPluginExtension> {
-    this.packageName = "com.lightningkite.lskiteuistarter"
+    this.packageName = "com.heroscript"
     this.iosProjectRoot = project.file("./ios/app")
 }
 

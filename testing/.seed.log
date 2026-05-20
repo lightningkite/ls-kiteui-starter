@@ -1,0 +1,57 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/9.4.1/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+
+> Configure project :apps
+WARNING: The option setting 'android.defaults.buildfeatures.buildconfig=true' is deprecated.
+The current default is 'false'.
+It will be removed in version 10.0 of the Android Gradle plugin.
+To keep using this feature, add the following to your module-level build.gradle files:
+    android.buildFeatures.buildConfig = true
+or from Android Studio, click: `Refactor` > `Migrate BuildConfig to Gradle Build Files`.
+
+> Task :server:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :shared:kmpPartiallyResolvedDependenciesChecker
+> Task :shared:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :shared:kspKotlinJvm UP-TO-DATE
+> Task :shared:compileKotlinJvm UP-TO-DATE
+> Task :shared:compileJvmMainJava NO-SOURCE
+> Task :shared:jvmProcessResources UP-TO-DATE
+> Task :shared:processJvmMainResources SKIPPED
+> Task :shared:jvmMainClasses UP-TO-DATE
+> Task :shared:jvmJar UP-TO-DATE
+> Task :server:kspKotlin UP-TO-DATE
+> Task :server:compileKotlin UP-TO-DATE
+> Task :server:compileJava NO-SOURCE
+> Task :server:processResources UP-TO-DATE
+> Task :server:classes UP-TO-DATE
+
+> Task :server:run
+Server built in 310.267125ms
+Seeding database with sample data...
+kotlin-logging: initializing... active logger factory: Slf4jLoggerFactory
+  Ensured 3 clinic memberships
+  Ensured 3 product-pharmacy mappings
+
+=== Seed Complete ===
+Admin token: 'refresh/User/5fb5d173-d38d-45cf-9883-c0cfac56be2e:3g+Hn9zgeb02zOlwscCqX441uT8GFdbZ'
+Prescriber token: 'refresh/User/0f1d66ba-8867-4bce-975c-0bbfce532bc9:w/JXtkiQdNMD+dWNBIcanO8w3WVtaULy'
+MA token: 'refresh/User/33cccb0a-007a-4470-abf6-8df08839a627:wzvJ7YU3Sr2nDjBKwdqUpMFCHnV4C87z'
+ClinicAdmin token: 'refresh/User/537d84e0-4217-480d-ae13-119842a7f39b:Cpm1XAontb+hSPS7jGekC7r7d2m/8Tjr'
+
+Test users:
+  admin@example.com         (Ops Admin)
+  prescriber@example.com    (Prescriber)
+  ma@example.com            (Medical Assistant)
+  clinicadmin@example.com   (Clinic Admin)
+
+[Incubating] Problems report is available at: file:///Users/jivie/Projects/herxoscript/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.4.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 12s
+9 actionable tasks: 2 executed, 7 up-to-date
+Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.4.1/userguide/configuration_cache_enabling.html

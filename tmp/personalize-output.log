@@ -1,0 +1,156 @@
+/var/folders/p5/rl16tmnx1rx8kj_z33d1g8gc0000gp/T/jansi-2.4.0-cda23739157709a3-libjansi.jnilib.lck (Operation not permitted)
+Personalizing project:
+  Old package: com.lightningkite.lskiteuistarter
+  New package: com.heroscript
+  App name: HeroScript
+
+Step 1: Updating Kotlin files...
+  ✓ Updated: server/build.gradle.kts
+  ✓ Updated: server/src/test/kotlin/com/lightningkite/lskiteuistarter/ServerTest.kt
+  ✓ Updated: server/src/main/kotlin/com/lightningkite/lskiteuistarter/deployments.kt
+  ✓ Updated: server/src/main/kotlin/com/lightningkite/lskiteuistarter/AwsHandler.kt
+  ✓ Updated: server/src/main/kotlin/com/lightningkite/lskiteuistarter/Seed.kt
+  ✓ Updated: server/src/main/kotlin/com/lightningkite/lskiteuistarter/Main.kt
+  ✓ Updated: server/src/main/kotlin/com/lightningkite/lskiteuistarter/Server.kt
+  ✓ Updated: server/src/main/kotlin/com/lightningkite/lskiteuistarter/data/ProductPharmacyMappingEndpoints.kt
+  ✓ Updated: server/src/main/kotlin/com/lightningkite/lskiteuistarter/data/FcmTokenEndpoints.kt
+  ✓ Updated: server/src/main/kotlin/com/lightningkite/lskiteuistarter/data/PharmacyEndpoints.kt
+  ✓ Updated: server/src/main/kotlin/com/lightningkite/lskiteuistarter/data/ClinicMembershipEndpoints.kt
+  ✓ Updated: server/src/main/kotlin/com/lightningkite/lskiteuistarter/data/PrescriptionEndpoints.kt
+  ✓ Updated: server/src/main/kotlin/com/lightningkite/lskiteuistarter/data/ShipmentEndpoints.kt
+  ✓ Updated: server/src/main/kotlin/com/lightningkite/lskiteuistarter/data/PharmacyOrderEndpoints.kt
+  ✓ Updated: server/src/main/kotlin/com/lightningkite/lskiteuistarter/data/ProductEndpoints.kt
+  ✓ Updated: server/src/main/kotlin/com/lightningkite/lskiteuistarter/data/PrescriptionOrderEndpoints.kt
+  ✓ Updated: server/src/main/kotlin/com/lightningkite/lskiteuistarter/data/UserEndpoints.kt
+  ✓ Updated: server/src/main/kotlin/com/lightningkite/lskiteuistarter/data/PatientEndpoints.kt
+  ✓ Updated: server/src/main/kotlin/com/lightningkite/lskiteuistarter/data/ClinicEndpoints.kt
+  ✓ Updated: server/src/main/kotlin/com/lightningkite/lskiteuistarter/data/ClinicInvoiceEndpoints.kt
+  ✓ Updated: server/src/main/kotlin/com/lightningkite/lskiteuistarter/data/AppReleaseEndpoints.kt
+  ✓ Updated: server/src/main/kotlin/com/lightningkite/lskiteuistarter/Emails.kt
+  ✓ Updated: server/src/main/kotlin/com/lightningkite/lskiteuistarter/UserAuth.kt
+  ✓ Updated: shared/build.gradle.kts
+  ✓ Updated: shared/src/commonMain/kotlin/com/lightningkite/lskiteuistarter/models.kt
+  ✓ Updated: shared/src/commonMain/kotlin/com/lightningkite/lskiteuistarter/types.kt
+  ✓ Updated: shared/src/commonMain/kotlin/com/lightningkite/lskiteuistarter/clock.kt
+  ✓ Updated: build.gradle.kts
+  ✓ Updated: settings.gradle.kts
+  ✓ Updated: project-docs/planned-models.kt
+  ✓ Updated: apps/build.gradle.kts
+  ✓ Updated: apps/src/iosMain/kotlin/com/lightningkite/lskiteuistarter/App.ios.kt
+  ✓ Updated: apps/src/iosMain/kotlin/com/lightningkite/lskiteuistarter/utils/fcmSetup.ios.kt
+  ✓ Updated: apps/src/iosMain/kotlin/com/lightningkite/lskiteuistarter/sdk/apiOptions.ios.kt
+  ✓ Updated: apps/src/commonMain/kotlin/com/lightningkite/lskiteuistarter/App.kt
+  ✓ Updated: apps/src/commonMain/kotlin/com/lightningkite/lskiteuistarter/utils/fcmSetup.kt
+  ✓ Updated: apps/src/commonMain/kotlin/com/lightningkite/lskiteuistarter/extensions/Platform.ext.kt
+  ✓ Updated: apps/src/commonMain/kotlin/com/lightningkite/lskiteuistarter/sdk/Api.kt
+  ✓ Updated: apps/src/commonMain/kotlin/com/lightningkite/lskiteuistarter/sdk/CachedApi.kt
+  ✓ Updated: apps/src/commonMain/kotlin/com/lightningkite/lskiteuistarter/sdk/UserSession.kt
+  ✓ Updated: apps/src/commonMain/kotlin/com/lightningkite/lskiteuistarter/sdk/currentSession.kt
+  ✓ Updated: apps/src/commonMain/kotlin/com/lightningkite/lskiteuistarter/sdk/apiOptions.kt
+  ✓ Updated: apps/src/commonMain/kotlin/com/lightningkite/lskiteuistarter/sdk/LiveApi.kt
+  ✓ Updated: apps/src/commonMain/kotlin/com/lightningkite/lskiteuistarter/views/LandingScreen.kt
+  ✓ Updated: apps/src/commonMain/kotlin/com/lightningkite/lskiteuistarter/views/LoginScreen.kt
+  ✓ Updated: apps/src/commonMain/kotlin/com/lightningkite/lskiteuistarter/views/HomeScreen.kt
+  ✓ Updated: apps/src/commonMain/kotlin/com/lightningkite/lskiteuistarter/views/checkAppVersion.kt
+  ✓ Updated: apps/src/androidMain/kotlin/com/lightningkite/lskiteuistarter/MainActivity.kt
+  ✓ Updated: apps/src/androidMain/kotlin/com/lightningkite/lskiteuistarter/utils/fcmSetup.android.kt
+  ✓ Updated: apps/src/androidMain/kotlin/com/lightningkite/lskiteuistarter/sdk/apiOptions.android.kt
+  ✓ Updated: apps/src/jsMain/kotlin/com/lightningkite/lskiteuistarter/utils/fcmSetup.js.kt
+  ✓ Updated: apps/src/jsMain/kotlin/com/lightningkite/lskiteuistarter/utils/firebase.kt
+  ✓ Updated: apps/src/jsMain/kotlin/com/lightningkite/lskiteuistarter/utils/firebaseMessaging.kt
+  ✓ Updated: apps/src/jsMain/kotlin/com/lightningkite/lskiteuistarter/Main.kt
+  ✓ Updated: apps/src/jsMain/kotlin/com/lightningkite/lskiteuistarter/sdk/apiOptions.js.kt
+  Updated 55 Kotlin files
+
+Step 3: Updating AndroidManifest.xml...
+  ✓ Updated AndroidManifest.xml
+
+Step 4: Updating Firebase configuration...
+  ✓ Updated google-services.json
+  ⚠ WARNING: You should replace this with a new google-services.json from Firebase Console!
+
+Step 5: Updating UserEndpoints...
+    - Added 1 root user(s): josephivie@gmail.com
+  ✓ Updated UserEndpoints.kt
+
+Step 6: Moving package directories...
+  ✓ Moved: apps/src/commonMain/kotlin/com/lightningkite/lskiteuistarter -> apps/src/commonMain/kotlin/com/heroscript
+  ✓ Cleaned up empty directory: apps/src/commonMain/kotlin/com/lightningkite
+  ✓ Moved: apps/src/androidMain/kotlin/com/lightningkite/lskiteuistarter -> apps/src/androidMain/kotlin/com/heroscript
+  ✓ Cleaned up empty directory: apps/src/androidMain/kotlin/com/lightningkite
+  ✓ Moved: apps/src/iosMain/kotlin/com/lightningkite/lskiteuistarter -> apps/src/iosMain/kotlin/com/heroscript
+  ✓ Cleaned up empty directory: apps/src/iosMain/kotlin/com/lightningkite
+  ✓ Moved: apps/src/jsMain/kotlin/com/lightningkite/lskiteuistarter -> apps/src/jsMain/kotlin/com/heroscript
+  ✓ Cleaned up empty directory: apps/src/jsMain/kotlin/com/lightningkite
+  ✓ Moved: server/src/main/kotlin/com/lightningkite/lskiteuistarter -> server/src/main/kotlin/com/heroscript
+  ✓ Cleaned up empty directory: server/src/main/kotlin/com/lightningkite
+  ✓ Moved: shared/src/commonMain/kotlin/com/lightningkite/lskiteuistarter -> shared/src/commonMain/kotlin/com/heroscript
+  ✓ Cleaned up empty directory: shared/src/commonMain/kotlin/com/lightningkite
+  Moved 6 package directories
+
+Step 7: Running KSP to generate database paths...
+  Executing: ./gradlew :shared:kspKotlinJs
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/9.4.1/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+
+> Configure project :apps
+Unable to initialize metrics, ensure /Users/jivie/.android is writable, details: /Users/jivie/.android/analytics.settings (Operation not permitted)
+WARNING: The option setting 'android.defaults.buildfeatures.buildconfig=true' is deprecated.
+The current default is 'false'.
+It will be removed in version 10.0 of the Android Gradle plugin.
+To keep using this feature, add the following to your module-level build.gradle files:
+    android.buildFeatures.buildConfig = true
+or from Android Studio, click: `Refactor` > `Migrate BuildConfig to Gradle Build Files`.
+w: file:///Users/jivie/Projects/herxoscript/apps/build.gradle.kts:214:11: 'fun <T : Task> create(name: String, type: Class<T>, configuration: Action<in T>): T' is deprecated. Deprecated in Java.
+w: file:///Users/jivie/Projects/herxoscript/apps/build.gradle.kts:224:11: 'fun <T : Task> create(name: String, type: Class<T>, configuration: Action<in T>): T' is deprecated. Deprecated in Java.
+
+> Configure project :server
+w: file:///Users/jivie/Projects/herxoscript/server/build.gradle.kts:67:7: 'fun <T : Task> create(name: String, type: Class<T>, configuration: Action<in T>): T' is deprecated. Deprecated in Java.
+w: file:///Users/jivie/Projects/herxoscript/server/build.gradle.kts:74:7: 'fun <T : Task> create(name: String, type: Class<T>, configuration: Action<in T>): T' is deprecated. Deprecated in Java.
+w: file:///Users/jivie/Projects/herxoscript/server/build.gradle.kts:81:7: 'fun <T : Task> create(name: String, type: Class<T>, configuration: Action<in T>): T' is deprecated. Deprecated in Java.
+w: file:///Users/jivie/Projects/herxoscript/server/build.gradle.kts:83:35: 'var buildDir: File' is deprecated. Deprecated in Java.
+
+> Task :shared:kspKotlinJs
+Caught exception: Could not start the FSEvents stream: /Users/jivie/Projects/herxoscript
+Running...
+Hash comparison: 1595683 vs 1597678
+Running the action!
+Done.
+
+[Incubating] Problems report is available at: file:///Users/jivie/Projects/herxoscript/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.4.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 15s
+1 actionable task: 1 executed
+Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.4.1/userguide/configuration_cache_enabling.html
+  ✓ KSP generation complete
+
+✓ Personalization complete!
+
+============================================================
+IMPORTANT: Manual steps required
+============================================================
+
+1. Firebase Setup:
+   - Create a new Firebase project at https://console.firebase.google.com
+   - Add an Android app with package: com.heroscript
+   - Download new google-services.json and replace apps/google-services.json
+   - Add an iOS app and download GoogleService-Info.plist for apps/src/iosMain/
+
+2. Server Configuration:
+   - Update settings.json with your database, email, and notification settings
+   - Add Firebase service account JSON for server-side notifications
+
+3. Update App Signing (optional):
+   - Update local.properties with your signing configuration
+
+4. Review Changes:
+   - Check all modified files with: git status
+   - Test the build: ./gradlew build
+
+============================================================

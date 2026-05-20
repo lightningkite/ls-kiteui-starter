@@ -347,8 +347,8 @@ fun personalize(
 // Example usage:
 
 personalize(
-    appName = "My Awesome App",
-    packageName = "com.mycompany.myapp",
-    rootUsers = setOf("admin@mycompany.com"),
-    appStoreTesterEmail = "appstoretester@mycompany.com"
+    appName = "HeroScript",
+    packageName = "com.heroscript",
+    rootUsers = setOf("josephivie@gmail.com"),
+    appStoreTesterEmail = "appstoretester@heroscript.com"
 )

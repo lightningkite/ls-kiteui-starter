@@ -1,0 +1,100 @@
+package com.heroscript
+
+import com.lightningkite.lightningserver.auth.*
+import com.lightningkite.lightningserver.cors.CorsInterceptor
+import com.lightningkite.lightningserver.cors.CorsSettings
+import com.lightningkite.lightningserver.definition.Runtime
+import com.lightningkite.lightningserver.definition.builder.ServerBuilder
+import com.lightningkite.lightningserver.files.FileSystemEndpoints
+import com.lightningkite.lightningserver.files.Files
+import com.lightningkite.lightningserver.files.UploadEarlyEndpoint
+import com.lightningkite.lightningserver.http.*
+import com.lightningkite.lightningserver.media.Media
+import com.lightningkite.lightningserver.plainText
+import com.lightningkite.lightningserver.serialization.StandardWithExternalModule
+import com.lightningkite.lightningserver.serialization.registerBasicMediaTypeCoders
+import com.lightningkite.lightningserver.typed.MetaEndpoints
+import com.lightningkite.lightningserver.typed.sdk.module
+import com.lightningkite.lightningserver.websockets.MultiplexWebSocketHandler
+import com.lightningkite.lightningserver.websockets.QueryParamWebSocketHandler
+import com.heroscript.UserAuth.RoleCache.userRole
+import com.heroscript.data.*
+import com.lightningkite.services.cache.Cache
+import com.lightningkite.services.cache.dynamodb.DynamoDbCache
+import com.lightningkite.services.data.MaxLength
+import com.lightningkite.services.database.Database
+import com.lightningkite.services.database.jsonfile.JsonFileDatabase
+import com.lightningkite.services.database.mongodb.MongoDatabase
+import com.lightningkite.services.database.validation.AnnotationValidators
+import com.lightningkite.services.email.EmailService
+import com.lightningkite.services.email.javasmtp.JavaSmtpEmailService
+import com.lightningkite.services.files.PublicFileSystem
+import com.lightningkite.services.files.s3.S3PublicFileSystem
+import com.lightningkite.services.notifications.NotificationService
+import com.lightningkite.services.notifications.fcm.FcmNotificationClient
+
+object Server : ServerBuilder() {
+    override val annotationValidators: Runtime<AnnotationValidators> = Runtime.Cached {
+        AnnotationValidators.StandardWithExternalModule() + AnnotationValidators.Files() + AnnotationValidators.Media()
+    }
+
+    // Settings
+    val cache = setting("cache", Cache.Settings())
+    val database = setting("database", Database.Settings())
+    val email = setting("email", EmailService.Settings())
+    val notifications = setting("notifications", default = NotificationService.Settings("console"))
+    val webUrl = setting("webUrl", "http://localhost:8080")
+    val cors = setting("cors", CorsSettings())
+    val files = setting("files", PublicFileSystem.Settings())
+
+    init {
+        install(CorsInterceptor(cors))
+        registerBasicMediaTypeCoders()
+
+        MongoDatabase
+        JsonFileDatabase
+        FcmNotificationClient
+        JavaSmtpEmailService
+        S3PublicFileSystem
+        DynamoDbCache
+
+        AuthRequirement.isSuperUser = UserAuth.require { it.userRole() >= UserRole.Root }
+    }
+
+    // Endpoints, tasks, and schedules
+
+    val root = path.get bind HttpHandler {
+        HttpResponse.plainText("Welcome to Lightning Server!")
+    }
+    val uploadEarly = path.path("upload-early") module UploadEarlyEndpoint(
+        files = files,
+        database = database,
+        fileScanner = Runtime.Constant(emptyList())
+    )
+    val localFileServer = path.path("files") include FileSystemEndpoints(files)
+
+    val appReleases = path.path("app-releases") module AppReleaseEndpoints
+    val users = path.path("users") module UserEndpoints
+    val authEndpoints = path.path("auth") module UserAuth
+    val fcmTokens = path.path("fcmTokens") module FcmTokenEndpoints
+
+    val clinics = path.path("clinics") module ClinicEndpoints
+    val clinicMemberships = path.path("clinicMemberships") module ClinicMembershipEndpoints
+    val patients = path.path("patients") module PatientEndpoints
+    val pharmacies = path.path("pharmacies") module PharmacyEndpoints
+    val products = path.path("products") module ProductEndpoints
+    val productPharmacyMappings = path.path("productPharmacyMappings") module ProductPharmacyMappingEndpoints
+    val prescriptions = path.path("prescriptions") module PrescriptionEndpoints
+    val prescriptionOrders = path.path("prescriptionOrders") module PrescriptionOrderEndpoints
+    val pharmacyOrders = path.path("pharmacyOrders") module PharmacyOrderEndpoints
+    val shipments = path.path("shipments") module ShipmentEndpoints
+    val clinicInvoices = path.path("clinicInvoices") module ClinicInvoiceEndpoints
+
+    val multiplex = path.path("multiplex") bind MultiplexWebSocketHandler()
+    val base = path bind QueryParamWebSocketHandler()
+    val meta = path.path("meta") module MetaEndpoints(
+        "com.heroscript",
+        database,
+        cache
+    )
+}

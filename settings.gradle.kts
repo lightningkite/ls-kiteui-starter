@@ -1,4 +1,4 @@
-rootProject.name = "lskiteuistarter"
+rootProject.name = "heroscript"
 
 pluginManagement {
     repositories {

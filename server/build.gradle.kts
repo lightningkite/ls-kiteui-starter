@@ -7,12 +7,12 @@ plugins {
 }
 
 
-group = "com.lightningkite.lskiteuistarter"
+group = "com.heroscript"
 version = "1.0-SNAPSHOT"
 
 
 application {
-    mainClass.set("com.lightningkite.lskiteuistarter.MainKt")
+    mainClass.set("com.heroscript.MainKt")
 }
 
 dependencies {
@@ -67,14 +67,14 @@ tasks.getByName<Zip>("distZip"){
 tasks.create("generateSdk", JavaExec::class.java) {
     group = "deploy"
     classpath(sourceSets.main.get().runtimeClasspath)
-    mainClass.set("com.lightningkite.lskiteuistarter.MainKt")
+    mainClass.set("com.heroscript.MainKt")
     args("sdk")
     workingDir(project.rootDir)
 }
 tasks.create("serve", JavaExec::class.java) {
     group = "application"
     classpath(sourceSets.main.get().runtimeClasspath)
-    mainClass.set("com.lightningkite.lskiteuistarter.MainKt")
+    mainClass.set("com.heroscript.MainKt")
     args("serve")
     workingDir(project.rootDir)
 }

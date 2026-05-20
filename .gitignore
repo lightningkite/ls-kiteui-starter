@@ -3,6 +3,7 @@ settings.*.json
 .idea
 .vscode/
 .DS_Store
+.~lock.*
 *.iws
 *.iml
 *.ipr

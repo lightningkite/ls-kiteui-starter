@@ -6,7 +6,7 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
-group = "com.lightningkite.lskiteuistarter"
+group = "com.heroscript"
 version = "1.0-SNAPSHOT"
 
 kotlin {
@@ -49,7 +49,7 @@ dependencies {
 
 
 android {
-    namespace = "com.lightningkite.lskiteuistarter.shared"
+    namespace = "com.heroscript.shared"
     compileSdk = 36
 
     defaultConfig {

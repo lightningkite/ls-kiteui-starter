@@ -38,6 +38,19 @@ fi
 echo "Starting backend server on port $PORT..."
 echo "Using settings: $SETTINGS_FILE"
 
+# Seed first (json-files DB persists between processes). This also outputs the admin token.
+# Seed prints "Admin token already exists" / "Admin token:" to stdout — we capture both.
+SEED_LOG_FILE="testing/.seed.log"
+echo "Running seed step..."
+./gradlew :server:run --args="--settings $SETTINGS_FILE seed" > "$SEED_LOG_FILE" 2>&1 || true
+
+if grep -q "Admin token:" "$SEED_LOG_FILE"; then
+    TOKEN=$(grep "Admin token:" "$SEED_LOG_FILE" | sed "s/.*Admin token: '\\([^']*\\)'.*/\\1/")
+    echo "$TOKEN" > "$TOKEN_FILE"
+    echo "Admin token saved to $TOKEN_FILE"
+    echo "Token: $TOKEN"
+fi
+
 # Start server in background with testing settings
 ./gradlew :server:run --args="--settings $SETTINGS_FILE serve" > "$LOG_FILE" 2>&1 &
 SERVER_PID=$!
@@ -49,16 +62,10 @@ for i in {1..90}; do
     if curl -s "http://localhost:$PORT/meta/health" > /dev/null 2>&1; then
         echo "Backend server started successfully on http://localhost:$PORT"
 
-        # Extract admin token from log
-        sleep 1  # Give it a moment to flush logs
-        if grep -q "Admin token:" "$LOG_FILE"; then
-            TOKEN=$(grep "Admin token:" "$LOG_FILE" | sed "s/.*Admin token: '\\([^']*\\)'.*/\\1/")
-            echo "$TOKEN" > "$TOKEN_FILE"
-            echo "Admin token saved to $TOKEN_FILE"
-            echo "Token: $TOKEN"
-        else
-            echo "WARNING: No admin token found in logs (debug mode may need to be enabled)"
-            echo "See: testing/README.md for instructions"
+        # If token wasn't captured from seed, warn
+        if [[ ! -f "$TOKEN_FILE" ]]; then
+            echo "WARNING: No admin token found (seed may have skipped because data already exists)"
+            echo "Run: rm -rf local/testing-database to force re-seed"
         fi
         exit 0
     fi
