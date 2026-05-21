@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HeroScript — Dispatch confirmed</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="wf-banner">Wireframe · V1 proposed shape — not the currently built app</div>
+  <div class="alt-banner">Alternative model — <strong>Separated Procurement</strong>. The recommended-path mockup is <strong>Combined Basket</strong>. <a href="model-comparison.html">View comparison →</a></div>
+
+  <header class="appbar">
+    <button class="nav-toggle" data-nav-toggle aria-label="Menu">☰</button>
+    <a href="index.html" class="logo">HeroScript</a>
+    <nav>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="patients.html">Patients</a>
+      <a href="orders.html">Orders</a>
+      <a href="refill-queue.html">Refills</a>
+      <a href="procurement-queue.html" class="active">Procurement</a>
+      <a href="catalog.html">Catalog</a>
+    </nav>
+    <div class="appbar-right">
+      <span class="chip">Gameday Knoxville</span>
+      <a href="profile.html" class="chip role">Tara Park · ClinicAdmin</a>
+    </div>
+  </header>
+
+  <main>
+    <div class="page-head">
+      <h1>Procurement Queue</h1>
+      <p class="page-sub">Approved prescriptions awaiting pharmacy selection and dispatch.</p>
+    </div>
+
+    <div class="alert-banner" style="background: var(--c-success-bg); color: var(--c-success); border-color: #c4e4d2;">
+      <strong>✓ Dispatched 5 orders to LifeFile Hallandale.</strong> Bundle total $264.00 · created <a href="order-detail.html">pharmacy-order pho-3a8b</a>. Patient SMS will fire on each <code>Shipment</code> event from the pharmacy webhook.
+    </div>
+
+    <div class="card">
+      <h3>Remaining in queue</h3>
+      <p>2 direct-to-patient orders still awaiting individual dispatch. <a href="procurement-queue.html">Return to Procurement Queue →</a></p>
+      <div class="btn-row" style="margin-top: 12px;">
+        <a href="procurement-queue.html" class="btn primary">Back to queue</a>
+        <a href="order-detail.html" class="btn secondary">View dispatched bundle</a>
+      </div>
+    </div>
+  </main>
+
+  <footer class="audit-footer">
+    <span>All actions on this screen are audit-logged · 6-year retention</span>
+  </footer>
+
+  <script src="nav.js"></script>
+</body>
+</html>

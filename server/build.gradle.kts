@@ -78,6 +78,13 @@ tasks.create("serve", JavaExec::class.java) {
     args("serve")
     workingDir(project.rootDir)
 }
+tasks.create("seed", JavaExec::class.java) {
+    group = "application"
+    classpath(sourceSets.main.get().runtimeClasspath)
+    mainClass.set("com.heroscript.MainKt")
+    args("seed")
+    workingDir(project.rootDir)
+}
 tasks.create("lambda", Copy::class.java) {
     group = "deploy"
     this.destinationDir = project.buildDir.resolve("dist/lambda")

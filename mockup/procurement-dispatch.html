@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HeroScript — Confirm dispatch</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="wf-banner">Wireframe · V1 proposed shape — not the currently built app</div>
+  <div class="alt-banner">Alternative model — <strong>Separated Procurement</strong>. The recommended-path mockup is <strong>Combined Basket</strong>. <a href="model-comparison.html">View comparison →</a></div>
+
+  <header class="appbar">
+    <button class="nav-toggle" data-nav-toggle aria-label="Menu">☰</button>
+    <a href="index.html" class="logo">HeroScript</a>
+    <nav>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="patients.html">Patients</a>
+      <a href="orders.html">Orders</a>
+      <a href="refill-queue.html">Refills</a>
+      <a href="procurement-queue.html" class="active">Procurement</a>
+      <a href="catalog.html">Catalog</a>
+    </nav>
+    <div class="appbar-right">
+      <span class="chip">Gameday Knoxville</span>
+      <a href="profile.html" class="chip role">Tara Park · ClinicAdmin</a>
+    </div>
+  </header>
+
+  <main>
+    <div class="page-head">
+      <div class="crumb"><a href="procurement-queue.html">← Procurement Queue</a></div>
+      <h1>Confirm dispatch</h1>
+      <p class="page-sub">5 approved orders · destination <strong>Gameday Knoxville Clinic, 615 Market Street, Knoxville TN 37902</strong>. Confirming creates one <code>PharmacyOrder</code> bundling these <code>PrescriptionOrder</code>s and triggers the pharmacy adapter.</p>
+    </div>
+
+    <div class="card flush">
+      <div class="card-head">
+        <h3>Selected orders</h3>
+        <small class="muted">4× Testosterone Cyp 200 mg/mL · 1× Anastrozole 1 mg · 1× Semaglutide 2.5 mg/mL</small>
+      </div>
+      <div class="table-wrap responsive" style="border:none; box-shadow:none; border-radius:0; margin:0;">
+        <table>
+          <thead>
+            <tr><th>Patient</th><th>Product</th><th>Form · Strength</th><th>Qty</th><th>Approved</th><th>Prescriber</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td data-label="Patient">Sam Sample</td>
+              <td data-label="Product">Testosterone Cypionate <span class="tag danger">CIII</span></td>
+              <td data-label="Form · Strength">Injectable vial · 200 mg/mL</td>
+              <td data-label="Qty">10 mL</td>
+              <td data-label="Approved">2026-05-19 09:14</td>
+              <td data-label="Prescriber">Dr. Reeves</td>
+            </tr>
+            <tr>
+              <td data-label="Patient">Sam Sample</td>
+              <td data-label="Product">Anastrozole</td>
+              <td data-label="Form · Strength">Tablet · 1 mg</td>
+              <td data-label="Qty">30 tabs</td>
+              <td data-label="Approved">2026-05-19 09:14</td>
+              <td data-label="Prescriber">Dr. Reeves</td>
+            </tr>
+            <tr>
+              <td data-label="Patient">Jordan Jones</td>
+              <td data-label="Product">Semaglutide</td>
+              <td data-label="Form · Strength">Injectable vial · 2.5 mg/mL</td>
+              <td data-label="Qty">5 mL</td>
+              <td data-label="Approved">2026-05-19 09:48</td>
+              <td data-label="Prescriber">Dr. Reeves</td>
+            </tr>
+            <tr>
+              <td data-label="Patient">Alex Adams</td>
+              <td data-label="Product">Testosterone Cypionate <span class="tag danger">CIII</span></td>
+              <td data-label="Form · Strength">Injectable vial · 200 mg/mL</td>
+              <td data-label="Qty">10 mL</td>
+              <td data-label="Approved">2026-05-19 11:02</td>
+              <td data-label="Prescriber">Dr. Allen</td>
+            </tr>
+            <tr>
+              <td data-label="Patient">Mike Kovacs</td>
+              <td data-label="Product">Testosterone Cypionate <span class="tag danger">CIII</span></td>
+              <td data-label="Form · Strength">Injectable vial · 200 mg/mL</td>
+              <td data-label="Qty">10 mL</td>
+              <td data-label="Approved">2026-05-19 12:15</td>
+              <td data-label="Prescriber">Dr. Reeves</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card flush">
+      <div class="card-head">
+        <h3>Eligible pharmacies</h3>
+        <small class="muted">Intersection of <code>ProductPharmacyMapping</code> for all selected products ∩ pharmacies licensed in TN.</small>
+      </div>
+      <div class="table-wrap responsive" style="border:none; box-shadow:none; border-radius:0; margin:0;">
+        <table>
+          <thead>
+            <tr><th></th><th>Pharmacy</th><th class="num">Bundle price</th><th class="num">Shipping</th><th class="num">Lead time</th><th>Notes</th></tr>
+          </thead>
+          <tbody>
+            <tr style="background: var(--c-primary-soft);">
+              <td data-label=""><input type="radio" name="proc-pharm" checked /></td>
+              <td data-label="Pharmacy"><strong>LifeFile Hallandale</strong></td>
+              <td data-label="Bundle price" class="num">$256.00</td>
+              <td data-label="Shipping" class="num">$8.00 <small class="muted">(bulk)</small></td>
+              <td data-label="Lead time" class="num">2 d</td>
+              <td data-label="Notes"><span class="status accepted">Covers all 5</span></td>
+            </tr>
+            <tr>
+              <td data-label=""><input type="radio" name="proc-pharm" /></td>
+              <td data-label="Pharmacy">LifeFile Compounding</td>
+              <td data-label="Bundle price" class="num">$272.00</td>
+              <td data-label="Shipping" class="num">$10.00 <small class="muted">(bulk)</small></td>
+              <td data-label="Lead time" class="num">3 d</td>
+              <td data-label="Notes"><span class="status accepted">Covers all 5</span></td>
+            </tr>
+            <tr style="opacity: 0.5;">
+              <td data-label=""><input type="radio" name="proc-pharm" disabled /></td>
+              <td data-label="Pharmacy">Empower</td>
+              <td data-label="Bundle price" class="num">—</td>
+              <td data-label="Shipping" class="num">—</td>
+              <td data-label="Lead time" class="num">2 d</td>
+              <td data-label="Notes"><span class="status rejected">Doesn't carry Anastrozole 1 mg</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Routing options</h3>
+      <label class="check"><input type="checkbox" /> Split — pick a different pharmacy for some orders <small class="muted">(creates multiple PharmacyOrders)</small></label>
+      <p style="margin-top: 12px;"><small class="muted">By default, all 5 selected orders bundle into one <code>PharmacyOrder</code> dispatched to the chosen pharmacy. The pharmacy ships one box to the clinic; the clinic handles per-patient final-leg distribution.</small></p>
+    </div>
+
+    <div class="basket-footer">
+      <div class="totals">
+        <div class="item">Orders<strong>5</strong></div>
+        <div class="item">Bundle subtotal<strong>$256.00</strong></div>
+        <div class="item">Shipping<strong>$8.00</strong></div>
+        <div class="item">Pharmacy<strong style="font-size: 14px;">LifeFile Hallandale</strong></div>
+        <div class="item">Total<strong>$264.00</strong></div>
+      </div>
+      <div class="btn-row">
+        <a href="procurement-queue.html" class="btn ghost">Cancel</a>
+        <a href="procurement-success.html" class="btn primary lg">Confirm &amp; dispatch →</a>
+      </div>
+    </div>
+
+    <div class="note">
+      <strong>What happens on Confirm:</strong> server creates <code>PharmacyOrder</code> referencing the 5 <code>PrescriptionOrder</code>s, dispatches via the LifeFile adapter, and emits one audit event per included order. Patient SMS notifications fire on each <code>Shipment</code> arriving back via webhook.
+    </div>
+  </main>
+
+  <footer class="audit-footer">
+    <span>All actions on this screen are audit-logged · 6-year retention</span>
+  </footer>
+
+  <script src="nav.js"></script>
+</body>
+</html>

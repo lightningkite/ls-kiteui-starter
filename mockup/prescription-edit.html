@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HeroScript — New Prescription</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="wf-banner">Wireframe · V1 proposed shape — not the currently built app</div>
+  <header class="appbar">
+    <button class="nav-toggle" data-nav-toggle aria-label="Menu">☰</button>
+    <a href="index.html" class="logo">HeroScript</a>
+    <nav>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="patients.html" class="active">Patients</a>
+      <a href="orders.html">Orders</a>
+      <a href="refill-queue.html">Refills</a>
+      <a href="catalog.html">Catalog</a>
+    </nav>
+    <div class="appbar-right">
+      <span class="chip">Gameday Knoxville</span>
+      <a href="profile.html" class="chip role">Dr. Reeves · Prescriber</a>
+    </div>
+  </header>
+
+  <main>
+    <div class="page-head">
+      <div class="crumb"><a href="prescriptions.html">← Sam Sample's prescriptions</a></div>
+      <h1>New Prescription</h1>
+      <p class="page-sub">A <strong>Prescription</strong> is the durable clinical authorization (patient + product + sig + endsAt). It exists independently of any fulfillment — once signed, it can be filled many times via <code>PrescriptionOrder</code>. Signing a new prescription fires ID.me.</p>
+    </div>
+
+    <div class="card">
+      <h3>Patient</h3>
+      <p><strong>Sam Sample</strong> · DOB 1985-03-14 · TN · SMS &amp; Email consented</p>
+      <p><small class="muted">Patient is locked once selected — a Prescription belongs to one patient.</small></p>
+    </div>
+
+    <div class="card">
+      <h3>Clinical authorization</h3>
+
+      <div class="row cols-2">
+        <div class="field">
+          <label>Product</label>
+          <input value="Testosterone Cypionate" />
+          <div class="help"><span class="tag danger">CIII · controlled</span></div>
+        </div>
+        <div class="field">
+          <label>Form</label>
+          <select>
+            <option>Injectable vial · mg/mL · mL</option>
+          </select>
+          <div class="help">FormType enum on <code>Product.forms</code></div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Strength</label>
+        <input value="200 mg/mL" />
+        <div class="help">Stored as <code>Prescription.strength: Double</code> with units carried by the selected Form.</div>
+      </div>
+
+      <div class="field">
+        <label>Sig (freehand instructions)</label>
+        <textarea rows="3">Inject 0.5 mL IM weekly</textarea>
+        <div class="help">
+          <strong>Sig templates</strong> (static catalog — tap to fill):
+          <a href="#">Inject {x} mL IM weekly</a> ·
+          <a href="#">Inject {x} mL IM twice weekly</a> ·
+          <a href="#">Take {n} tab(s) PO daily</a> ·
+          <a href="#">Take {n} tab(s) PO MWF</a> ·
+          <a href="#">Apply thin layer BID to affected area</a>
+        </div>
+      </div>
+
+      <div class="row cols-2">
+        <div class="field">
+          <label>Prescribing user</label>
+          <input value="Dr. Helena Reeves (you)" disabled style="color: var(--c-muted);" />
+          <div class="help">Locked to current user for Prescriber role. MAs see a picker here that routes the draft to the chosen prescriber.</div>
+        </div>
+        <div class="field">
+          <label>Rx ends at (optional)</label>
+          <input placeholder="Leave blank for open-ended" />
+          <div class="help">After this date the Rx is unusable for new orders; existing orders remain.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="alert-banner">
+      <strong>ID.me step-up required.</strong> Signing this prescription writes <code>ClinicianReview</code> and the ID.me event ID. Refills (future <code>PrescriptionOrder</code>s against this Rx) reuse this approval — no re-prompt at order time.
+    </div>
+
+    <div class="basket-footer">
+      <div class="totals">
+        <div class="item">Status<strong style="font-size: 14px; color: var(--c-warning);">Draft — unsigned</strong></div>
+      </div>
+      <div class="btn-row">
+        <a href="prescriptions.html" class="btn ghost">Cancel</a>
+        <a href="#" class="btn secondary">Save draft</a>
+        <a href="idme-modal.html" class="btn primary lg">Sign &amp; verify (ID.me) →</a>
+      </div>
+    </div>
+
+    <div class="note">
+      <strong>After signing:</strong> the page presents two CTAs — "Create an order using this prescription" (jumps to <a href="order-entry.html?refill=1">Order Entry</a> with this Rx pre-added as a line) or "Done — return to patient." The Prescription is durable; no order is required.
+    </div>
+  </main>
+
+  <footer class="audit-footer">
+    <span>All actions on this screen are audit-logged · 6-year retention</span>
+  </footer>
+
+  <script src="nav.js"></script>
+</body>
+</html>

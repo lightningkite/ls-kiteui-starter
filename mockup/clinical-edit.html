@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HeroScript — Patient · Clinical info</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="wf-banner">Wireframe · V1 proposed shape — not the currently built app</div>
+  <header class="appbar">
+    <button class="nav-toggle" data-nav-toggle aria-label="Menu">☰</button>
+    <a href="index.html" class="logo">HeroScript</a>
+    <nav>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="patients.html" class="active">Patients</a>
+      <a href="orders.html">Orders</a>
+      <a href="refill-queue.html">Refills</a>
+      <a href="catalog.html">Catalog</a>
+    </nav>
+    <div class="appbar-right">
+      <span class="chip">Gameday Knoxville</span>
+      <a href="profile.html" class="chip role">Dr. Reeves · Prescriber</a>
+    </div>
+  </header>
+
+  <main>
+    <div class="page-head">
+      <div class="crumb"><a href="patients.html">← Patients</a></div>
+      <h1>Sam Sample</h1>
+      <p class="page-sub">Male · DOB 1985-03-14 · Patient since 2024-09-12</p>
+    </div>
+
+    <div class="tabs">
+      <a href="patient-detail.html">Overview</a>
+      <a href="prescriptions.html">Prescriptions (3)</a>
+      <a href="patient-detail-orders.html">Orders (8)</a>
+      <a href="patient-detail-shipments.html">Shipments (11)</a>
+      <a href="clinical-edit.html" class="active">Clinical info</a>
+    </div>
+
+    <div class="card">
+      <p style="margin-top:0;">Three-state UI per section: <em>not asked at intake</em> (null) / <em>asked, reported none</em> (empty list) / <em>itemized list</em>. Mirrors LifeFile's clinical[] shape — passes through on order submission.</p>
+    </div>
+
+    <div class="card">
+      <h3>Allergies</h3>
+      <p><span class="status accepted">Itemized</span></p>
+      <table>
+        <thead><tr><th>Description</th><th>Code</th><th>Source</th><th>Reaction</th><th></th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Sulfa drugs</td>
+            <td><span class="muted">—</span></td>
+            <td>Patient</td>
+            <td>Rash</td>
+            <td><a href="#" class="btn ghost sm">Edit</a></td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="btn-row" style="margin-top: 8px;">
+        <a href="#" class="btn secondary sm">+ Add allergy</a>
+        <a href="#" class="btn ghost sm">Mark "patient reported none"</a>
+        <a href="#" class="btn ghost sm">Mark "not asked"</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Diseases</h3>
+      <p><span class="status accepted">Itemized</span></p>
+      <table>
+        <thead><tr><th>Description</th><th>Code</th><th>Source</th><th></th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Hypogonadism</td>
+            <td>E29.1 (ICD-10)</td>
+            <td>Doctor</td>
+            <td><a href="#" class="btn ghost sm">Edit</a></td>
+          </tr>
+        </tbody>
+      </table>
+      <a href="#" class="btn secondary sm" style="margin-top: 8px;">+ Add disease</a>
+    </div>
+
+    <div class="card">
+      <h3>Other medications</h3>
+      <p><span class="status pending">Not asked at intake</span></p>
+      <a href="#" class="btn secondary sm">Ask now — convert to empty list</a>
+    </div>
+
+    <div class="card">
+      <a href="patient-detail.html" class="btn primary">Save &amp; back to patient</a>
+      <a href="patient-detail.html" class="btn ghost">Cancel</a>
+    </div>
+  </main>
+
+  <footer class="audit-footer">
+    <span>All actions on this screen are audit-logged · 6-year retention</span>
+  </footer>
+
+  <script src="nav.js"></script>
+</body>
+</html>

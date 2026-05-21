@@ -19,6 +19,7 @@ import com.lightningkite.reactive.core.MutableReactive
 import com.lightningkite.reactive.core.Reactive
 import com.lightningkite.reactive.core.Signal
 import com.lightningkite.reactive.core.remember
+import com.lightningkite.reactive.core.remember
 import com.lightningkite.reactive.core.rememberSuspending
 import com.lightningkite.services.data.EmailAddress
 import com.lightningkite.services.data.toEmailAddress
@@ -43,18 +44,18 @@ class UserDetailPage(
 
     private val editMode = Signal(startInEditMode)
 
-    private val isOps = rememberSuspending {
+    private val isOps = remember {
         (currentSession()?.self?.invoke()?.role ?: UserRole.User) >= UserRole.Admin
     }
 
-    private val me = rememberSuspending { currentSession()?.self?.invoke() }
+    private val me = remember { currentSession()?.self?.invoke() }
 
-    private val canPromoteToAdmin = rememberSuspending {
+    private val canPromoteToAdmin = remember {
         (me()?.role ?: UserRole.User) >= UserRole.Developer
     }
 
-    private val loaded = rememberSuspending {
-        val session = currentSession() ?: return@rememberSuspending null
+    private val loaded = remember {
+        val session = currentSession() ?: return@remember null
         session.users[id].invoke()
     }
 
@@ -379,8 +380,8 @@ class UserDetailPage(
 
     private fun ElementWriter.CanAddTheme.membershipsSection() = card.col {
         h3("Clinic memberships")
-        val memberships = rememberSuspending {
-            val session = currentSession() ?: return@rememberSuspending emptyList()
+        val memberships = remember {
+            val session = currentSession() ?: return@remember emptyList()
             session.clinicMemberships.query(
                 Query(condition<ClinicMembership> { it.user eq id })
             )()

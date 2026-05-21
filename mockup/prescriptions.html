@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HeroScript — Patient · Prescriptions</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="wf-banner">Wireframe · V1 proposed shape — not the currently built app</div>
+  <header class="appbar">
+    <button class="nav-toggle" data-nav-toggle aria-label="Menu">☰</button>
+    <a href="index.html" class="logo">HeroScript</a>
+    <nav>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="patients.html" class="active">Patients</a>
+      <a href="orders.html">Orders</a>
+      <a href="refill-queue.html">Refills</a>
+      <a href="catalog.html">Catalog</a>
+    </nav>
+    <div class="appbar-right">
+      <span class="chip">Gameday Knoxville</span>
+      <a href="profile.html" class="chip role">Dr. Reeves · Prescriber</a>
+    </div>
+  </header>
+
+  <main>
+    <div class="page-head">
+      <div class="crumb"><a href="patients.html">← Patients</a></div>
+      <h1>Sam Sample</h1>
+      <p class="page-sub">Male · DOB 1985-03-14 · Patient since 2024-09-12</p>
+    </div>
+
+    <div class="tabs">
+      <a href="patient-detail.html">Overview</a>
+      <a href="prescriptions.html" class="active">Prescriptions (3)</a>
+      <a href="patient-detail-orders.html">Orders (8)</a>
+      <a href="patient-detail-shipments.html">Shipments (11)</a>
+      <a href="clinical-edit.html">Clinical info</a>
+    </div>
+
+    <div class="card">
+      <p style="margin-top:0;">Durable clinical authorizations for this patient. Each row is a <code>Prescription</code> — orders are filled <em>against</em> these. One Prescription can be filled many times.</p>
+      <div class="btn-row">
+        <a href="prescription-edit.html" class="btn primary">+ Write new Prescription</a>
+      </div>
+    </div>
+
+    <div class="table-wrap responsive">
+      <table>
+        <thead>
+          <tr><th>Product</th><th>Strength</th><th>Sig</th><th>Prescriber</th><th>Started</th><th>Ends</th><th class="num">Orders</th><th></th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td data-label="Product"><a href="prescription-edit.html">Testosterone Cypionate</a> <span class="tag danger">CIII</span></td>
+            <td data-label="Strength">200 mg/mL</td>
+            <td data-label="Sig">Inject 0.5 mL IM weekly</td>
+            <td data-label="Prescriber">Dr. Reeves</td>
+            <td data-label="Started">2025-10-04</td>
+            <td data-label="Ends"><span class="muted">open-ended</span></td>
+            <td data-label="Orders" class="num">6</td>
+            <td data-label=""><a href="order-entry.html?refill=1" class="btn secondary sm">Create order →</a></td>
+          </tr>
+          <tr>
+            <td data-label="Product"><a href="prescription-edit.html">Anastrozole</a></td>
+            <td data-label="Strength">1 mg</td>
+            <td data-label="Sig">Take 0.5 tab MWF</td>
+            <td data-label="Prescriber">Dr. Reeves</td>
+            <td data-label="Started">2025-10-04</td>
+            <td data-label="Ends"><span class="muted">open-ended</span></td>
+            <td data-label="Orders" class="num">2</td>
+            <td data-label=""><a href="order-entry.html?refill=1" class="btn secondary sm">Create order →</a></td>
+          </tr>
+          <tr>
+            <td data-label="Product"><a href="prescription-edit.html">Semaglutide</a></td>
+            <td data-label="Strength">2.5 mg/mL</td>
+            <td data-label="Sig">Titrate per chart</td>
+            <td data-label="Prescriber">Dr. Reeves</td>
+            <td data-label="Started">2026-01-15</td>
+            <td data-label="Ends">2027-01-15</td>
+            <td data-label="Orders" class="num">3</td>
+            <td data-label=""><a href="order-entry.html?refill=1" class="btn secondary sm">Create order →</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note">
+      <strong>Prescription vs Order:</strong> A Prescription is the clinical authorization (signed once, durable). A <code>PrescriptionOrder</code> is one fulfillment of that authorization at a specific pharmacy with a specific quantity. Refills are new orders against the same Prescription — they reuse the original ID.me approval.
+    </div>
+  </main>
+
+  <footer class="audit-footer">
+    <span>All actions on this screen are audit-logged · 6-year retention</span>
+  </footer>
+
+  <script src="nav.js"></script>
+</body>
+</html>

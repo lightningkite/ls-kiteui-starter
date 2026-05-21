@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HeroScript — Audit Log</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="wf-banner">Wireframe · V1 proposed shape — not the currently built app</div>
+  <header class="appbar">
+    <button class="nav-toggle" data-nav-toggle aria-label="Menu">☰</button>
+    <a href="index.html" class="logo">HeroScript</a>
+    <nav>
+      <a href="order-monitor.html">Monitor</a>
+      <a href="dea-queue.html">DEA Queue</a>
+      <a href="invoices.html">Invoices</a>
+      <a href="audit-log.html" class="active">Audit Log</a>
+    </nav>
+    <div class="appbar-right">
+      <a href="profile.html" class="chip role">Ops Admin</a>
+    </div>
+  </header>
+
+  <main>
+    <div class="page-head">
+      <h1>Audit Log</h1>
+      <p class="page-sub">Append-only event store. All PHI-touching reads and all state-changing writes. Ops-only, read-only. 6-year retention (HIPAA § 164.530(j)).</p>
+    </div>
+
+    <div class="card">
+      <div class="row">
+        <div class="field"><label>Actor</label><input placeholder="user or email…" /></div>
+        <div class="field"><label>Action</label>
+          <select><option>Any</option><option>read</option><option>create</option><option>update</option><option>delete</option><option>submit</option><option>cancel</option></select>
+        </div>
+        <div class="field"><label>Target entity</label><input placeholder="e.g. ord-7c4e, patient-…" /></div>
+        <div class="field"><label>Date range</label><input value="Last 24h" /></div>
+      </div>
+    </div>
+
+    <div class="table-wrap responsive">
+      <table>
+        <thead>
+          <tr><th>Timestamp</th><th>Actor</th><th>Role</th><th>Clinic</th><th>Action</th><th>Target</th><th>Payload hash</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td data-label="Timestamp">2026-05-19 14:01:33Z</td>
+            <td data-label="Actor">system</td>
+            <td data-label="Role">—</td>
+            <td data-label="Clinic">Knoxville</td>
+            <td data-label="Action">notify.sms.sent</td>
+            <td data-label="Target">ship-8821</td>
+            <td data-label="Payload hash"><code>sha256:8c4f…</code></td>
+          </tr>
+          <tr>
+            <td data-label="Timestamp">2026-05-19 09:21:02Z</td>
+            <td data-label="Actor">lifefile-adapter</td>
+            <td data-label="Role">—</td>
+            <td data-label="Clinic">Knoxville</td>
+            <td data-label="Action">order.accepted</td>
+            <td data-label="Target">ord-7c4e</td>
+            <td data-label="Payload hash"><code>sha256:6a82…</code></td>
+          </tr>
+          <tr>
+            <td data-label="Timestamp">2026-05-19 09:14:11Z</td>
+            <td data-label="Actor">reeves@gameday.example</td>
+            <td data-label="Role">Prescriber</td>
+            <td data-label="Clinic">Knoxville</td>
+            <td data-label="Action">order.submit</td>
+            <td data-label="Target">ord-7c4e</td>
+            <td data-label="Payload hash"><code>sha256:1f30…</code></td>
+          </tr>
+          <tr>
+            <td data-label="Timestamp">2026-05-19 09:13:58Z</td>
+            <td data-label="Actor">reeves@gameday.example</td>
+            <td data-label="Role">Prescriber</td>
+            <td data-label="Clinic">Knoxville</td>
+            <td data-label="Action">idme.verified</td>
+            <td data-label="Target">rx-anastrozole-line2</td>
+            <td data-label="Payload hash"><code>sha256:9b21…</code></td>
+          </tr>
+          <tr>
+            <td data-label="Timestamp">2026-05-19 09:13:42Z</td>
+            <td data-label="Actor">reeves@gameday.example</td>
+            <td data-label="Role">Prescriber</td>
+            <td data-label="Clinic">Knoxville</td>
+            <td data-label="Action">idme.verified</td>
+            <td data-label="Target">rx-testc-line1</td>
+            <td data-label="Payload hash"><code>sha256:7c4e…</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note">
+      Audit mechanism lives outside the canonical models per build direction. The UI assumes a queryable view (this screen) and target-id filter for deep links from detail screens.
+    </div>
+  </main>
+
+  <script src="nav.js"></script>
+</body>
+</html>

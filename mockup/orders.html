@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HeroScript — Orders</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="wf-banner">Wireframe · V1 proposed shape — not the currently built app</div>
+  <header class="appbar">
+    <button class="nav-toggle" data-nav-toggle aria-label="Menu">☰</button>
+    <a href="index.html" class="logo">HeroScript</a>
+    <nav>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="patients.html">Patients</a>
+      <a href="orders.html" class="active">Orders</a>
+      <a href="refill-queue.html">Refills</a>
+      <a href="catalog.html">Catalog</a>
+    </nav>
+    <div class="appbar-right">
+      <span class="chip">Gameday Knoxville</span>
+      <a href="profile.html" class="chip role">Dr. Reeves · Prescriber</a>
+    </div>
+  </header>
+
+  <main>
+    <div class="page-head">
+      <h1>Orders</h1>
+      <p class="page-sub">Rows are <strong>baskets</strong> — one order = N Rx lines. <small class="muted">("In Process" and "Stuck" are derived display states, not stored fields.)</small></p>
+    </div>
+
+    <div class="card">
+      <div class="row">
+        <div class="field"><label>Status</label>
+          <select><option>Any</option><option>Draft</option><option>Submitted</option><option>Accepted</option><option>In Process</option><option>Shipped</option><option>Rejected</option><option>Cancelled</option></select>
+        </div>
+        <div class="field"><label>Date range</label><input value="Last 30 days" /></div>
+        <div class="field"><label>Patient</label><input placeholder="search…" /></div>
+      </div>
+      <div class="btn-row" style="margin-top: 8px;">
+        <a href="order-entry.html" class="btn primary">+ New order</a>
+        <a href="#" class="btn tertiary">More filters ▾</a>
+      </div>
+    </div>
+
+    <div class="table-wrap responsive">
+      <table>
+        <thead>
+          <tr>
+            <th>Order</th><th>Patient</th><th>Lines</th><th>Pharmacy</th><th>Submitted</th><th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td data-label="Order"><a href="order-detail.html">ord-7c4e</a></td>
+            <td data-label="Patient">Sam Sample</td>
+            <td data-label="Lines">2 Rx · TestC + Anastrozole</td>
+            <td data-label="Pharmacy">LifeFile Hallandale</td>
+            <td data-label="Submitted">2026-05-19</td>
+            <td data-label="Status"><span class="status inprocess">In Process · 1 of 2 shipped</span></td>
+          </tr>
+          <tr>
+            <td data-label="Order"><a href="order-detail.html">ord-9b21</a></td>
+            <td data-label="Patient">Jordan Jones</td>
+            <td data-label="Lines">1 Rx · Semaglutide</td>
+            <td data-label="Pharmacy">Empower</td>
+            <td data-label="Submitted">2026-05-17</td>
+            <td data-label="Status"><span class="status shipped">Shipped</span></td>
+          </tr>
+          <tr>
+            <td data-label="Order"><a href="order-detail.html">ord-5af3</a></td>
+            <td data-label="Patient">Sam Sample</td>
+            <td data-label="Lines">1 Rx · Testosterone Cyp</td>
+            <td data-label="Pharmacy">LifeFile Hallandale</td>
+            <td data-label="Submitted">2026-04-22</td>
+            <td data-label="Status"><span class="status shipped">Shipped</span></td>
+          </tr>
+          <tr>
+            <td data-label="Order"><a href="order-detail.html">ord-2cc8</a></td>
+            <td data-label="Patient">Alex Adams</td>
+            <td data-label="Lines">1 Rx · Testosterone Cyp</td>
+            <td data-label="Pharmacy">LifeFile Compounding</td>
+            <td data-label="Submitted">2026-05-15</td>
+            <td data-label="Status"><span class="status stuck">Stuck · no accept &gt;4h</span></td>
+          </tr>
+          <tr>
+            <td data-label="Order"><a href="order-detail.html">ord-1fea</a></td>
+            <td data-label="Patient">Jordan Jones</td>
+            <td data-label="Lines">1 Rx · Testosterone Cyp</td>
+            <td data-label="Pharmacy">Empower</td>
+            <td data-label="Submitted"><span class="muted">—</span></td>
+            <td data-label="Status"><span class="status draft">Draft</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note">
+      <strong>Sublists everywhere:</strong> Orders-for-patient, Orders-by-prescriber, Orders-by-pharmacy — all this list with one filter locked.
+    </div>
+  </main>
+
+  <footer class="audit-footer">
+    <span>All actions on this screen are audit-logged · 6-year retention</span>
+  </footer>
+
+  <script src="nav.js"></script>
+</body>
+</html>

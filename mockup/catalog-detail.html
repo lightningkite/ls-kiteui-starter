@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HeroScript — Catalog detail</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="wf-banner">Wireframe · V1 proposed shape — not the currently built app</div>
+  <header class="appbar">
+    <button class="nav-toggle" data-nav-toggle aria-label="Menu">☰</button>
+    <a href="index.html" class="logo">HeroScript</a>
+    <nav>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="patients.html">Patients</a>
+      <a href="orders.html">Orders</a>
+      <a href="refill-queue.html">Refills</a>
+      <a href="catalog.html" class="active">Catalog</a>
+    </nav>
+    <div class="appbar-right">
+      <span class="chip">Gameday Knoxville</span>
+      <a href="profile.html" class="chip role">Dr. Reeves · Prescriber</a>
+    </div>
+  </header>
+
+  <main>
+    <div class="page-head">
+      <div class="crumb"><a href="catalog.html">← Catalog</a></div>
+      <h1>Testosterone Cypionate <span class="tag danger" style="margin-left: 8px; font-size: 12px; vertical-align: middle;">CIII</span></h1>
+      <p class="page-sub">Synthetic testosterone ester for intramuscular injection. Stocked by 3 pharmacies across the network.</p>
+    </div>
+
+    <div class="card">
+      <h3>Forms</h3>
+      <p>One form per FormType per Product (enforced in service layer). Adding a second Injectable Vial form is blocked.</p>
+      <table>
+        <thead><tr><th>Form type</th><th>Strength unit</th><th>Quantity unit</th></tr></thead>
+        <tbody>
+          <tr><td>Injectable vial</td><td>mg/mL</td><td>mL</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card flush">
+      <div class="card-head">
+        <h3>Pharmacy mappings · Injectable vial</h3>
+        <small class="muted">3 active mappings</small>
+      </div>
+      <div class="table-wrap responsive" style="border:none; box-shadow:none; border-radius:0; margin:0;">
+        <table>
+          <thead>
+            <tr><th>Pharmacy</th><th>Strength</th><th>Quantity</th><th>Pharmacy SKU</th><th class="num">Price</th><th class="num">Shipping</th><th class="num">Lead time</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td data-label="Pharmacy">LifeFile Hallandale</td>
+              <td data-label="Strength">200 mg/mL</td>
+              <td data-label="Quantity">10 mL</td>
+              <td data-label="SKU">LF-TC-200-10</td>
+              <td data-label="Price" class="num">$48.00</td>
+              <td data-label="Shipping" class="num">$8.00</td>
+              <td data-label="Lead time" class="num">2 d</td>
+            </tr>
+            <tr>
+              <td data-label="Pharmacy">LifeFile Compounding</td>
+              <td data-label="Strength">200 mg/mL</td>
+              <td data-label="Quantity">10 mL</td>
+              <td data-label="SKU">LFC-TCYP-10</td>
+              <td data-label="Price" class="num">$52.00</td>
+              <td data-label="Shipping" class="num">$10.00</td>
+              <td data-label="Lead time" class="num">3 d</td>
+            </tr>
+            <tr>
+              <td data-label="Pharmacy">LifeFile Compounding</td>
+              <td data-label="Strength">200 mg/mL</td>
+              <td data-label="Quantity"><span class="tag">Customizable</span></td>
+              <td data-label="SKU">LFC-TCYP-CUSTOM</td>
+              <td data-label="Price" class="num">$58.00</td>
+              <td data-label="Shipping" class="num">$10.00</td>
+              <td data-label="Lead time" class="num">3 d</td>
+            </tr>
+            <tr>
+              <td data-label="Pharmacy">Empower</td>
+              <td data-label="Strength">100 mg/mL</td>
+              <td data-label="Quantity">10 mL</td>
+              <td data-label="SKU">EMP-TC-100</td>
+              <td data-label="Price" class="num">$42.00</td>
+              <td data-label="Shipping" class="num">$6.00</td>
+              <td data-label="Lead time" class="num">2 d</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="note">
+      <strong>Mapping semantics:</strong> Each row is a <code>ProductPharmacyMapping</code> keyed by <code>(pharmacy, product, form)</code>. <code>strength == null</code> or <code>quantity == null</code> means the prescriber fills that axis in at order time. Pricing is per (strength, quantity) combination.
+    </div>
+  </main>
+
+  <footer class="audit-footer">
+    <span>All actions on this screen are audit-logged · 6-year retention</span>
+  </footer>
+
+  <script src="nav.js"></script>
+</body>
+</html>

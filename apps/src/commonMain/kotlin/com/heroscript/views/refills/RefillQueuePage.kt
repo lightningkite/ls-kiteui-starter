@@ -21,7 +21,7 @@ import com.lightningkite.reactive.core.MutableReactive
 import com.lightningkite.reactive.core.Reactive
 import com.lightningkite.reactive.core.Signal
 import com.lightningkite.reactive.core.remember
-import com.lightningkite.reactive.core.rememberSuspending
+import com.lightningkite.reactive.core.remember
 import com.lightningkite.services.database.*
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.seconds
@@ -86,9 +86,9 @@ class RefillQueuePage : PageWithParent {
      * Acceptable at V1 pilot scale; flag for batching once the queue exceeds a few hundred rows.
      * TODO: batch via `prescription inside ids` and group client-side once data volume warrants.
      */
-    private val rows = rememberSuspending {
-        val session = currentSession() ?: return@rememberSuspending emptyList()
-        val prescriptions = openPrescriptions()?.invoke() ?: return@rememberSuspending emptyList()
+    private val rows = remember {
+        val session = currentSession() ?: return@remember emptyList()
+        val prescriptions = openPrescriptions()?.invoke() ?: return@remember emptyList()
         val nowInstant = Clock.System.now()
         val horizon = nowInstant + (dueInDays() * 86_400).seconds
 
@@ -171,13 +171,13 @@ class RefillQueuePage : PageWithParent {
     }
 
     private fun ElementWriter.CanAddTheme.refillRowCard(entry: RefillRow) = card.col {
-        val patient = rememberSuspending {
+        val patient = remember {
             currentSession()?.patients?.get(entry.prescription.patient)?.invoke()
         }
-        val product = rememberSuspending {
+        val product = remember {
             currentSession()?.products?.get(entry.prescription.product)?.invoke()
         }
-        val pharmacy = rememberSuspending {
+        val pharmacy = remember {
             currentSession()?.pharmacies?.get(entry.lastOrder.pharmacy)?.invoke()
         }
 
@@ -241,10 +241,10 @@ private data class RefillRow(
 private fun ElementWriter.CanAddTheme.prescriberPicker(value: MutableReactive<User?>) = col {
     val search = Signal("")
 
-    val results = rememberSuspending {
-        val session = currentSession() ?: return@rememberSuspending emptyList<User>()
-        val clinicId = activeClinic() ?: return@rememberSuspending emptyList<User>()
-        val q = search().trim().takeIf { it.isNotBlank() } ?: return@rememberSuspending emptyList<User>()
+    val results = remember {
+        val session = currentSession() ?: return@remember emptyList<User>()
+        val clinicId = activeClinic() ?: return@remember emptyList<User>()
+        val q = search().trim().takeIf { it.isNotBlank() } ?: return@remember emptyList<User>()
         val memberships = session.clinicMemberships.query(
             Query(condition<ClinicMembership> {
                 (it.clinic eq clinicId) and (it.role eq ClinicRole.Prescriber) and (it.acceptedAt neq null) and (it.deactivatedAt eq null)

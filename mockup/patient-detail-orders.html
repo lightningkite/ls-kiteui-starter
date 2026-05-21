@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HeroScript — Patient · Orders</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="wf-banner">Wireframe · V1 proposed shape — not the currently built app</div>
+  <header class="appbar">
+    <button class="nav-toggle" data-nav-toggle aria-label="Menu">☰</button>
+    <a href="index.html" class="logo">HeroScript</a>
+    <nav>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="patients.html" class="active">Patients</a>
+      <a href="orders.html">Orders</a>
+      <a href="refill-queue.html">Refills</a>
+      <a href="catalog.html">Catalog</a>
+    </nav>
+    <div class="appbar-right">
+      <span class="chip">Gameday Knoxville</span>
+      <a href="profile.html" class="chip role">Dr. Reeves · Prescriber</a>
+    </div>
+  </header>
+
+  <main>
+    <div class="page-head">
+      <div class="crumb"><a href="patients.html">← Patients</a></div>
+      <h1>Sam Sample</h1>
+      <p class="page-sub">Male · DOB 1985-03-14 · Patient since 2024-09-12</p>
+    </div>
+
+    <div class="tabs">
+      <a href="patient-detail.html">Overview</a>
+      <a href="prescriptions.html">Prescriptions (3)</a>
+      <a href="patient-detail-orders.html" class="active">Orders (8)</a>
+      <a href="patient-detail-shipments.html">Shipments (11)</a>
+      <a href="clinical-edit.html">Clinical info</a>
+    </div>
+
+    <div class="card">
+      <p style="margin-top:0;">All orders ever placed for this patient. <small class="muted">Same component as the global <a href="orders.html">Orders list</a> with patient filter locked to Sam Sample.</small></p>
+      <div class="btn-row">
+        <a href="order-entry.html?patient=sam" class="btn primary">+ Start order for this patient</a>
+      </div>
+    </div>
+
+    <div class="table-wrap responsive">
+      <table>
+        <thead>
+          <tr><th>Order</th><th>Lines</th><th>Pharmacy</th><th>Submitted</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td data-label="Order"><a href="order-detail.html">ord-7c4e</a></td>
+            <td data-label="Lines">2 Rx · TestC + Anastrozole</td>
+            <td data-label="Pharmacy">LifeFile Hallandale</td>
+            <td data-label="Submitted">2026-05-19</td>
+            <td data-label="Status"><span class="status inprocess">In Process · 1 of 2 shipped</span></td>
+          </tr>
+          <tr>
+            <td data-label="Order"><a href="order-detail.html">ord-5af3</a></td>
+            <td data-label="Lines">1 Rx · Testosterone Cyp</td>
+            <td data-label="Pharmacy">LifeFile Hallandale</td>
+            <td data-label="Submitted">2026-04-22</td>
+            <td data-label="Status"><span class="status shipped">Shipped</span></td>
+          </tr>
+          <tr>
+            <td data-label="Order"><a href="order-detail.html">ord-3b91</a></td>
+            <td data-label="Lines">1 Rx · Testosterone Cyp</td>
+            <td data-label="Pharmacy">LifeFile Hallandale</td>
+            <td data-label="Submitted">2026-03-25</td>
+            <td data-label="Status"><span class="status shipped">Shipped</span></td>
+          </tr>
+          <tr>
+            <td data-label="Order"><a href="order-detail.html">ord-2f80</a></td>
+            <td data-label="Lines">2 Rx · TestC + Anastrozole</td>
+            <td data-label="Pharmacy">LifeFile Hallandale</td>
+            <td data-label="Submitted">2026-02-26</td>
+            <td data-label="Status"><span class="status shipped">Shipped</span></td>
+          </tr>
+          <tr>
+            <td data-label="Order"><a href="order-detail.html">ord-1cd4</a></td>
+            <td data-label="Lines">1 Rx · Semaglutide</td>
+            <td data-label="Pharmacy">Empower</td>
+            <td data-label="Submitted">2026-01-29</td>
+            <td data-label="Status"><span class="status shipped">Shipped</span></td>
+          </tr>
+          <tr>
+            <td data-label="Order"><a href="order-detail.html">ord-0a18</a></td>
+            <td data-label="Lines">1 Rx · Testosterone Cyp</td>
+            <td data-label="Pharmacy">LifeFile Hallandale</td>
+            <td data-label="Submitted">2026-01-01</td>
+            <td data-label="Status"><span class="status shipped">Shipped</span></td>
+          </tr>
+          <tr>
+            <td data-label="Order"><a href="order-detail.html">ord-9e72</a></td>
+            <td data-label="Lines">1 Rx · Testosterone Cyp</td>
+            <td data-label="Pharmacy">LifeFile Hallandale</td>
+            <td data-label="Submitted">2025-12-04</td>
+            <td data-label="Status"><span class="status shipped">Shipped</span></td>
+          </tr>
+          <tr>
+            <td data-label="Order"><a href="order-detail.html">ord-8c1a</a></td>
+            <td data-label="Lines">1 Rx · Testosterone Cyp</td>
+            <td data-label="Pharmacy">LifeFile Hallandale</td>
+            <td data-label="Submitted">2025-11-07</td>
+            <td data-label="Status"><span class="status shipped">Shipped</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <footer class="audit-footer">
+    <span>All actions on this screen are audit-logged · 6-year retention</span>
+  </footer>
+
+  <script src="nav.js"></script>
+</body>
+</html>

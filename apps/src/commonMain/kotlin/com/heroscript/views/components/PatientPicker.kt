@@ -10,7 +10,7 @@ import com.lightningkite.reactive.context.invoke
 import com.lightningkite.reactive.context.reactive
 import com.lightningkite.reactive.core.MutableReactive
 import com.lightningkite.reactive.core.Signal
-import com.lightningkite.reactive.core.rememberSuspending
+import com.lightningkite.reactive.core.remember
 import com.lightningkite.services.database.*
 
 /**
@@ -20,10 +20,10 @@ import com.lightningkite.services.database.*
 fun ElementWriter.CanAddTheme.patientPicker(value: MutableReactive<Patient?>) = col {
     val search = Signal("")
 
-    val results = rememberSuspending {
-        val session = currentSession() ?: return@rememberSuspending emptyList()
-        val clinicId = activeClinic() ?: return@rememberSuspending emptyList()
-        val q = search().trim().takeIf { it.isNotBlank() } ?: return@rememberSuspending emptyList()
+    val results = remember {
+        val session = currentSession() ?: return@remember emptyList()
+        val clinicId = activeClinic() ?: return@remember emptyList()
+        val q = search().trim().takeIf { it.isNotBlank() } ?: return@remember emptyList()
         val nameSearch =
             condition<Patient> { it.firstName.contains(q, ignoreCase = true) } or
                 condition<Patient> { it.lastName.contains(q, ignoreCase = true) }

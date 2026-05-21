@@ -17,7 +17,7 @@ import com.lightningkite.reactive.core.Constant
 import com.lightningkite.reactive.core.Reactive
 import com.lightningkite.reactive.core.Signal
 import com.lightningkite.reactive.core.remember
-import com.lightningkite.reactive.core.rememberSuspending
+import com.lightningkite.reactive.core.remember
 import com.lightningkite.services.database.*
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
@@ -62,7 +62,7 @@ class DeaQueuePage : PageWithParent {
     @QueryParameter
     val expirationWindow = Signal(ExpirationWindow.Sixty)
 
-    private val isOps = rememberSuspending {
+    private val isOps = remember {
         (currentSession()?.self?.invoke()?.role ?: UserRole.User) >= UserRole.Admin
     }
 
@@ -178,8 +178,8 @@ class DeaQueuePage : PageWithParent {
         }
         subtext(user.email.raw)
 
-        val clinicNames = rememberSuspending {
-            val s = currentSession() ?: return@rememberSuspending ""
+        val clinicNames = remember {
+            val s = currentSession() ?: return@remember ""
             val memberships = s.clinicMemberships.query(
                 Query(condition<ClinicMembership> {
                     (it.user eq user._id) and (it.acceptedAt neq null) and (it.deactivatedAt eq null)

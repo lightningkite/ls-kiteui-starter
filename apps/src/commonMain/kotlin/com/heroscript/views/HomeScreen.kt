@@ -22,7 +22,7 @@ import com.lightningkite.reactive.context.invoke
 import com.lightningkite.reactive.context.reactive
 import com.lightningkite.reactive.core.Constant
 import com.lightningkite.reactive.core.Reactive
-import com.lightningkite.reactive.core.rememberSuspending
+import com.lightningkite.reactive.core.remember
 import com.lightningkite.services.database.*
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.seconds
@@ -31,41 +31,41 @@ import kotlin.time.Duration.Companion.seconds
 class DashboardPage : Page {
     override val title: Reactive<String> get() = Constant("Dashboard")
 
-    private val me = rememberSuspending { currentSession()?.self?.invoke() }
+    private val me = remember { currentSession()?.self?.invoke() }
 
-    private val memberships = rememberSuspending {
+    private val memberships = remember {
         currentSession()?.activeMemberships?.invoke() ?: emptyList()
     }
 
-    private val activeClinicRecord = rememberSuspending {
-        val session = currentSession() ?: return@rememberSuspending null
-        val cid = activeClinic() ?: return@rememberSuspending null
+    private val activeClinicRecord = remember {
+        val session = currentSession() ?: return@remember null
+        val cid = activeClinic() ?: return@remember null
         session.clinics[cid].invoke()
     }
 
-    private val activeMembership = rememberSuspending {
-        val cid = activeClinic() ?: return@rememberSuspending null
+    private val activeMembership = remember {
+        val cid = activeClinic() ?: return@remember null
         memberships().firstOrNull { it.clinic == cid }
     }
 
-    private val isPrescriberHere = rememberSuspending {
-        val u = me() ?: return@rememberSuspending false
-        val m = activeMembership() ?: return@rememberSuspending false
+    private val isPrescriberHere = remember {
+        val u = me() ?: return@remember false
+        val m = activeMembership() ?: return@remember false
         u.prescriber != null && m.role == ClinicRole.Prescriber
     }
 
-    private val isMedicalAssistantHere = rememberSuspending {
+    private val isMedicalAssistantHere = remember {
         activeMembership()?.role == ClinicRole.MedicalAssistant
     }
 
-    private val isClinicAdminHere = rememberSuspending {
+    private val isClinicAdminHere = remember {
         activeMembership()?.role == ClinicRole.ClinicAdmin
     }
 
-    private val recentTouched = rememberSuspending {
-        val session = currentSession() ?: return@rememberSuspending emptyList()
-        val cid = activeClinic() ?: return@rememberSuspending emptyList()
-        val uid = me()?._id ?: return@rememberSuspending emptyList()
+    private val recentTouched = remember {
+        val session = currentSession() ?: return@remember emptyList()
+        val cid = activeClinic() ?: return@remember emptyList()
+        val uid = me()?._id ?: return@remember emptyList()
         session.prescriptionOrders.query(
             Query(
                 condition = Condition.And(
@@ -81,11 +81,11 @@ class DashboardPage : Page {
         )()
     }
 
-    private val prescriberDrafts = rememberSuspending {
-        if (!isPrescriberHere()) return@rememberSuspending emptyList()
-        val session = currentSession() ?: return@rememberSuspending emptyList()
-        val cid = activeClinic() ?: return@rememberSuspending emptyList()
-        val uid = me()?._id ?: return@rememberSuspending emptyList()
+    private val prescriberDrafts = remember {
+        if (!isPrescriberHere()) return@remember emptyList()
+        val session = currentSession() ?: return@remember emptyList()
+        val cid = activeClinic() ?: return@remember emptyList()
+        val uid = me()?._id ?: return@remember emptyList()
         session.prescriptionOrders.query(
             Query(
                 condition = condition<PrescriptionOrder> {
@@ -100,11 +100,11 @@ class DashboardPage : Page {
         )()
     }
 
-    private val maDrafts = rememberSuspending {
-        if (!isMedicalAssistantHere()) return@rememberSuspending emptyList()
-        val session = currentSession() ?: return@rememberSuspending emptyList()
-        val cid = activeClinic() ?: return@rememberSuspending emptyList()
-        val uid = me()?._id ?: return@rememberSuspending emptyList()
+    private val maDrafts = remember {
+        if (!isMedicalAssistantHere()) return@remember emptyList()
+        val session = currentSession() ?: return@remember emptyList()
+        val cid = activeClinic() ?: return@remember emptyList()
+        val uid = me()?._id ?: return@remember emptyList()
         session.prescriptionOrders.query(
             Query(
                 condition = condition<PrescriptionOrder> {
@@ -119,10 +119,10 @@ class DashboardPage : Page {
         )()
     }
 
-    private val pendingInvites = rememberSuspending {
-        if (!isClinicAdminHere()) return@rememberSuspending emptyList()
-        val session = currentSession() ?: return@rememberSuspending emptyList()
-        val cid = activeClinic() ?: return@rememberSuspending emptyList()
+    private val pendingInvites = remember {
+        if (!isClinicAdminHere()) return@remember emptyList()
+        val session = currentSession() ?: return@remember emptyList()
+        val cid = activeClinic() ?: return@remember emptyList()
         session.clinicMemberships.query(
             Query(condition<ClinicMembership> {
                 (it.clinic eq cid) and (it.acceptedAt eq null) and (it.deactivatedAt eq null)
@@ -130,10 +130,10 @@ class DashboardPage : Page {
         )()
     }
 
-    private val prescribersInClinic = rememberSuspending {
-        if (!isClinicAdminHere()) return@rememberSuspending emptyList<User>()
-        val session = currentSession() ?: return@rememberSuspending emptyList()
-        val cid = activeClinic() ?: return@rememberSuspending emptyList()
+    private val prescribersInClinic = remember {
+        if (!isClinicAdminHere()) return@remember emptyList<User>()
+        val session = currentSession() ?: return@remember emptyList()
+        val cid = activeClinic() ?: return@remember emptyList()
         session.clinicMemberships.query(
             Query(condition<ClinicMembership> {
                 (it.clinic eq cid) and (it.role eq ClinicRole.Prescriber) and
@@ -145,10 +145,10 @@ class DashboardPage : Page {
     }
 
     /** Open Prescriptions in this clinic — used by the MA refill summary. */
-    private val openPrescriptions = rememberSuspending {
-        if (!isMedicalAssistantHere()) return@rememberSuspending emptyList()
-        val session = currentSession() ?: return@rememberSuspending emptyList()
-        val cid = activeClinic() ?: return@rememberSuspending emptyList()
+    private val openPrescriptions = remember {
+        if (!isMedicalAssistantHere()) return@remember emptyList()
+        val session = currentSession() ?: return@remember emptyList()
+        val cid = activeClinic() ?: return@remember emptyList()
         val nowInstant = Clock.System.now()
         session.prescriptions.query(
             Query(
@@ -163,10 +163,10 @@ class DashboardPage : Page {
         )()
     }
 
-    private val refillSummary = rememberSuspending {
-        val session = currentSession() ?: return@rememberSuspending RefillSummary(0, 0)
+    private val refillSummary = remember {
+        val session = currentSession() ?: return@remember RefillSummary(0, 0)
         val prescriptions = openPrescriptions()
-        if (prescriptions.isEmpty()) return@rememberSuspending RefillSummary(0, 0)
+        if (prescriptions.isEmpty()) return@remember RefillSummary(0, 0)
         val nowInstant = Clock.System.now()
         val horizon = nowInstant + (7L * 86_400L).seconds
         var overdue = 0
@@ -262,10 +262,10 @@ class DashboardPage : Page {
                         col {
                             row {
                                 expanding.h4 {
-                                    val patient = rememberSuspending {
+                                    val patient = remember {
                                         session.patients[order.patient].invoke()
                                     }
-                                    val product = rememberSuspending {
+                                    val product = remember {
                                         session.products[order.product].invoke()
                                     }
                                     ::content {
@@ -275,10 +275,10 @@ class DashboardPage : Page {
                                     }
                                 }
                                 subtext {
-                                    val pharmacyOrder = rememberSuspending {
+                                    val pharmacyOrder = remember {
                                         order.fulfilled?.by?.let { session.pharmacyOrders[it].invoke() }
                                     }
-                                    val shipment = rememberSuspending {
+                                    val shipment = remember {
                                         order.shipment?.let { session.shipments[it].invoke() }
                                     }
                                     ::content {
@@ -326,10 +326,10 @@ class DashboardPage : Page {
                         col {
                             row {
                                 expanding.h4 {
-                                    val patient = rememberSuspending {
+                                    val patient = remember {
                                         session.patients[order.patient].invoke()
                                     }
-                                    val product = rememberSuspending {
+                                    val product = remember {
                                         session.products[order.product].invoke()
                                     }
                                     ::content {
@@ -414,10 +414,10 @@ class DashboardPage : Page {
                         col {
                             row {
                                 expanding.h4 {
-                                    val patient = rememberSuspending {
+                                    val patient = remember {
                                         session.patients[order.patient].invoke()
                                     }
-                                    val product = rememberSuspending {
+                                    val product = remember {
                                         session.products[order.product].invoke()
                                     }
                                     ::content {

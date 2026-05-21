@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HeroScript — Invoices</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="wf-banner">Wireframe · V1 proposed shape — not the currently built app</div>
+  <header class="appbar">
+    <button class="nav-toggle" data-nav-toggle aria-label="Menu">☰</button>
+    <a href="index.html" class="logo">HeroScript</a>
+    <nav>
+      <a href="order-monitor.html">Monitor</a>
+      <a href="dea-queue.html">DEA Queue</a>
+      <a href="invoices.html" class="active">Invoices</a>
+      <a href="audit-log.html">Audit Log</a>
+    </nav>
+    <div class="appbar-right">
+      <a href="profile.html" class="chip role">Ops Admin</a>
+    </div>
+  </header>
+
+  <main>
+    <div class="page-head">
+      <h1>Invoices</h1>
+      <p class="page-sub">Daily settlement (PRD § F13). <strong>Dual-context:</strong> ClinicAdmins see their own clinic; Ops sees the network with clinic filter. Same component, different lock.</p>
+    </div>
+
+    <div class="card">
+      <div class="row">
+        <div class="field"><label>Clinic</label>
+          <select><option>Any (Ops view)</option><option>Gameday Knoxville</option><option>Gameday Nashville</option></select>
+        </div>
+        <div class="field"><label>Status</label>
+          <select><option>Any</option><option>Unpaid</option><option>Paid</option></select>
+        </div>
+        <div class="field"><label>Period</label><input value="Last 90 days" /></div>
+      </div>
+    </div>
+
+    <div class="table-wrap responsive">
+      <table>
+        <thead>
+          <tr><th>Invoice</th><th>Clinic</th><th>Period</th><th class="num">Total</th><th>Stripe ID</th><th>Status</th><th></th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td data-label="Invoice"><a href="#">inv-9c4a</a></td>
+            <td data-label="Clinic">Gameday Knoxville</td>
+            <td data-label="Period">2026-05-12 → 2026-05-19</td>
+            <td data-label="Total" class="num">$1,248.00</td>
+            <td data-label="Stripe ID">pi_3OQz…</td>
+            <td data-label="Status"><span class="status accepted">Paid · 2026-05-20</span></td>
+            <td data-label=""><a href="#" class="btn ghost sm">Receipt</a></td>
+          </tr>
+          <tr>
+            <td data-label="Invoice"><a href="#">inv-7d18</a></td>
+            <td data-label="Clinic">Gameday Knoxville</td>
+            <td data-label="Period">2026-05-19 → 2026-05-20</td>
+            <td data-label="Total" class="num">$78.00</td>
+            <td data-label="Stripe ID">pi_3OR2…</td>
+            <td data-label="Status"><span class="status pending">Unpaid</span></td>
+            <td data-label=""><a href="#" class="btn secondary sm">Mark paid</a></td>
+          </tr>
+          <tr>
+            <td data-label="Invoice"><a href="#">inv-3b88</a></td>
+            <td data-label="Clinic">Gameday Nashville</td>
+            <td data-label="Period">2026-05-19 → 2026-05-20</td>
+            <td data-label="Total" class="num">$432.00</td>
+            <td data-label="Stripe ID">pi_3OR3…</td>
+            <td data-label="Status"><span class="status pending">Unpaid</span></td>
+            <td data-label=""><a href="#" class="btn secondary sm">Mark paid</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note">
+      <strong>Invoice detail</strong> (not separately wireframed) shows line items = the <code>PharmacyOrder</code>s in the billing window, totals, and Stripe link. ClinicAdmin can download receipt; Ops can mark paid or force-regenerate.
+    </div>
+  </main>
+
+  <script src="nav.js"></script>
+</body>
+</html>

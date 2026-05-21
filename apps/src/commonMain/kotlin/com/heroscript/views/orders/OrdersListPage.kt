@@ -19,7 +19,7 @@ import com.lightningkite.reactive.core.Constant
 import com.lightningkite.reactive.core.Reactive
 import com.lightningkite.reactive.core.Signal
 import com.lightningkite.reactive.core.remember
-import com.lightningkite.reactive.core.rememberSuspending
+import com.lightningkite.reactive.core.remember
 import com.lightningkite.services.database.*
 import kotlinx.coroutines.delay
 import kotlinx.datetime.TimeZone
@@ -52,8 +52,8 @@ class OrdersListPage : PageWithParent {
     @QueryParameter
     val controlledOnly = Signal(false)
 
-    private val products = rememberSuspending {
-        val session = currentSession() ?: return@rememberSuspending emptyList()
+    private val products = remember {
+        val session = currentSession() ?: return@remember emptyList()
         session.products.query(Query<Product>())()
     }
 
@@ -118,8 +118,8 @@ class OrdersListPage : PageWithParent {
 
                 // Client-side filter for derived statuses that need PharmacyOrder/Shipment joins,
                 // and for the free-text search.
-                val filtered = rememberSuspending {
-                    val session = currentSession() ?: return@rememberSuspending emptyList()
+                val filtered = remember {
+                    val session = currentSession() ?: return@remember emptyList()
                     val items = rawItems()
                     val q = search().trim().lowercase()
                     val status = statusFilter()

@@ -19,6 +19,7 @@ import com.heroscript.data.ProductPharmacyMappingEndpoints
 import com.heroscript.data.ShipmentEndpoints
 import com.heroscript.data.UserEndpoints
 import com.lightningkite.services.data.toEmailAddress
+import com.lightningkite.services.database.Condition
 import com.lightningkite.services.database.condition
 import com.lightningkite.services.database.get
 import com.lightningkite.services.database.insertOne
@@ -38,17 +39,29 @@ fun seed() = engine {
         println("Seeding database with sample data...")
 
         val usersTable = UserEndpoints.info.table()
+        usersTable.deleteManyIgnoringOld(Condition.Always)
         val clinicsTable = ClinicEndpoints.info.table()
+        clinicsTable.deleteManyIgnoringOld(Condition.Always)
         val membershipsTable = ClinicMembershipEndpoints.info.table()
+        membershipsTable.deleteManyIgnoringOld(Condition.Always)
         val pharmaciesTable = PharmacyEndpoints.info.table()
+        pharmaciesTable.deleteManyIgnoringOld(Condition.Always)
         val productsTable = ProductEndpoints.info.table()
+        productsTable.deleteManyIgnoringOld(Condition.Always)
         val mappingsTable = ProductPharmacyMappingEndpoints.info.table()
+        mappingsTable.deleteManyIgnoringOld(Condition.Always)
         val patientsTable = PatientEndpoints.info.table()
+        patientsTable.deleteManyIgnoringOld(Condition.Always)
         val prescriptionsTable = PrescriptionEndpoints.info.table()
+        prescriptionsTable.deleteManyIgnoringOld(Condition.Always)
         val prescriptionOrdersTable = PrescriptionOrderEndpoints.info.table()
+        prescriptionOrdersTable.deleteManyIgnoringOld(Condition.Always)
         val pharmacyOrdersTable = PharmacyOrderEndpoints.info.table()
+        pharmacyOrdersTable.deleteManyIgnoringOld(Condition.Always)
         val shipmentsTable = ShipmentEndpoints.info.table()
+        shipmentsTable.deleteManyIgnoringOld(Condition.Always)
         val invoicesTable = ClinicInvoiceEndpoints.info.table()
+        invoicesTable.deleteManyIgnoringOld(Condition.Always)
 
         // -------- Users --------
 

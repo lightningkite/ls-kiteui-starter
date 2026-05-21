@@ -34,12 +34,13 @@ import com.heroscript.views.profile.ProfilePage
 import com.heroscript.views.refills.RefillQueuePage
 import com.heroscript.views.users.DeaQueuePage
 import com.heroscript.views.users.UserListPage
+import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.reactive.context.invoke
 import com.lightningkite.reactive.context.reactive
 import com.lightningkite.reactive.context.reactiveSuspending
 import com.lightningkite.reactive.core.AppScope
 import com.lightningkite.reactive.core.Signal
-import com.lightningkite.reactive.core.rememberSuspending
+import com.lightningkite.reactive.core.remember
 
 val defaultTheme = Theme.flat2("default", Angle(0.55f))
 val appTheme = Signal(defaultTheme)
@@ -98,7 +99,7 @@ fun ViewWriter.app(navigator: PageNavigator, dialog: PageNavigator) {
 
     checkAppVersion()
 
-    val isWide = rememberSuspending { AppState.windowInfo().width > 60.rem }
+    val isWide = remember { AppState.windowInfo().width > 60.rem }
     reactive {
         context.appNavFactory.value = if (isWide()) ViewWriter::appNavTopAndLeft else ViewWriter::appNavHamburger
     }

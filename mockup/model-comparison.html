@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HeroScript — Model comparison</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="wf-banner">Wireframe · V1 proposed shape — not the currently built app</div>
+
+  <header class="appbar">
+    <button class="nav-toggle" data-nav-toggle aria-label="Menu">☰</button>
+    <a href="index.html" class="logo">HeroScript</a>
+    <nav>
+      <a href="index.html">Index</a>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="order-entry.html">Order Entry (Combined)</a>
+      <a href="procurement-queue.html">Procurement (Separated)</a>
+    </nav>
+    <div class="appbar-right">
+      <span class="chip">Discussion artifact</span>
+    </div>
+  </header>
+
+  <main>
+    <div class="page-head">
+      <div class="crumb"><a href="index.html">← Index</a></div>
+      <h1>Order model — three viable shapes</h1>
+      <p class="page-sub">Two axes generate four shapes; one is impractical, leaving three credible options. The mockup walks <strong>Combined Basket</strong>; this page surfaces <strong>Separated Procurement</strong> and describes <strong>Flat Order</strong> for comparison.</p>
+    </div>
+
+    <div class="card">
+      <h3>The two axes</h3>
+      <ul>
+        <li><strong>Axis A — Durable Prescription entity?</strong>  <em>YES:</em> Rx is a long-lived clinical authorization, signed once, filled many times. <em>NO:</em> each fill captures its own clinical details (no shared parent).</li>
+        <li><strong>Axis B — Separate dispatch entity?</strong>  <em>YES:</em> approved orders queue for a procurement operator who picks pharmacy and creates a <code>PharmacyOrder</code> later. <em>NO:</em> pharmacy is picked at order entry; approval-then-dispatch happens in one motion.</li>
+      </ul>
+      <p><small class="muted">Axis A = NO + Axis B = YES is impractical (deferred dispatch without a durable Rx makes the procurement queue's identity strange), so three shapes remain.</small></p>
+    </div>
+
+    <h2>Side-by-side</h2>
+
+    <div class="row cols-3">
+      <!-- Combined Basket -->
+      <div class="cell-card recommended">
+        <div class="cell-head">
+          <h3>Combined Basket</h3>
+          <span class="tag">Current mockup</span>
+        </div>
+        <div class="thumb">[ Patient + ship-to ]
+[ Add Rx line · Rx line ]
+[ Eligible pharmacy ▣ ]
+[ Submit (1 ID.me)    ]
+   ↓ dispatch</div>
+        <div class="cell-body">
+          <p><strong>Axis A:</strong> durable Prescription. <strong>Axis B:</strong> dispatch combined with approval.</p>
+          <p>MA composes the basket: patient → ship-to → Rx lines (existing or new) → pharmacy → submit. One screen, one motion. Pharmacy eligibility is computed from the basket.</p>
+          <p><strong>Best when:</strong> most shipments go direct-to-patient or to one clinic at a time; pharmacy choice is largely automatic given lowest-price-that-covers-the-basket.</p>
+        </div>
+        <div class="cell-foot">
+          <a href="order-entry.html" class="btn primary sm">Walk through Order Entry →</a>
+        </div>
+      </div>
+
+      <!-- Separated Procurement -->
+      <div class="cell-card">
+        <div class="cell-head">
+          <h3>Separated Procurement</h3>
+          <span class="tag">Alternative</span>
+        </div>
+        <div class="thumb">[ Patient + Rx line  ]
+[ Approve (1 ID.me)  ]
+   ↓
+[ Procurement Queue  ]
+[ Group · pick pharm ]
+[ Confirm → dispatch ]</div>
+        <div class="cell-body">
+          <p><strong>Axis A:</strong> durable Prescription. <strong>Axis B:</strong> dispatch deferred to procurement.</p>
+          <p>Prescribers approve individual <code>PrescriptionOrder</code>s without picking pharmacy. ClinicAdmin (or a dedicated role) opens the Procurement Queue, groups by destination, picks pharmacy(ies), and confirms — that creates the <code>PharmacyOrder</code> and triggers dispatch.</p>
+          <p><strong>Best when:</strong> clinic-bulk-shipping is common — many patients' Rxs ship together to the clinic for in-clinic distribution. Procurement role enables packing optimization.</p>
+        </div>
+        <div class="cell-foot">
+          <a href="procurement-queue.html" class="btn secondary sm">View Procurement Queue →</a>
+        </div>
+      </div>
+
+      <!-- Flat Order -->
+      <div class="cell-card">
+        <div class="cell-head">
+          <h3>Flat Order (PRD § 09)</h3>
+          <span class="tag">Not recommended</span>
+        </div>
+        <div class="thumb">[ Order               ]
+[   OrderItem        ]
+[   OrderItem        ]
+[ Submit             ]
+   ↓ dispatch</div>
+        <div class="cell-body">
+          <p><strong>Axis A:</strong> no durable Prescription. <strong>Axis B:</strong> dispatch combined.</p>
+          <p>PRD § 09's literal shape: <code>Order</code> + <code>OrderItem</code>. Each fill captures its own product/strength/sig; refills are new orders with duplicated fields. No shared parent record.</p>
+          <p><strong>Trade-off:</strong> Slightly less code in the short term, but refill cleanliness and clinical-record permanence both suffer — every refill is a clone with no canonical authorization to point at, complicating DEA audit responses and clinical chart consistency.</p>
+        </div>
+        <div class="cell-foot">
+          <a href="#" class="btn ghost sm" style="pointer-events: none; opacity: 0.6;">No live mockup</a>
+        </div>
+      </div>
+    </div>
+
+    <h2>Comparison matrix</h2>
+
+    <div class="table-wrap">
+      <table class="matrix">
+        <thead>
+          <tr>
+            <th>Concern</th>
+            <th class="col-combined col-head">Combined Basket</th>
+            <th class="col-separated col-head">Separated Procurement</th>
+            <th class="col-flat col-head">Flat Order</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Multi-Rx basket UX</strong></td>
+            <td class="col-combined">One screen, build → submit. Pharmacy panel below the lines.</td>
+            <td class="col-separated">Build individual orders; basket forms at procurement step.</td>
+            <td class="col-flat">One screen with line items, but each item carries its own clinical detail.</td>
+          </tr>
+          <tr>
+            <td><strong>Refill tracking</strong></td>
+            <td class="col-combined">Clean. Refill = new <code>PrescriptionOrder</code> against existing Rx.</td>
+            <td class="col-separated">Clean. Same as Combined Basket.</td>
+            <td class="col-flat">Awkward. Refill = clone of last Order with similar fields, no canonical parent.</td>
+          </tr>
+          <tr>
+            <td><strong>Pharmacy choice timing</strong></td>
+            <td class="col-combined">At order entry (clinician / MA picks).</td>
+            <td class="col-separated">Deferred to procurement operator; allows bulk optimization.</td>
+            <td class="col-flat">At order entry.</td>
+          </tr>
+          <tr>
+            <td><strong>Procurement role</strong></td>
+            <td class="col-combined">None. Whoever submits picks pharmacy.</td>
+            <td class="col-separated">Dedicated. ClinicAdmin or procurement specialist runs the queue.</td>
+            <td class="col-flat">None.</td>
+          </tr>
+          <tr>
+            <td><strong>Clinical-shipping batching</strong></td>
+            <td class="col-combined">Per-order. No grouping across patients.</td>
+            <td class="col-separated">Yes — group by destination, one shipment per clinic-day.</td>
+            <td class="col-flat">Per-order.</td>
+          </tr>
+          <tr>
+            <td><strong>ID.me cadence</strong></td>
+            <td class="col-combined">Per new Rx (locked decision). Refills reuse approval.</td>
+            <td class="col-separated">Per new Rx, same as Combined Basket.</td>
+            <td class="col-flat">Per order, every time (no durable approval to reuse).</td>
+          </tr>
+          <tr>
+            <td><strong>DEA audit story</strong></td>
+            <td class="col-combined">Each Prescription has one signed authorization; orders cite back to it.</td>
+            <td class="col-separated">Same as Combined Basket.</td>
+            <td class="col-flat">N copies of the authorization scattered across N orders.</td>
+          </tr>
+          <tr>
+            <td><strong>Implementation cost delta</strong></td>
+            <td class="col-combined"><strong>Baseline</strong> (estimate priced this).</td>
+            <td class="col-separated">+~4–6 points: procurement queue screen, role gating, <code>PharmacyOrder</code> creation moves to procurement step.</td>
+            <td class="col-flat">−~6–8 points but loses refill cleanliness and clinical-record permanence (estimate flags as not recommended).</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card recommended" style="background: var(--c-primary-soft); border-color: var(--c-primary);">
+      <h3 style="color: var(--c-primary); letter-spacing: 0;">Lightning Kite recommendation</h3>
+      <p><strong>Axis A = YES (durable Prescription) always.</strong> Both Combined Basket and Separated Procurement carry it; Flat Order's omission is the main reason we don't recommend it.</p>
+      <p><strong>Axis B (separated vs combined dispatch) is conditional on Gameday's ops:</strong></p>
+      <ul>
+        <li><strong>Common clinic-bulk-shipping</strong> (≥5 Rxs/day per clinic going to the clinic address rather than patient addresses): <strong>Separated Procurement</strong>. The procurement role pays for itself.</li>
+        <li><strong>Mostly direct-to-patient or low daily volume</strong>: <strong>Combined Basket</strong>. Avoids an extra screen and extra role.</li>
+      </ul>
+      <p style="margin-top: 12px;">Question for Jon: <em>at a typical Gameday clinic, what percentage of prescriptions ship to the clinic for in-clinic distribution vs. directly to the patient's home?</em> The answer picks the shape.</p>
+    </div>
+  </main>
+
+  <footer class="audit-footer">
+    <span>All actions on this screen are audit-logged · 6-year retention</span>
+  </footer>
+
+  <script src="nav.js"></script>
+</body>
+</html>

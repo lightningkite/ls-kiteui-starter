@@ -14,6 +14,7 @@ import com.lightningkite.lightningserver.typed.auth
 import com.lightningkite.lightningserver.typed.modelInfo
 import com.lightningkite.lightningserver.typed.startupOnce
 import com.heroscript.*
+import com.heroscript.UserAuth.ClinicMembershipsCache.clinicAdminIds
 import com.heroscript.UserAuth.CoClinicUsersCache.coClinicUsers
 import com.heroscript.UserAuth.RoleCache.userRole
 import com.heroscript._id
@@ -24,13 +25,17 @@ import com.lightningkite.services.data.toEmailAddress
 import com.lightningkite.services.database.Condition
 import com.lightningkite.services.database.ModelPermissions
 import com.lightningkite.services.database.Table
+import com.lightningkite.services.database.and
 import com.lightningkite.services.database.condition
 import com.lightningkite.services.database.eq
 import com.lightningkite.services.database.findOne
 import com.lightningkite.services.database.insertOne
 import com.lightningkite.services.database.inside
+import com.lightningkite.services.database.mask
+import com.lightningkite.services.database.neq
 import com.lightningkite.services.database.or
 import com.lightningkite.services.database.updateRestrictions
+import kotlinx.coroutines.flow.toList
 import kotlin.uuid.Uuid
 
 object UserEndpoints : ServerBuilder() {
@@ -40,16 +45,40 @@ object UserEndpoints : ServerBuilder() {
             val allowedRoles = UserRole.entries.filter { it <= auth.userRole() }
             val isSystemAdmin = auth.userRole() >= UserRole.Admin
             val myCoClinicUserIds = auth.coClinicUsers()
+            // Users belonging to a clinic where the current actor is ClinicAdmin.
+            // These are the colleagues for whom the current actor may see the (sensitive)
+            // PrescriberLicensing block: DEA number, license image, state licenses, ID.me link.
+            val myAdminClinics = auth.clinicAdminIds()
+            val usersInMyAdminClinics: Set<User.ID> =
+                if (myAdminClinics.isEmpty()) emptySet()
+                else ClinicMembershipEndpoints.info.table()
+                    .find(condition {
+                        (it.clinic inside myAdminClinics) and
+                        (it.deactivatedAt eq null) and
+                        (it.acceptedAt neq null)
+                    })
+                    .toList()
+                    .map { it.user }
+                    .toSet()
 
             val admin: Condition<User> =
                 if (isSystemAdmin) condition { it.role inside allowedRoles }
                 else Condition.Never
             val self = condition<User> { it._id eq auth.id }
             val coClinic = condition<User> { it._id inside myCoClinicUserIds }
+            // PrescriberLicensing carries DEA number, license image, state licenses, and
+            // the ID.me linkage — confidential professional credentials. Only the user
+            // themself, a ClinicAdmin of one of their clinics, or a system admin may
+            // see it. All other co-clinic readers see `prescriber = null`.
+            val canReadPrescriber = admin or self or
+                condition<User> { it._id inside usersInMyAdminClinics }
 
             ModelPermissions(
                 create = admin,
                 read = admin or self or coClinic,
+                readMask = mask {
+                    it.prescriber.mask(value = null, unless = canReadPrescriber)
+                },
                 update = admin or self,
                 updateRestrictions = updateRestrictions {
                     it.role.requires(admin) { it.inside(allowedRoles) }

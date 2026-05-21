@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HeroScript — Procurement Queue (Separated Procurement)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="wf-banner">Wireframe · V1 proposed shape — not the currently built app</div>
+  <div class="alt-banner">Alternative model — <strong>Separated Procurement</strong>. The recommended-path mockup is <strong>Combined Basket</strong>. <a href="model-comparison.html">View comparison →</a></div>
+
+  <header class="appbar">
+    <button class="nav-toggle" data-nav-toggle aria-label="Menu">☰</button>
+    <a href="index.html" class="logo">HeroScript</a>
+    <nav>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="patients.html">Patients</a>
+      <a href="orders.html">Orders</a>
+      <a href="refill-queue.html">Refills</a>
+      <a href="procurement-queue.html" class="active">Procurement</a>
+      <a href="catalog.html">Catalog</a>
+    </nav>
+    <div class="appbar-right">
+      <span class="chip">Gameday Knoxville</span>
+      <a href="profile.html" class="chip role">Tara Park · ClinicAdmin</a>
+    </div>
+  </header>
+
+  <main>
+    <div class="page-head">
+      <h1>Procurement Queue</h1>
+      <p class="page-sub">Approved prescriptions awaiting pharmacy selection and dispatch. <strong>Procurement operator</strong> groups them by destination, picks pharmacy(ies), and confirms — that's what creates the <code>PharmacyOrder</code> and triggers dispatch.</p>
+    </div>
+
+    <div class="note">
+      <strong>Role split in this workflow:</strong> Prescribers approve clinical content; ClinicAdmin (or a dedicated procurement role) picks pharmacies. Enables clinical-shipping batching — one bulk shipment to the clinic containing many patients' Rxs, packing-optimized. Trade-off: an extra human step between approval and dispatch.
+    </div>
+
+    <div class="card">
+      <div class="row">
+        <div class="field">
+          <label>Destination</label>
+          <select>
+            <option>Group by destination (default)</option>
+            <option>Show all (ungrouped)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Shipping mode</label>
+          <select>
+            <option>All</option>
+            <option>To clinic (bulk-eligible)</option>
+            <option>Direct to patient</option>
+          </select>
+        </div>
+        <div class="field"><label>Approved within</label>
+          <select><option>Last 7 days</option><option>Last 24 hours</option><option>Last 30 days</option></select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Group 1: clinic destination, bulk-eligible -->
+    <div class="group-head">
+      <div>
+        <strong>Gameday Knoxville Clinic</strong> · 615 Market Street, Knoxville TN 37902
+        <div><small class="muted">5 approved orders · bulk-eligible · last approval 18 min ago</small></div>
+      </div>
+      <span class="tag">To clinic</span>
+    </div>
+    <div class="group-body">
+      <table>
+        <thead>
+          <tr><th><input type="checkbox" checked /></th><th>Patient</th><th>Product</th><th>Form · Strength</th><th>Qty</th><th>Approved</th><th>Prescriber</th><th>Preferred pharmacy</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><input type="checkbox" checked /></td>
+            <td>Sam Sample</td>
+            <td>Testosterone Cypionate <span class="tag danger">CIII</span></td>
+            <td>Injectable vial · 200 mg/mL</td>
+            <td>10 mL</td>
+            <td>2026-05-19 09:14</td>
+            <td>Dr. Reeves</td>
+            <td>LifeFile Hallandale</td>
+          </tr>
+          <tr>
+            <td><input type="checkbox" checked /></td>
+            <td>Sam Sample</td>
+            <td>Anastrozole</td>
+            <td>Tablet · 1 mg</td>
+            <td>30 tabs</td>
+            <td>2026-05-19 09:14</td>
+            <td>Dr. Reeves</td>
+            <td><span class="muted">—</span></td>
+          </tr>
+          <tr>
+            <td><input type="checkbox" checked /></td>
+            <td>Jordan Jones</td>
+            <td>Semaglutide</td>
+            <td>Injectable vial · 2.5 mg/mL</td>
+            <td>5 mL</td>
+            <td>2026-05-19 09:48</td>
+            <td>Dr. Reeves</td>
+            <td>Empower</td>
+          </tr>
+          <tr>
+            <td><input type="checkbox" checked /></td>
+            <td>Alex Adams</td>
+            <td>Testosterone Cypionate <span class="tag danger">CIII</span></td>
+            <td>Injectable vial · 200 mg/mL</td>
+            <td>10 mL</td>
+            <td>2026-05-19 11:02</td>
+            <td>Dr. Allen</td>
+            <td>LifeFile Hallandale</td>
+          </tr>
+          <tr>
+            <td><input type="checkbox" checked /></td>
+            <td>Mike Kovacs</td>
+            <td>Testosterone Cypionate <span class="tag danger">CIII</span></td>
+            <td>Injectable vial · 200 mg/mL</td>
+            <td>10 mL</td>
+            <td>2026-05-19 12:15</td>
+            <td>Dr. Reeves</td>
+            <td>LifeFile Hallandale</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="group-foot">
+      <a href="procurement-dispatch.html?dest=knoxville-clinic" class="btn primary">Group &amp; dispatch (5 orders) →</a>
+    </div>
+
+    <!-- Group 2: patient direct -->
+    <div class="group-head" style="margin-top: var(--s-5);">
+      <div>
+        <strong>Direct to patient</strong> · 2 destinations
+        <div><small class="muted">2 approved orders · individual ship-to addresses</small></div>
+      </div>
+      <span class="tag">Direct</span>
+    </div>
+    <div class="group-body">
+      <table>
+        <thead>
+          <tr><th></th><th>Patient</th><th>Ship to</th><th>Product</th><th>Qty</th><th>Approved</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><input type="checkbox" /></td>
+            <td>Pat Pike</td>
+            <td>4412 Pine Hill Rd, Nashville TN 37205</td>
+            <td>Semaglutide</td>
+            <td>5 mL</td>
+            <td>2026-05-19 13:30</td>
+          </tr>
+          <tr>
+            <td><input type="checkbox" /></td>
+            <td>Lee Kim</td>
+            <td>889 Maple Ct, Memphis TN 38103</td>
+            <td>Anastrozole</td>
+            <td>30 tabs</td>
+            <td>2026-05-19 14:11</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="group-foot">
+      <a href="procurement-dispatch.html?dest=direct" class="btn secondary">Dispatch individually →</a>
+    </div>
+
+    <div class="note">
+      <strong>Why Separated Procurement over Combined Basket?</strong> The procurement role split + destination grouping pays off when clinic-bulk-shipping is common (5+ Rxs/day per clinic landing at the clinic address, not patient addresses). When most shipments go direct-to-patient anyway, the extra screen is overhead. See <a href="model-comparison.html">Model comparison</a> for the trade-off matrix.
+    </div>
+  </main>
+
+  <footer class="audit-footer">
+    <span>All actions on this screen are audit-logged · 6-year retention</span>
+  </footer>
+
+  <script src="nav.js"></script>
+</body>
+</html>

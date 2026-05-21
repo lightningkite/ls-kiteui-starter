@@ -66,6 +66,25 @@ object PrescriptionOrderEndpoints : ServerBuilder() {
     )
 
     val rest = path include ModelRestEndpoints(info)
+
+    init {
+        // Keep Shipment.clinics in sync with the orders that point at each shipment.
+        // When an order's `shipment` field becomes non-null (typically via the pharmacy
+        // webhook path), add the order's clinic to that shipment's `clinics` set so that
+        // ShipmentEndpoints' read permission can resolve "clinic-scoped" without a
+        // per-request reverse query.
+        info.registerChangeListener { changes ->
+            for (change in changes.changes) {
+                val newOrder = change.new ?: continue
+                val newShipment = newOrder.shipment ?: continue
+                if (change.old?.shipment == newShipment) continue // unchanged pointer
+                ShipmentEndpoints.info.table().updateOneIgnoringResult(
+                    condition { it._id eq newShipment },
+                    modification { it.clinics addAll setOf(newOrder.clinic) },
+                )
+            }
+        }
+    }
 }
 
 val PrescriptionOrder.Companion.info get() = PrescriptionOrderEndpoints.info

@@ -559,6 +559,12 @@ data class Shipment(
     @Denormalized val shippedAt: Instant? = null,
     @Denormalized val deliveredAt: Instant? = null,
     @Denormalized val cancelledAt: Instant? = null,
+    /**
+     * Clinics that have at least one [PrescriptionOrder] pointing to this shipment.
+     * Kept in sync by a change listener on [PrescriptionOrder] writes; gates read access
+     * so a clinic only sees shipments its own orders reference.
+     */
+    @Denormalized val clinics: Set<Clinic.ID> = emptySet(),
 ): HasId<Shipment.ID> {
     @Serializable
     @JvmInline

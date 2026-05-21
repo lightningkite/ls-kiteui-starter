@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HeroScript — Catalog</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="wf-banner">Wireframe · V1 proposed shape — not the currently built app</div>
+  <header class="appbar">
+    <button class="nav-toggle" data-nav-toggle aria-label="Menu">☰</button>
+    <a href="index.html" class="logo">HeroScript</a>
+    <nav>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="patients.html">Patients</a>
+      <a href="orders.html">Orders</a>
+      <a href="refill-queue.html">Refills</a>
+      <a href="catalog.html" class="active">Catalog</a>
+    </nav>
+    <div class="appbar-right">
+      <span class="chip">Gameday Knoxville</span>
+      <a href="profile.html" class="chip role">Dr. Reeves · Prescriber</a>
+    </div>
+  </header>
+
+  <main>
+    <div class="page-head">
+      <h1>Catalog</h1>
+      <p class="page-sub">Read-only for clinic users. Ops manages edits separately. One row per canonical drug — click through to see forms, strengths, and the pharmacies that stock it.</p>
+    </div>
+
+    <div class="card">
+      <div class="row">
+        <div class="field"><label>Search</label><input placeholder="Product name…" /></div>
+        <div class="field"><label>Controlled</label>
+          <select><option>Any</option><option>Controlled only</option><option>Non-controlled only</option></select>
+        </div>
+        <div class="field"><label>Form</label>
+          <select><option>Any</option><option>Injectable</option><option>Tablet</option><option>Capsule</option><option>Cream</option></select>
+        </div>
+      </div>
+    </div>
+
+    <div class="table-wrap responsive">
+      <table>
+        <thead>
+          <tr><th>Product</th><th>Forms</th><th class="num">Pharmacies</th><th>Price range</th><th>Controlled</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td data-label="Product"><a href="catalog-detail.html">Testosterone Cypionate</a></td>
+            <td data-label="Forms">1 (Injectable vial)</td>
+            <td data-label="Pharmacies" class="num">3</td>
+            <td data-label="Price range">$42 – $58</td>
+            <td data-label="Controlled"><span class="tag danger">CIII</span></td>
+          </tr>
+          <tr>
+            <td data-label="Product"><a href="catalog-detail.html">Semaglutide</a></td>
+            <td data-label="Forms">1 (Injectable vial)</td>
+            <td data-label="Pharmacies" class="num">2</td>
+            <td data-label="Price range">$210 – $245</td>
+            <td data-label="Controlled"><span class="muted">No</span></td>
+          </tr>
+          <tr>
+            <td data-label="Product"><a href="catalog-detail.html">Anastrozole</a></td>
+            <td data-label="Forms">1 (Tablet)</td>
+            <td data-label="Pharmacies" class="num">2</td>
+            <td data-label="Price range">$18 – $26</td>
+            <td data-label="Controlled"><span class="muted">No</span></td>
+          </tr>
+          <tr>
+            <td data-label="Product"><a href="catalog-detail.html">Sermorelin / Ipamorelin blend</a></td>
+            <td data-label="Forms">1 (Injectable vial)</td>
+            <td data-label="Pharmacies" class="num">1</td>
+            <td data-label="Price range">$132</td>
+            <td data-label="Controlled"><span class="muted">No</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note">
+      <strong>Clinic users see this read-only view.</strong> Ops admins edit forms, strengths, and pharmacy mappings on the same detail screen with an Edit toggle (priced separately in the estimate).
+    </div>
+  </main>
+
+  <footer class="audit-footer">
+    <span>All actions on this screen are audit-logged · 6-year retention</span>
+  </footer>
+
+  <script src="nav.js"></script>
+</body>
+</html>

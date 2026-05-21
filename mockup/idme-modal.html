@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HeroScript — ID.me step-up</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 25, 40, 0.55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 16px;
+    }
+    .modal {
+      background: var(--c-surface);
+      border-radius: var(--r-lg);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+      width: 100%;
+      max-width: 460px;
+      overflow: hidden;
+    }
+    .modal-head { padding: 20px 24px; border-bottom: 1px solid var(--c-border); background: var(--c-surface-2); }
+    .modal-body { padding: 24px; }
+    .modal-foot { padding: 16px 24px; border-top: 1px solid var(--c-border); background: var(--c-surface-2); display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
+    .id-step {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 12px;
+      border: 1px solid var(--c-border);
+      border-radius: var(--r-md);
+      margin-bottom: 8px;
+      background: var(--c-surface-2);
+    }
+    .id-step .num {
+      width: 24px; height: 24px; border-radius: 50%;
+      background: var(--c-primary); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700;
+    }
+    .id-step.done .num { background: var(--c-success); }
+    .id-step.current { border-color: var(--c-primary); background: var(--c-primary-soft); }
+  </style>
+</head>
+<body>
+  <div class="wf-banner">Wireframe · V1 proposed shape — not the currently built app</div>
+  <header class="appbar">
+    <a href="index.html" class="logo">HeroScript</a>
+    <div style="flex:1"></div>
+    <a href="order-entry.html" class="btn tertiary">← Back to order entry</a>
+  </header>
+
+  <main style="padding-top: 16px;">
+    <div class="page-head">
+      <h1>ID.me step-up (per-Rx)</h1>
+      <p class="page-sub">Demonstrates the modal that fires for each new prescription in a basket. The basket above contains 2 new Rxs → 2 sequential ID.me steps. Refill-only baskets skip this entirely.</p>
+    </div>
+
+    <div class="modal-backdrop">
+      <div class="modal">
+        <div class="modal-head">
+          <h2 style="margin: 0;">Verify your identity</h2>
+          <p style="margin: 4px 0 0;"><small class="muted">Required by DEA EPCS regulations for each new controlled-substance prescription.</small></p>
+        </div>
+        <div class="modal-body">
+          <div class="id-step done">
+            <div class="num">✓</div>
+            <div>
+              <strong>Rx 1 of 2</strong> · Testosterone Cypionate
+              <div><small class="muted">Verified · id-evt-7c4e21f0</small></div>
+            </div>
+          </div>
+          <div class="id-step current">
+            <div class="num">2</div>
+            <div>
+              <strong>Rx 2 of 2</strong> · Anastrozole
+              <div><small class="muted">Tap "Verify" to start ID.me for this prescription</small></div>
+            </div>
+          </div>
+          <p style="margin-top: 16px;"><small class="muted">Each prescription gets its own ID.me event for audit. Stored on <code>Prescription.clinicianReview.idEvent</code>.</small></p>
+        </div>
+        <div class="modal-foot">
+          <a href="order-entry.html" class="btn ghost">Cancel basket</a>
+          <a href="order-detail.html" class="btn primary">Verify with ID.me →</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="nav.js"></script>
+</body>
+</html>

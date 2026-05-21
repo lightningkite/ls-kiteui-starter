@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HeroScript — Profile</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="wf-banner">Wireframe · V1 proposed shape — not the currently built app</div>
+  <header class="appbar">
+    <button class="nav-toggle" data-nav-toggle aria-label="Menu">☰</button>
+    <a href="index.html" class="logo">HeroScript</a>
+    <nav>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="patients.html">Patients</a>
+      <a href="orders.html">Orders</a>
+      <a href="refill-queue.html">Refills</a>
+      <a href="catalog.html">Catalog</a>
+    </nav>
+    <div class="appbar-right">
+      <span class="chip">Gameday Knoxville</span>
+      <a href="profile.html" class="chip role">Dr. Reeves · Prescriber</a>
+    </div>
+  </header>
+
+  <main>
+    <div class="page-head">
+      <h1>Your profile</h1>
+      <p class="page-sub">Dr. Helena Reeves · prescriber@gameday.example · <a href="credentials.html">Manage credentials →</a></p>
+    </div>
+
+    <div class="row cols-3">
+      <div class="card">
+        <h3>Identity</h3>
+        <p><strong>Name:</strong> Helena Reeves</p>
+        <p><strong>Email:</strong> prescriber@gameday.example</p>
+        <p><strong>Phone:</strong> (865) 555-0199</p>
+        <a href="#" class="btn ghost sm">Edit</a>
+      </div>
+      <div class="card">
+        <h3>MFA</h3>
+        <p><span class="status verified">TOTP enrolled</span></p>
+        <p><small class="muted">Enrolled 2025-09-14</small></p>
+        <a href="#" class="btn ghost sm">Re-enroll</a>
+      </div>
+      <div class="card">
+        <h3>Clinic memberships</h3>
+        <p>Gameday Knoxville · <span class="tag">Prescriber</span></p>
+        <p>Gameday Nashville · <span class="tag">Prescriber</span></p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Credentials at a glance</h3>
+      <p><strong>DEA:</strong> BR1234567 · expires 2026-07-06 (47d) · <span class="status verified">Verified</span></p>
+      <p><strong>State licenses:</strong> TN, KY · both <span class="status verified">Verified</span></p>
+      <p><strong>ID.me:</strong> Linked 2025-11-02</p>
+      <a href="credentials.html" class="btn secondary">Open Credentials sub-page →</a>
+    </div>
+
+    <div class="card">
+      <a href="login.html" class="btn danger">Sign out everywhere</a>
+    </div>
+  </main>
+
+  <footer class="audit-footer">
+    <span>All actions on this screen are audit-logged · 6-year retention</span>
+  </footer>
+
+  <script src="nav.js"></script>
+</body>
+</html>

@@ -13,7 +13,7 @@ import com.lightningkite.reactive.context.invoke
 import com.lightningkite.reactive.context.reactive
 import com.lightningkite.reactive.core.Constant
 import com.lightningkite.reactive.core.Reactive
-import com.lightningkite.reactive.core.rememberSuspending
+import com.lightningkite.reactive.core.remember
 import com.lightningkite.services.database.*
 import kotlin.time.Clock
 
@@ -22,17 +22,17 @@ class InvoiceDetailPage(val id: ClinicInvoice.ID) : PageWithParent {
     override val title: Reactive<String> get() = Constant("Invoice")
     override var parentPage: Page = InvoiceListPage()
 
-    private val invoice = rememberSuspending {
+    private val invoice = remember {
         currentSession()?.clinicInvoices?.get(id)?.invoke()
     }
 
-    private val clinic = rememberSuspending {
-        val session = currentSession() ?: return@rememberSuspending null
+    private val clinic = remember {
+        val session = currentSession() ?: return@remember null
         invoice()?.let { session.clinics[it.clinic].invoke() }
     }
 
-    private val lineItems = rememberSuspending {
-        val session = currentSession() ?: return@rememberSuspending emptyList()
+    private val lineItems = remember {
+        val session = currentSession() ?: return@remember emptyList()
         session.pharmacyOrders.query(
             Query(
                 condition = condition<PharmacyOrder> { it.invoice eq id },
@@ -41,7 +41,7 @@ class InvoiceDetailPage(val id: ClinicInvoice.ID) : PageWithParent {
         )()
     }
 
-    private val isOps = rememberSuspending {
+    private val isOps = remember {
         (currentSession()?.self?.invoke()?.role ?: UserRole.User) >= UserRole.Admin
     }
 
@@ -111,8 +111,8 @@ class InvoiceDetailPage(val id: ClinicInvoice.ID) : PageWithParent {
     }
 
     private fun ElementWriter.CanAddTheme.lineItemRow(order: PharmacyOrder) = col {
-        val pharmacy = rememberSuspending {
-            val session = currentSession() ?: return@rememberSuspending null
+        val pharmacy = remember {
+            val session = currentSession() ?: return@remember null
             session.pharmacies[order.pharmacy].invoke()
         }
         row {

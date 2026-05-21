@@ -16,7 +16,7 @@ import com.lightningkite.reactive.core.Constant
 import com.lightningkite.reactive.core.Reactive
 import com.lightningkite.reactive.core.Signal
 import com.lightningkite.reactive.core.remember
-import com.lightningkite.reactive.core.rememberSuspending
+import com.lightningkite.reactive.core.remember
 import com.lightningkite.services.database.*
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.seconds
@@ -40,7 +40,7 @@ class PharmacyListPage : PageWithParent {
     @QueryParameter
     val stateFilter = Signal("")
 
-    private val isOps = rememberSuspending {
+    private val isOps = remember {
         (currentSession()?.self?.invoke()?.role ?: UserRole.User) >= UserRole.Admin
     }
 

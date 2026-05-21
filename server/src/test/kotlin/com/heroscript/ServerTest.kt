@@ -11,7 +11,9 @@ import com.heroscript.data.ClinicMembershipEndpoints
 import com.heroscript.data.PatientEndpoints
 import com.heroscript.data.PrescriptionEndpoints
 import com.heroscript.data.PrescriptionOrderEndpoints
+import com.heroscript.data.ShipmentEndpoints
 import com.heroscript.data.UserEndpoints
+import com.lightningkite.services.files.ServerFile
 import com.lightningkite.services.data.toEmailAddress
 import com.lightningkite.services.database.Database
 import com.lightningkite.services.database.Query
@@ -323,6 +325,140 @@ class ServerTest {
                     modification<User> { it.role assign UserRole.Admin }
                 )
             }
+        }
+    }
+
+    @Test
+    fun shipmentReadScopedToClinic(): Unit = runBlocking {
+        Server.test(settings = { database set Database.Settings("ram") }) {
+            val admin = UserEndpoints.info.table().insertOne(
+                user("admin@test.com", "Admin", role = UserRole.Admin)
+            )!!
+            val clinicAUser = UserEndpoints.info.table().insertOne(user("a@test.com", "A"))!!
+            val clinicBUser = UserEndpoints.info.table().insertOne(user("b@test.com", "B"))!!
+
+            val clinicA = ClinicEndpoints.info.table().insertOne(clinic("Clinic A"))!!
+            val clinicB = ClinicEndpoints.info.table().insertOne(clinic("Clinic B"))!!
+            ClinicMembershipEndpoints.info.table().insertOne(
+                membership(clinicA._id, clinicAUser._id, ClinicRole.MedicalAssistant)
+            )
+            ClinicMembershipEndpoints.info.table().insertOne(
+                membership(clinicB._id, clinicBUser._id, ClinicRole.MedicalAssistant)
+            )
+
+            // Shipment that only Clinic A's order references.
+            val shipment = ShipmentEndpoints.info.table().insertOne(
+                Shipment(carrier = "UPS", trackingNumber = "1Z-SHIPMENT-A")
+            )!!
+
+            // Order in Clinic A referencing the shipment — this should add Clinic A's id to
+            // `Shipment.clinics` via the PrescriptionOrder change listener.
+            val patA = PatientEndpoints.info.table().insertOne(patient(clinicA._id, clinicAUser._id))!!
+            val productId = Product.ID(kotlin.uuid.Uuid.fromLongs(0L, 1000L))
+            val pharmacyId = Pharmacy.ID(kotlin.uuid.Uuid.fromLongs(0L, 1002L))
+            val rxA = PrescriptionEndpoints.info.table().insertOne(
+                Prescription(
+                    clinic = clinicA._id,
+                    patient = patA._id,
+                    product = productId,
+                    prescribedBy = clinicAUser._id,
+                    form = Product.FormType.InjectableVial,
+                    strength = 1.0,
+                    instructions = "Once weekly.",
+                )
+            )!!
+            // updateOne the order with shipment via the system-admin path so the listener fires.
+            val orderA = PrescriptionOrderEndpoints.info.table().insertOne(
+                PrescriptionOrder(
+                    prescription = rxA._id,
+                    pharmacy = pharmacyId,
+                    destination = patA.shippingAddress,
+                    quantity = 5.0,
+                    willLastDays = 35,
+                    clinic = clinicA._id,
+                    patient = patA._id,
+                    product = productId,
+                    form = Product.FormType.InjectableVial,
+                    strength = 1.0,
+                    instructions = "Once weekly.",
+                    prescribedBy = clinicAUser._id,
+                    createdBy = clinicAUser._id,
+                )
+            )!!
+            PrescriptionOrderEndpoints.rest.modify.test(
+                orderA._id, UserAuth.testAuth(admin),
+                modification<PrescriptionOrder> { it.shipment assign shipment._id }
+            )
+
+            // Admin can read any shipment.
+            val adminFetched = ShipmentEndpoints.rest.detail.test(shipment._id, UserAuth.testAuth(admin), Unit)
+            assertEquals(shipment._id, adminFetched._id)
+
+            // Clinic A member can read it (their order points at it).
+            val aFetched = ShipmentEndpoints.rest.detail.test(shipment._id, UserAuth.testAuth(clinicAUser), Unit)
+            assertEquals(shipment._id, aFetched._id)
+
+            // Clinic B member cannot read it.
+            assertFailsWith<NotFoundException> {
+                ShipmentEndpoints.rest.detail.test(shipment._id, UserAuth.testAuth(clinicBUser), Unit)
+            }
+        }
+    }
+
+    @Test
+    fun prescriberLicensingMaskedForCoClinicNonAdmin(): Unit = runBlocking {
+        Server.test(settings = { database set Database.Settings("ram") }) {
+            val prescriberLicensing = PrescriberLicensing(
+                deaNumber = "AB1234563",
+                deaLicenseImage = ServerFile("https://example.invalid/dea.png"),
+                deaExpiration = now(),
+            )
+            val prescriberUser = UserEndpoints.info.table().insertOne(
+                user("rx@test.com", "Rx").copy(prescriber = prescriberLicensing)
+            )!!
+            val maUser = UserEndpoints.info.table().insertOne(user("ma@test.com", "MA"))!!
+            val clinicAdmin = UserEndpoints.info.table().insertOne(user("cadmin@test.com", "CAdmin"))!!
+            val systemAdmin = UserEndpoints.info.table().insertOne(
+                user("admin@test.com", "Admin", role = UserRole.Admin)
+            )!!
+
+            val c = ClinicEndpoints.info.table().insertOne(clinic())!!
+            ClinicMembershipEndpoints.info.table().insertOne(
+                membership(c._id, prescriberUser._id, ClinicRole.Prescriber)
+            )
+            ClinicMembershipEndpoints.info.table().insertOne(
+                membership(c._id, maUser._id, ClinicRole.MedicalAssistant)
+            )
+            ClinicMembershipEndpoints.info.table().insertOne(
+                membership(c._id, clinicAdmin._id, ClinicRole.ClinicAdmin)
+            )
+
+            // Co-clinic MA reads the prescriber's user record — prescriber must be masked to null.
+            val asMa = UserEndpoints.rest.endpoints.detail.test(
+                prescriberUser._id, UserAuth.testAuth(maUser), Unit
+            )
+            assertEquals(prescriberUser._id, asMa._id)
+            assertEquals(null, asMa.prescriber, "MA should NOT see PrescriberLicensing")
+
+            // The prescriber themself sees their own licensing.
+            val asSelf = UserEndpoints.rest.endpoints.detail.test(
+                prescriberUser._id, UserAuth.testAuth(prescriberUser), Unit
+            )
+            assertNotNull(asSelf.prescriber, "Prescriber should see their own licensing")
+            assertEquals("AB1234563", asSelf.prescriber!!.deaNumber)
+
+            // ClinicAdmin of the prescriber's clinic sees the licensing.
+            val asClinicAdmin = UserEndpoints.rest.endpoints.detail.test(
+                prescriberUser._id, UserAuth.testAuth(clinicAdmin), Unit
+            )
+            assertNotNull(asClinicAdmin.prescriber, "ClinicAdmin should see co-prescriber licensing")
+            assertEquals("AB1234563", asClinicAdmin.prescriber!!.deaNumber)
+
+            // System admin sees the licensing.
+            val asSystemAdmin = UserEndpoints.rest.endpoints.detail.test(
+                prescriberUser._id, UserAuth.testAuth(systemAdmin), Unit
+            )
+            assertNotNull(asSystemAdmin.prescriber, "System admin should see licensing")
         }
     }
 

@@ -18,7 +18,7 @@ import com.lightningkite.reactive.context.reactive
 import com.lightningkite.reactive.core.Constant
 import com.lightningkite.reactive.core.Reactive
 import com.lightningkite.reactive.core.Signal
-import com.lightningkite.reactive.core.rememberSuspending
+import com.lightningkite.reactive.core.remember
 import com.lightningkite.services.data.toEmailAddress
 import com.lightningkite.services.data.toPhoneNumber
 import kotlin.time.Clock
@@ -31,13 +31,13 @@ class ProfilePage : PageWithParent {
 
     private val editMode = Signal(false)
 
-    private val loaded = rememberSuspending {
+    private val loaded = remember {
         currentSession()?.self?.invoke()
     }
 
     private val draft = Signal<User?>(null)
 
-    private val memberships = rememberSuspending {
+    private val memberships = remember {
         currentSession()?.activeMemberships?.invoke() ?: emptyList()
     }
 

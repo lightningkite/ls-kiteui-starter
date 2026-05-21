@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HeroScript — Order notifications</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="wf-banner">Wireframe · V1 proposed shape — not the currently built app</div>
+  <header class="appbar">
+    <button class="nav-toggle" data-nav-toggle aria-label="Menu">☰</button>
+    <a href="index.html" class="logo">HeroScript</a>
+    <nav>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="patients.html">Patients</a>
+      <a href="orders.html" class="active">Orders</a>
+      <a href="refill-queue.html">Refills</a>
+      <a href="catalog.html">Catalog</a>
+    </nav>
+    <div class="appbar-right">
+      <span class="chip">Gameday Knoxville</span>
+      <a href="profile.html" class="chip role">Dr. Reeves · Prescriber</a>
+    </div>
+  </header>
+
+  <main>
+    <div class="page-head">
+      <div class="crumb"><a href="order-detail.html">← Order ord-7c4e</a></div>
+      <h1>Patient notifications</h1>
+      <p class="page-sub">Every SMS / email sent for this order. Reference only — no action surface here.</p>
+    </div>
+
+    <div class="tabs">
+      <a href="order-detail.html">Detail</a>
+      <a href="#" class="active">Notifications</a>
+    </div>
+
+    <div class="card flush">
+      <div class="card-head">
+        <h3>Patient notifications</h3>
+        <small class="muted">No PHI in body (PRD § F7)</small>
+      </div>
+      <div class="table-wrap responsive" style="border:none; box-shadow:none; border-radius:0; margin:0;">
+        <table>
+          <thead>
+            <tr><th>When</th><th>Channel</th><th>Body</th><th>Status</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td data-label="When">2026-05-19 14:01</td>
+              <td data-label="Channel"><span class="tag">SMS</span></td>
+              <td data-label="Body">"Hi Sam — package 1 of 2 from your Gameday Knoxville order has shipped via FedEx. Track it: [link]. Reply STOP to opt out."</td>
+              <td data-label="Status"><span class="status accepted">Delivered</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="note">
+      Notification persistence lives outside the canonical models per build direction. The UI assumes a lookup by <code>prescriptionOrder</code> or <code>shipment</code> exists in that mechanism.
+    </div>
+  </main>
+
+  <footer class="audit-footer">
+    <span>All actions on this screen are audit-logged · 6-year retention</span>
+  </footer>
+
+  <script src="nav.js"></script>
+</body>
+</html>

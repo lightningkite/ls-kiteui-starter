@@ -10,16 +10,16 @@ import com.lightningkite.reactive.context.invoke
 import com.lightningkite.reactive.context.reactive
 import com.lightningkite.reactive.core.MutableReactive
 import com.lightningkite.reactive.core.Signal
-import com.lightningkite.reactive.core.rememberSuspending
+import com.lightningkite.reactive.core.remember
 import com.lightningkite.services.database.*
 
 /** Free-text search picker over active Pharmacies. */
 fun ElementWriter.CanAddTheme.pharmacyPicker(value: MutableReactive<Pharmacy?>) = col {
     val search = Signal("")
 
-    val results = rememberSuspending {
-        val session = currentSession() ?: return@rememberSuspending emptyList()
-        val q = search().trim().takeIf { it.isNotBlank() } ?: return@rememberSuspending emptyList()
+    val results = remember {
+        val session = currentSession() ?: return@remember emptyList()
+        val q = search().trim().takeIf { it.isNotBlank() } ?: return@remember emptyList()
         session.pharmacies.query(
             Query(
                 condition = Condition.And(

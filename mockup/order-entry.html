@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HeroScript — Order Entry</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="wf-banner">Wireframe · V1 proposed shape — not the currently built app</div>
+  <header class="appbar">
+    <button class="nav-toggle" data-nav-toggle aria-label="Menu">☰</button>
+    <a href="index.html" class="logo">HeroScript</a>
+    <nav>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="patients.html">Patients</a>
+      <a href="orders.html" class="active">Orders</a>
+      <a href="refill-queue.html">Refills</a>
+      <a href="catalog.html">Catalog</a>
+    </nav>
+    <div class="appbar-right">
+      <span class="chip">Gameday Knoxville</span>
+      <a href="profile.html" class="chip role">Dr. Reeves · Prescriber</a>
+    </div>
+  </header>
+
+  <main>
+    <div class="page-head">
+      <div class="crumb"><a href="orders.html">← Orders</a></div>
+      <h1>New Order</h1>
+      <p class="page-sub"><strong>Order = basket.</strong> An order fulfills one or more existing or new <code>Prescription</code>s at one pharmacy, shipping to one address.</p>
+    </div>
+
+    <div class="note">
+      <strong>Top-down flow:</strong> patient &amp; ship-to → prescription lines (existing Rxs or new Rxs) → eligible pharmacy → review &amp; submit. The pharmacy panel only unlocks once at least one line is added — eligibility is computed from the basket.
+    </div>
+
+    <a href="procurement-queue.html" class="alt-link">
+      <strong>Alternative workflow available — Separated Procurement →</strong>
+      In the alternative model, prescribers approve individual orders and a procurement operator picks pharmacy(ies) in batch from the Procurement Queue. <a href="model-comparison.html" style="text-decoration: underline;">See comparison</a>.
+    </a>
+
+    <!-- STEP 1 -->
+    <div class="step-card">
+      <div class="step-num"><span class="badge">1</span></div>
+      <div class="step-body">
+        <div class="card flush">
+          <div class="card-head">
+            <h3>Patient &amp; ship-to</h3>
+            <span class="tag">Required</span>
+          </div>
+          <div class="card-body">
+            <div class="row cols-2">
+              <div class="field">
+                <label>Patient</label>
+                <input value="Sam Sample" />
+                <div class="help">DOB 1985-03-14 · TN · SMS &amp; Email consented</div>
+              </div>
+              <div class="field">
+                <label>Ship to</label>
+                <select>
+                  <option>Patient address — 123 Oak Ave, Knoxville TN 37902 (verified)</option>
+                  <option>Clinic primary — 500 Gameday Blvd, Knoxville TN 37902</option>
+                  <option>Clinic alternate — 510 Annex St, Knoxville TN 37902</option>
+                </select>
+                <div class="help">Ship-to state drives pharmacy licensing (per locked decision).</div>
+              </div>
+            </div>
+            <label class="check">
+              <input type="checkbox" checked />
+              Patient SMS &amp; Email consent reaffirmed for this order
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="step-card">
+      <div class="step-num"><span class="badge">2</span></div>
+      <div class="step-body">
+        <div class="card flush">
+          <div class="card-head">
+            <h3>Prescription lines</h3>
+            <small class="muted">Build the basket</small>
+          </div>
+          <div class="card-body">
+
+            <!-- Choice tiles for adding a line -->
+            <div class="choice-tiles">
+              <a href="#existing-picker" class="choice-tile" onclick="document.getElementById('existing-picker').style.display='block';return false;">
+                <div class="ttl">↻ Use existing prescription</div>
+                <small>Patient's open Rxs. Reuses prior ID.me — no step-up.</small>
+              </a>
+              <a href="#new-rx-inline" class="choice-tile" onclick="document.getElementById('new-rx-inline').style.display='block';return false;">
+                <div class="ttl">✎ Write new prescription</div>
+                <small>Inline composer. Fires ID.me when signed. Full editor at <a href="prescription-edit.html">prescription-edit</a>.</small>
+              </a>
+            </div>
+
+            <!-- Existing-Rx picker (collapsed by default) -->
+            <div id="existing-picker" class="card subtle" style="display: none; margin-top: 12px;">
+              <h3>Sam Sample's open prescriptions</h3>
+              <div class="picker-row">
+                <input type="checkbox" />
+                <div class="grow">
+                  <strong>Testosterone Cypionate</strong> · 200 mg/mL
+                  <small>Sig: Inject 0.5 mL IM weekly · Dr. Reeves · started 2025-10-04 · 6 prior orders</small>
+                </div>
+                <span class="tag">Refill</span>
+              </div>
+              <div class="picker-row">
+                <input type="checkbox" />
+                <div class="grow">
+                  <strong>Anastrozole</strong> · 1 mg
+                  <small>Sig: Take 0.5 tab MWF · Dr. Reeves · started 2025-10-04 · 2 prior orders</small>
+                </div>
+                <span class="tag">Refill</span>
+              </div>
+              <div class="picker-row">
+                <input type="checkbox" />
+                <div class="grow">
+                  <strong>Semaglutide</strong> · 2.5 mg/mL
+                  <small>Sig: Titrate per chart · Dr. Reeves · started 2026-01-15 · ends 2027-01-15</small>
+                </div>
+                <span class="tag">Refill</span>
+              </div>
+              <div class="btn-row" style="margin-top: 8px;">
+                <a href="#" class="btn primary sm">Add selected to basket</a>
+                <a href="#" class="btn ghost sm" onclick="document.getElementById('existing-picker').style.display='none';return false;">Cancel</a>
+              </div>
+            </div>
+
+            <!-- Inline new-Rx composer (collapsed by default) -->
+            <div id="new-rx-inline" class="card subtle" style="display: none; margin-top: 12px;">
+              <h3>Inline new Prescription</h3>
+              <div class="row cols-2">
+                <div class="field"><label>Product</label><input placeholder="Search products…" /></div>
+                <div class="field"><label>Form</label><select><option>Select a product first…</option></select></div>
+              </div>
+              <div class="field"><label>Strength</label><input placeholder="e.g. 200 mg/mL" /></div>
+              <div class="field">
+                <label>Sig (freehand)</label>
+                <textarea rows="2" placeholder="Inject …"></textarea>
+                <div class="help">
+                  <strong>Sig templates:</strong>
+                  <a href="#">Inject {x} mL IM weekly</a> ·
+                  <a href="#">Inject {x} mL IM twice weekly</a> ·
+                  <a href="#">Take {n} tab(s) PO daily</a>
+                </div>
+              </div>
+              <div class="alert-banner" style="margin-bottom: 8px;">Signing the new Rx fires ID.me. Adding the line saves a draft; signing happens at order submit.</div>
+              <div class="btn-row">
+                <a href="#" class="btn primary sm">Add as new-Rx line</a>
+                <a href="prescription-edit.html" class="btn secondary sm">Open full Prescription editor →</a>
+                <a href="#" class="btn ghost sm" onclick="document.getElementById('new-rx-inline').style.display='none';return false;">Cancel</a>
+              </div>
+            </div>
+
+            <!-- Current basket lines (already populated for demo) -->
+            <h3 style="margin-top: 24px;">In basket (2 lines)</h3>
+
+            <div class="line-item">
+              <div class="line-head">
+                <h3>Line 1 · Testosterone Cypionate <span class="tag danger" style="margin-left: 6px;">CIII</span> <span class="tag" style="margin-left: 6px; background: var(--c-warning-bg); color: var(--c-warning); border-color: #ecd28a;">New Rx · ID.me required</span></h3>
+                <a href="#" class="btn ghost sm">Remove</a>
+              </div>
+              <p>200 mg/mL · "Inject 0.5 mL IM weekly"</p>
+              <div class="row cols-2">
+                <div class="field"><label>Quantity</label><input value="10 mL" /></div>
+                <div class="field"><label>Will last (days)</label><input value="28" /><div class="help">28-day BUD default for injectables</div></div>
+              </div>
+              <details>
+                <summary style="font-size: 12px; color: var(--c-text-2); cursor: pointer; font-weight: 600;">Edit Rx details ▾</summary>
+                <p style="margin-top: 8px;"><small class="muted">Sig and strength edits open the full <a href="prescription-edit.html">Prescription editor</a> — they belong to the Rx, not the order line.</small></p>
+              </details>
+            </div>
+
+            <div class="line-item">
+              <div class="line-head">
+                <h3>Line 2 · Anastrozole <span class="tag" style="margin-left: 6px;">Refill · reuses prior ID.me</span></h3>
+                <a href="#" class="btn ghost sm">Remove</a>
+              </div>
+              <p>1 mg · "Take 0.5 tab MWF"</p>
+              <div class="row cols-2">
+                <div class="field"><label>Quantity</label><input value="30 tablets" /></div>
+                <div class="field"><label>Will last (days)</label><input value="60" /></div>
+              </div>
+            </div>
+
+            <p><small class="muted">Each line stores quantity, willLastDays, and routing per <code>PrescriptionOrder</code>. The clinical content (product/form/strength/sig) belongs to the linked <code>Prescription</code> and is read-only here.</small></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 3 -->
+    <div class="step-card">
+      <div class="step-num"><span class="badge">3</span></div>
+      <div class="step-body">
+        <div class="card flush">
+          <div class="card-head">
+            <h3>Eligible pharmacies</h3>
+            <small class="muted">Filtered to pharmacies that carry <strong>all</strong> basket products and are licensed to ship to TN</small>
+          </div>
+          <div class="table-wrap responsive" style="border:none; box-shadow:none; border-radius:0; margin:0;">
+            <table>
+              <thead>
+                <tr><th></th><th>Pharmacy</th><th class="num">Total</th><th class="num">Shipping</th><th class="num">Lead time</th><th>Notes</th></tr>
+              </thead>
+              <tbody>
+                <tr style="background: var(--c-primary-soft);">
+                  <td data-label=""><input type="radio" name="pharmacy" checked /></td>
+                  <td data-label="Pharmacy"><strong>LifeFile Hallandale</strong></td>
+                  <td data-label="Total" class="num">$70.00</td>
+                  <td data-label="Shipping" class="num">$8.00</td>
+                  <td data-label="Lead time" class="num">2 d</td>
+                  <td data-label="Notes"><span class="status accepted">Covers both lines</span></td>
+                </tr>
+                <tr>
+                  <td data-label=""><input type="radio" name="pharmacy" /></td>
+                  <td data-label="Pharmacy">LifeFile Compounding</td>
+                  <td data-label="Total" class="num">$74.00</td>
+                  <td data-label="Shipping" class="num">$10.00</td>
+                  <td data-label="Lead time" class="num">3 d</td>
+                  <td data-label="Notes"><span class="status accepted">Covers both lines</span></td>
+                </tr>
+                <tr style="opacity: 0.5;">
+                  <td data-label=""><input type="radio" name="pharmacy" disabled /></td>
+                  <td data-label="Pharmacy">Empower</td>
+                  <td data-label="Total" class="num">—</td>
+                  <td data-label="Shipping" class="num">—</td>
+                  <td data-label="Lead time" class="num">2 d</td>
+                  <td data-label="Notes"><span class="status rejected">Doesn't carry Anastrozole 1 mg</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="card-body">
+            <small class="muted">Eligibility = intersection of <code>ProductPharmacyMapping</code>s for all basket products ∩ <code>Pharmacy.states</code> covering ship-to state. Pharmacies that can't fulfill the whole basket are greyed.</small>
+            <p style="margin-top: 8px;"><small class="muted"><em>In the <strong>Separated Procurement</strong> alternative, pharmacy selection happens later in the <a href="procurement-queue.html">Procurement Queue</a>, not here.</em></small></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 4 -->
+    <div class="step-card">
+      <div class="step-num"><span class="badge">4</span></div>
+      <div class="step-body">
+        <div class="card flush">
+          <div class="card-head">
+            <h3>Review &amp; submit</h3>
+            <small class="muted">2 lines · LifeFile Hallandale · ships to TN</small>
+          </div>
+          <div class="card-body">
+            <p><strong>Pre-submit checks:</strong> <span style="color: var(--c-success);">✓ DEA · ✓ Address verified · ✓ Sigs · ✓ Pharmacy licensed in TN</span> · <span style="color: var(--c-warning);">⚠ 1 new-Rx line needs ID.me</span></p>
+            <p><small class="muted">Line 1 (Testosterone Cyp · new Rx) fires ID.me at submit. Line 2 (Anastrozole · refill) reuses the prior approval.</small></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="basket-footer">
+      <div class="totals">
+        <div class="item">Lines<strong>2</strong></div>
+        <div class="item">Subtotal<strong>$70.00</strong></div>
+        <div class="item">Shipping<strong>$8.00</strong></div>
+        <div class="item">Total<strong>$78.00</strong></div>
+      </div>
+      <div class="btn-row">
+        <a href="orders.html" class="btn ghost">Cancel</a>
+        <a href="#" class="btn secondary">Save draft</a>
+        <a href="idme-modal.html" class="btn primary lg">Submit (1 ID.me) →</a>
+      </div>
+    </div>
+
+    <div class="note">
+      <strong>Refill-only mode:</strong> If every line in the basket is a refill (no "New Rx" tag), the submit button reads "Submit order" with no ID.me prompt. Hide the pharmacy panel until at least one line is added — eligibility depends on what's in the basket.
+    </div>
+  </main>
+
+  <footer class="audit-footer">
+    <span>All actions on this screen are audit-logged · 6-year retention</span>
+  </footer>
+
+  <script src="nav.js"></script>
+</body>
+</html>

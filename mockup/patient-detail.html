@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HeroScript — Patient · Overview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="wf-banner">Wireframe · V1 proposed shape — not the currently built app</div>
+  <header class="appbar">
+    <button class="nav-toggle" data-nav-toggle aria-label="Menu">☰</button>
+    <a href="index.html" class="logo">HeroScript</a>
+    <nav>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="patients.html" class="active">Patients</a>
+      <a href="orders.html">Orders</a>
+      <a href="refill-queue.html">Refills</a>
+      <a href="catalog.html">Catalog</a>
+    </nav>
+    <div class="appbar-right">
+      <span class="chip">Gameday Knoxville</span>
+      <a href="profile.html" class="chip role">Dr. Reeves · Prescriber</a>
+    </div>
+  </header>
+
+  <main>
+    <div class="page-head">
+      <div class="crumb"><a href="patients.html">← Patients</a></div>
+      <h1>Sam Sample</h1>
+      <p class="page-sub">Male · DOB 1985-03-14 · Patient since 2024-09-12</p>
+    </div>
+
+    <div class="card">
+      <div class="btn-row">
+        <a href="order-entry.html?patient=sam" class="btn primary">+ Start order for this patient</a>
+        <a href="prescription-edit.html" class="btn secondary">+ Write new Prescription</a>
+        <a href="#" class="btn ghost">Edit</a>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <a href="patient-detail.html" class="active">Overview</a>
+      <a href="prescriptions.html">Prescriptions (3)</a>
+      <a href="patient-detail-orders.html">Orders (8)</a>
+      <a href="patient-detail-shipments.html">Shipments (11)</a>
+      <a href="clinical-edit.html">Clinical info</a>
+    </div>
+
+    <div class="row cols-3">
+      <div class="card">
+        <h3>Identity</h3>
+        <p><strong>Phone:</strong> (865) 555-0144</p>
+        <p><strong>Email:</strong> sam.sample@example.com</p>
+        <p><strong>DOB:</strong> 1985-03-14</p>
+        <p><strong>Gender:</strong> M</p>
+      </div>
+      <div class="card">
+        <h3>Shipping address</h3>
+        <p>123 Oak Ave<br>Knoxville, TN 37902</p>
+        <p><span class="status verified">Verified</span> <small>2025-12-04 · Smarty</small></p>
+        <a href="#" class="btn ghost sm" onclick="document.getElementById('addr-editor').style.display='block';return false;">Edit / Re-verify</a>
+
+        <div id="addr-editor" class="card subtle" style="display:none; margin-top: 12px; padding: 12px;">
+          <h3>Address editor</h3>
+          <div class="field"><label>Line 1</label><input value="123 Oak Ave" /></div>
+          <div class="field"><label>Line 2</label><input placeholder="Apt, suite…" /></div>
+          <div class="row cols-3">
+            <div class="field"><label>City</label><input value="Knoxville" /></div>
+            <div class="field"><label>State</label><input value="TN" /></div>
+            <div class="field"><label>Zip</label><input value="37902" /></div>
+          </div>
+          <div class="alert-banner" style="margin: 4px 0 8px;">Smarty suggests: <strong>123 Oak Avenue, Knoxville TN 37902-1144</strong> · <a href="#">Use suggestion</a></div>
+          <a href="#" class="btn primary sm">Verify &amp; save</a>
+        </div>
+      </div>
+      <div class="card">
+        <h3>HIPAA consent</h3>
+        <p><strong>SMS:</strong> 2024-09-12</p>
+        <p><strong>Email:</strong> 2024-09-12</p>
+        <p><small class="muted">NPP acknowledged at intake (paper). Reaffirmed per order.</small></p>
+        <a href="#" class="btn ghost sm">Re-affirm</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>At a glance</h3>
+      <p><strong>3</strong> active prescriptions · <strong>8</strong> orders ever · <strong>11</strong> shipments · last order <strong>2026-04-22</strong></p>
+      <p><strong>Allergies:</strong> Sulfa drugs <small class="muted">(patient-reported, reaction: rash)</small></p>
+      <p><strong>Diseases:</strong> Hypogonadism <small class="muted">(doctor)</small></p>
+      <p><strong>Other medications:</strong> <span class="muted">not asked at intake</span></p>
+    </div>
+
+    <div class="note">
+      <strong>Tabs:</strong> each tab is its own URL — Prescriptions / Orders / Shipments tabs reuse the global Prescriptions / Orders / Shipments lists with patient filter locked. Clinical info has its own edit screen since the three-state UI (null / empty / itemized) needs space.
+    </div>
+  </main>
+
+  <footer class="audit-footer">
+    <span>All actions on this screen are audit-logged · 6-year retention</span>
+  </footer>
+
+  <script src="nav.js"></script>
+</body>
+</html>

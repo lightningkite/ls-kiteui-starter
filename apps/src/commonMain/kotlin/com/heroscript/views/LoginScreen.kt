@@ -72,13 +72,6 @@ class LoginPage : Page, FullscreenPage {
                         authUI().render(this@auth)
                     }
                 }
-
-                centered.button {
-                    centered.text("Forgot password?")
-                    onClick {
-                        context.toast("Contact HeroScript Support to reset your password.")
-                    }
-                }
             }
         }
     }

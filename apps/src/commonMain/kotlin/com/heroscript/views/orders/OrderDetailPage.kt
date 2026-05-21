@@ -18,7 +18,7 @@ import com.lightningkite.reactive.core.Constant
 import com.lightningkite.reactive.core.Reactive
 import com.lightningkite.reactive.core.Signal
 import com.lightningkite.reactive.core.remember
-import com.lightningkite.reactive.core.rememberSuspending
+import com.lightningkite.reactive.core.remember
 import com.lightningkite.services.database.*
 import kotlin.time.Clock
 import kotlin.uuid.Uuid
@@ -28,70 +28,70 @@ class OrderDetailPage(val id: PrescriptionOrder.ID) : PageWithParent {
     override val title: Reactive<String> get() = Constant("Order")
     override var parentPage: Page = OrdersListPage()
 
-    private val order = rememberSuspending {
+    private val order = remember {
         currentSession()?.prescriptionOrders?.get(id)?.invoke()
     }
 
-    private val pharmacyOrder = rememberSuspending {
-        val session = currentSession() ?: return@rememberSuspending null
+    private val pharmacyOrder = remember {
+        val session = currentSession() ?: return@remember null
         order()?.fulfilled?.by?.let { session.pharmacyOrders[it].invoke() }
     }
 
-    private val shipment = rememberSuspending {
-        val session = currentSession() ?: return@rememberSuspending null
+    private val shipment = remember {
+        val session = currentSession() ?: return@remember null
         order()?.shipment?.let { session.shipments[it].invoke() }
     }
 
-    private val patient = rememberSuspending {
-        val session = currentSession() ?: return@rememberSuspending null
+    private val patient = remember {
+        val session = currentSession() ?: return@remember null
         order()?.let { session.patients[it.patient].invoke() }
     }
 
-    private val pharmacy = rememberSuspending {
-        val session = currentSession() ?: return@rememberSuspending null
+    private val pharmacy = remember {
+        val session = currentSession() ?: return@remember null
         order()?.let { session.pharmacies[it.pharmacy].invoke() }
     }
 
-    private val prescriber = rememberSuspending {
-        val session = currentSession() ?: return@rememberSuspending null
+    private val prescriber = remember {
+        val session = currentSession() ?: return@remember null
         order()?.let { session.users[it.prescribedBy].invoke() }
     }
 
-    private val product = rememberSuspending {
-        val session = currentSession() ?: return@rememberSuspending null
+    private val product = remember {
+        val session = currentSession() ?: return@remember null
         order()?.let { session.products[it.product].invoke() }
     }
 
     /** All sibling PrescriptionOrders bound to the same PharmacyOrder, including this one. */
-    private val siblings = rememberSuspending {
-        val session = currentSession() ?: return@rememberSuspending emptyList()
-        val poId = pharmacyOrder()?._id ?: return@rememberSuspending emptyList()
+    private val siblings = remember {
+        val session = currentSession() ?: return@remember emptyList()
+        val poId = pharmacyOrder()?._id ?: return@remember emptyList()
         session.prescriptionOrders.query(
             Query(condition<PrescriptionOrder> { it.fulfilled.notNull.by eq poId })
         )()
     }
 
     /** Shipments referenced by any sibling order. */
-    private val bundleShipments = rememberSuspending {
-        val session = currentSession() ?: return@rememberSuspending emptyList()
+    private val bundleShipments = remember {
+        val session = currentSession() ?: return@remember emptyList()
         val ids = siblings().mapNotNull { it.shipment }.distinct()
         ids.mapNotNull { session.shipments[it].invoke() }
     }
 
     /** Other PrescriptionOrders that point to the same Shipment as this order. */
-    private val shipmentSharers = rememberSuspending {
-        val session = currentSession() ?: return@rememberSuspending emptyList()
-        val sid = order()?.shipment ?: return@rememberSuspending emptyList()
+    private val shipmentSharers = remember {
+        val session = currentSession() ?: return@remember emptyList()
+        val sid = order()?.shipment ?: return@remember emptyList()
         session.prescriptionOrders.query(
             Query(condition<PrescriptionOrder> { (it.shipment eq sid) and (it._id neq id) })
         )()
     }
 
-    private val isOps = rememberSuspending {
+    private val isOps = remember {
         (currentSession()?.self?.invoke()?.role ?: UserRole.User) >= UserRole.Admin
     }
 
-    private val me = rememberSuspending { currentSession()?.self?.invoke() }
+    private val me = remember { currentSession()?.self?.invoke() }
 
     /**
      * Draft state: prescriber hasn't submitted yet and the order hasn't been cancelled.
@@ -325,13 +325,13 @@ class OrderDetailPage(val id: PrescriptionOrder.ID) : PageWithParent {
                             col {
                                 row {
                                     expanding.text {
-                                        val sibPatient = rememberSuspending {
+                                        val sibPatient = remember {
                                             session.patients[sib.patient].invoke()?.displayName ?: "—"
                                         }
                                         ::content { sibPatient() }
                                     }
                                     val sibPo = pharmacyOrder()
-                                    val sibShipment = rememberSuspending {
+                                    val sibShipment = remember {
                                         sib.shipment?.let { session.shipments[it].invoke() }
                                     }
                                     subtext {
@@ -339,7 +339,7 @@ class OrderDetailPage(val id: PrescriptionOrder.ID) : PageWithParent {
                                     }
                                 }
                                 subtext {
-                                    val sibProduct = rememberSuspending {
+                                    val sibProduct = remember {
                                         session.products[sib.product].invoke()?.name ?: "—"
                                     }
                                     ::content { sibProduct() }
@@ -379,8 +379,8 @@ class OrderDetailPage(val id: PrescriptionOrder.ID) : PageWithParent {
         card.row {
             val ctx = context
 
-            val canCancel = rememberSuspending {
-                val o = order() ?: return@rememberSuspending false
+            val canCancel = remember {
+                val o = order() ?: return@remember false
                 val status = derivedStatus(o, pharmacyOrder(), shipment())
                 (status == DerivedStatus.Submitted || status == DerivedStatus.InProcess) && o.shipment == null
             }

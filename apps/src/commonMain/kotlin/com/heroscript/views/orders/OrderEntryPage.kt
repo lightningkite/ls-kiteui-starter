@@ -21,7 +21,7 @@ import com.lightningkite.reactive.core.Constant
 import com.lightningkite.reactive.core.Reactive
 import com.lightningkite.reactive.core.Signal
 import com.lightningkite.reactive.core.remember
-import com.lightningkite.reactive.core.rememberSuspending
+import com.lightningkite.reactive.core.remember
 import com.lightningkite.services.database.*
 import kotlin.time.Clock
 import kotlin.uuid.Uuid
@@ -68,19 +68,19 @@ class OrderEntryPage(
 
     /* ---- Loaded reference data ---- */
 
-    private val clinic = rememberSuspending {
-        val session = currentSession() ?: return@rememberSuspending null
-        val cid = activeClinic() ?: return@rememberSuspending null
+    private val clinic = remember {
+        val session = currentSession() ?: return@remember null
+        val cid = activeClinic() ?: return@remember null
         session.clinics[cid].invoke()
     }
 
-    private val me = rememberSuspending {
+    private val me = remember {
         currentSession()?.self?.invoke()
     }
 
-    private val membershipsInClinic = rememberSuspending {
-        val session = currentSession() ?: return@rememberSuspending emptyList()
-        val cid = activeClinic() ?: return@rememberSuspending emptyList()
+    private val membershipsInClinic = remember {
+        val session = currentSession() ?: return@remember emptyList()
+        val cid = activeClinic() ?: return@remember emptyList()
         session.clinicMemberships.query(
             Query(condition<ClinicMembership> {
                 (it.clinic eq cid) and (it.acceptedAt neq null) and (it.deactivatedAt eq null)
@@ -88,34 +88,34 @@ class OrderEntryPage(
         )()
     }
 
-    private val prescribers = rememberSuspending {
-        val session = currentSession() ?: return@rememberSuspending emptyList<User>()
+    private val prescribers = remember {
+        val session = currentSession() ?: return@remember emptyList<User>()
         membershipsInClinic()
             .filter { it.role == ClinicRole.Prescriber }
             .mapNotNull { m -> session.users[m.user].invoke() }
             .filter { it.prescriber != null }
     }
 
-    private val selectedPrescriber = rememberSuspending {
-        val session = currentSession() ?: return@rememberSuspending null
+    private val selectedPrescriber = remember {
+        val session = currentSession() ?: return@remember null
         prescriberId()?.let { session.users[it].invoke() }
     }
 
-    private val refillPrescription = rememberSuspending {
-        val session = currentSession() ?: return@rememberSuspending null
+    private val refillPrescription = remember {
+        val session = currentSession() ?: return@remember null
         prescriptionId?.let { session.prescriptions[it].invoke() }
     }
 
-    private val refillProduct = rememberSuspending {
-        val session = currentSession() ?: return@rememberSuspending null
+    private val refillProduct = remember {
+        val session = currentSession() ?: return@remember null
         refillPrescription()?.let { session.products[it.product].invoke() }
     }
 
     /** Active mappings for the selected (product, formType). */
-    private val candidateMappings = rememberSuspending {
-        val session = currentSession() ?: return@rememberSuspending emptyList()
-        val pid = product()?._id ?: return@rememberSuspending emptyList()
-        val ft = formType() ?: return@rememberSuspending emptyList()
+    private val candidateMappings = remember {
+        val session = currentSession() ?: return@remember emptyList()
+        val pid = product()?._id ?: return@remember emptyList()
+        val ft = formType() ?: return@remember emptyList()
         session.productPharmacyMappings.query(
             Query(
                 condition = Condition.And(
@@ -143,10 +143,10 @@ class OrderEntryPage(
     }
 
     /** Pharmacies eligible for the chosen ship-to state, deduped from candidate mappings. */
-    private val eligiblePharmacies = rememberSuspending {
-        val session = currentSession() ?: return@rememberSuspending emptyList()
-        val dest = destination() ?: return@rememberSuspending emptyList()
-        val state = dest.address.state.takeIf { it.length == 2 } ?: return@rememberSuspending emptyList()
+    private val eligiblePharmacies = remember {
+        val session = currentSession() ?: return@remember emptyList()
+        val dest = destination() ?: return@remember emptyList()
+        val state = dest.address.state.takeIf { it.length == 2 } ?: return@remember emptyList()
         val mappings = candidateMappings()
         val byPharmacy = mappings.groupBy { it.pharmacy }
 
@@ -159,11 +159,11 @@ class OrderEntryPage(
             .sortedBy { (_, rows) -> rows.minOf { it.total } }
     }
 
-    private val recentSigs = rememberSuspending {
-        if (isRefill) return@rememberSuspending emptyList()
-        val session = currentSession() ?: return@rememberSuspending emptyList()
-        val pid = product()?._id ?: return@rememberSuspending emptyList()
-        val by = prescriberId() ?: return@rememberSuspending emptyList()
+    private val recentSigs = remember {
+        if (isRefill) return@remember emptyList()
+        val session = currentSession() ?: return@remember emptyList()
+        val pid = product()?._id ?: return@remember emptyList()
+        val by = prescriberId() ?: return@remember emptyList()
         session.prescriptions.query(
             Query(
                 condition = Condition.And(

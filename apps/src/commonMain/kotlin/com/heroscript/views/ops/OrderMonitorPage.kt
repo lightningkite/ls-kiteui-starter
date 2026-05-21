@@ -25,6 +25,7 @@ import com.lightningkite.reactive.core.Constant
 import com.lightningkite.reactive.core.Reactive
 import com.lightningkite.reactive.core.Signal
 import com.lightningkite.reactive.core.remember
+import com.lightningkite.reactive.core.remember
 import com.lightningkite.reactive.core.rememberSuspending
 import com.lightningkite.services.database.*
 import kotlinx.coroutines.delay
@@ -62,13 +63,13 @@ class OrderMonitorPage : PageWithParent {
     @QueryParameter
     val pharmacyFilter = Signal<Pharmacy.ID?>(null)
 
-    private val isOps = rememberSuspending {
+    private val isOps = remember {
         (currentSession()?.self?.invoke()?.role ?: UserRole.User) >= UserRole.Admin
     }
 
-    private val clinics = rememberSuspending {
-        val session = currentSession() ?: return@rememberSuspending emptyList()
-        if (!isOps()) return@rememberSuspending emptyList()
+    private val clinics = remember {
+        val session = currentSession() ?: return@remember emptyList()
+        if (!isOps()) return@remember emptyList()
         session.clinics.query(Query<Clinic>())()
     }
 
@@ -76,9 +77,9 @@ class OrderMonitorPage : PageWithParent {
 
     private val clinicOptions = remember { listOf<Clinic.ID?>(null) + clinics().map { it._id } }
 
-    private val pharmacies = rememberSuspending {
-        val session = currentSession() ?: return@rememberSuspending emptyList()
-        if (!isOps()) return@rememberSuspending emptyList()
+    private val pharmacies = remember {
+        val session = currentSession() ?: return@remember emptyList()
+        if (!isOps()) return@remember emptyList()
         session.pharmacies.query(Query<Pharmacy>())()
     }
 
@@ -133,14 +134,14 @@ class OrderMonitorPage : PageWithParent {
     /* ---- List data ---- */
 
     /**
-     * Built as a rememberSuspending because it depends on `isOps()` (itself a
-     * rememberSuspending). A non-suspending `remember` here causes the list pipeline
+     * Built as a remember because it depends on `isOps()` (itself a
+     * remember). A non-suspending `remember` here causes the list pipeline
      * downstream of `data` to wedge while `isOps` is still loading — the page renders
-     * the KPIs (which are rememberSuspending) but the list area never populates.
+     * the KPIs (which are remember) but the list area never populates.
      */
-    val data = rememberSuspending {
-        val session = currentSession() ?: return@rememberSuspending null
-        if (!isOps()) return@rememberSuspending null
+    val data = remember {
+        val session = currentSession() ?: return@remember null
+        if (!isOps()) return@remember null
 
         val parts: List<Condition<PrescriptionOrder>?> = buildList {
             clinicFilter()?.let { cid ->
@@ -188,10 +189,10 @@ class OrderMonitorPage : PageWithParent {
                 kpiRow()
                 filterRow()
 
-                val rawItems = rememberSuspending { data()?.invoke() ?: emptyList() }
+                val rawItems = remember { data()?.invoke() ?: emptyList() }
 
-                val filtered = rememberSuspending {
-                    val session = currentSession() ?: return@rememberSuspending emptyList()
+                val filtered = remember {
+                    val session = currentSession() ?: return@remember emptyList()
                     val items = rawItems()
                     val q = search().trim().lowercase()
                     val status = statusFilter()
@@ -411,11 +412,11 @@ class OrderMonitorPage : PageWithParent {
 
         shownWhen { showReroute() }.card.col {
             h4("Re-route to alternate pharmacy")
-            val eligible = rememberSuspending {
-                val session = currentSession() ?: return@rememberSuspending emptyList()
+            val eligible = remember {
+                val session = currentSession() ?: return@remember emptyList()
                 val o = order()
                 val state = o.destination.address.state.takeIf { it.length == 2 }
-                    ?: return@rememberSuspending emptyList()
+                    ?: return@remember emptyList()
                 val mappings = session.productPharmacyMappings.query(
                     Query(
                         condition = Condition.And(
@@ -457,8 +458,8 @@ class OrderMonitorPage : PageWithParent {
 
         shownWhen { showContact() }.card.col {
             h4("Contact pharmacy")
-            val pharmacy = rememberSuspending {
-                val session = currentSession() ?: return@rememberSuspending null
+            val pharmacy = remember {
+                val session = currentSession() ?: return@remember null
                 session.pharmacies[order().pharmacy].invoke()
             }
             row {

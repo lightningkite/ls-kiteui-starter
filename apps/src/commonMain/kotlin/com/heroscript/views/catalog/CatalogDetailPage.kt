@@ -18,7 +18,7 @@ import com.lightningkite.reactive.core.MutableReactive
 import com.lightningkite.reactive.core.Reactive
 import com.lightningkite.reactive.core.Signal
 import com.lightningkite.reactive.core.remember
-import com.lightningkite.reactive.core.rememberSuspending
+import com.lightningkite.reactive.core.remember
 import com.lightningkite.services.database.*
 import kotlin.time.Clock
 
@@ -30,12 +30,12 @@ class CatalogDetailPage(
     override val title: Reactive<String> get() = Constant("Product")
     override var parentPage: Page = CatalogListPage()
 
-    private val isOps = rememberSuspending {
+    private val isOps = remember {
         (currentSession()?.self?.invoke()?.role ?: UserRole.User) >= UserRole.Admin
     }
 
-    private val loaded = rememberSuspending {
-        val session = currentSession() ?: return@rememberSuspending null
+    private val loaded = remember {
+        val session = currentSession() ?: return@remember null
         session.products[id].invoke()
     }
 
@@ -43,8 +43,8 @@ class CatalogDetailPage(
     private val editMode = Signal(startInEditMode)
     private val isNew = Signal(false)
 
-    private val mappings = rememberSuspending {
-        val session = currentSession() ?: return@rememberSuspending emptyList()
+    private val mappings = remember {
+        val session = currentSession() ?: return@remember emptyList()
         session.productPharmacyMappings.query(
             Query(condition<ProductPharmacyMapping> { it.product eq id })
         )()
@@ -302,8 +302,8 @@ class CatalogDetailPage(
     }
 
     private fun ElementWriter.CanAddTheme.mappingReadOnly(mapping: ProductPharmacyMapping) {
-        val pharmacyName = rememberSuspending {
-            val session = currentSession() ?: return@rememberSuspending ""
+        val pharmacyName = remember {
+            val session = currentSession() ?: return@remember ""
             session.pharmacies[mapping.pharmacy].invoke()?.name ?: ""
         }
         row {
@@ -325,8 +325,8 @@ class CatalogDetailPage(
     }
 
     private fun ElementWriter.CanAddTheme.mappingEditor(mapping: ProductPharmacyMapping) {
-        val pharmacyName = rememberSuspending {
-            val session = currentSession() ?: return@rememberSuspending ""
+        val pharmacyName = remember {
+            val session = currentSession() ?: return@remember ""
             session.pharmacies[mapping.pharmacy].invoke()?.name ?: ""
         }
         val strengthCustomizable = Signal(mapping.strength == null)

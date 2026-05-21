@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HeroScript — Patients</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="wf-banner">Wireframe · V1 proposed shape — not the currently built app</div>
+  <header class="appbar">
+    <button class="nav-toggle" data-nav-toggle aria-label="Menu">☰</button>
+    <a href="index.html" class="logo">HeroScript</a>
+    <nav>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="patients.html" class="active">Patients</a>
+      <a href="orders.html">Orders</a>
+      <a href="refill-queue.html">Refills</a>
+      <a href="catalog.html">Catalog</a>
+    </nav>
+    <div class="appbar-right">
+      <span class="chip">Gameday Knoxville</span>
+      <a href="profile.html" class="chip role">Dr. Reeves · Prescriber</a>
+    </div>
+  </header>
+
+  <main>
+    <div class="page-head">
+      <h1>Patients</h1>
+      <p class="page-sub">Clinic-scoped. Filterable list doubles as report (PRD § F11).</p>
+    </div>
+
+    <div class="card">
+      <div class="row">
+        <div class="field"><label>Search</label><input placeholder="Name, DOB, phone…" /></div>
+        <div class="field"><label>Recent order</label>
+          <select><option>Any</option><option>Within 30d</option><option>Within 90d</option><option>None</option></select>
+        </div>
+        <div class="field"><label>Address</label>
+          <select><option>Any</option><option>Unverified</option><option>Verified</option></select>
+        </div>
+      </div>
+      <div class="btn-row" style="margin-top: 8px;">
+        <a href="patient-detail.html?new=1" class="btn primary">+ Add patient</a>
+        <a href="#" class="btn tertiary">More filters ▾</a>
+      </div>
+    </div>
+
+    <div class="table-wrap responsive">
+      <table>
+        <thead>
+          <tr><th>Name</th><th>DOB</th><th>State</th><th>Consent</th><th>Last order</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td data-label="Name"><a href="patient-detail.html">Sam Sample</a></td>
+            <td data-label="DOB">1985-03-14</td>
+            <td data-label="State">TN</td>
+            <td data-label="Consent"><span class="tag">SMS</span> <span class="tag">Email</span></td>
+            <td data-label="Last order">2026-04-22</td>
+          </tr>
+          <tr>
+            <td data-label="Name"><a href="patient-detail.html">Jordan Jones</a></td>
+            <td data-label="DOB">1978-11-02</td>
+            <td data-label="State">TN</td>
+            <td data-label="Consent"><span class="tag">SMS</span></td>
+            <td data-label="Last order">2026-05-01</td>
+          </tr>
+          <tr>
+            <td data-label="Name"><a href="patient-detail.html">Alex Adams</a></td>
+            <td data-label="DOB">1990-07-30</td>
+            <td data-label="State">TN</td>
+            <td data-label="Consent"><span class="muted">none</span></td>
+            <td data-label="Last order"><span class="muted">—</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note">
+      <strong>Pattern:</strong> Tap a row on mobile → full-screen detail with back. Desktop adds split view (list left, detail right). Same component.
+    </div>
+  </main>
+
+  <footer class="audit-footer">
+    <span>All actions on this screen are audit-logged · 6-year retention</span>
+  </footer>
+
+  <script src="nav.js"></script>
+</body>
+</html>

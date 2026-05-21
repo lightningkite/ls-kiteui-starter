@@ -19,7 +19,7 @@ import com.lightningkite.reactive.context.reactive
 import com.lightningkite.reactive.core.Constant
 import com.lightningkite.reactive.core.Reactive
 import com.lightningkite.reactive.core.Signal
-import com.lightningkite.reactive.core.rememberSuspending
+import com.lightningkite.reactive.core.remember
 import com.lightningkite.services.data.toEmailAddress
 import com.lightningkite.services.data.toPhoneNumber
 import kotlin.time.Clock
@@ -44,8 +44,8 @@ class PatientDetailPage(
 
     private val editMode = Signal(startInEditMode)
 
-    private val loaded = rememberSuspending {
-        val session = currentSession() ?: return@rememberSuspending null
+    private val loaded = remember {
+        val session = currentSession() ?: return@remember null
         session.patients[id].invoke()
     }
 

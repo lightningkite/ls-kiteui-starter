@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HeroScript — Network Order Monitor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="wf-banner">Wireframe · V1 proposed shape — not the currently built app</div>
+  <header class="appbar">
+    <button class="nav-toggle" data-nav-toggle aria-label="Menu">☰</button>
+    <a href="index.html" class="logo">HeroScript</a>
+    <nav>
+      <a href="order-monitor.html" class="active">Monitor</a>
+      <a href="dea-queue.html">DEA Queue</a>
+      <a href="invoices.html">Invoices</a>
+      <a href="audit-log.html">Audit Log</a>
+    </nav>
+    <div class="appbar-right">
+      <a href="profile.html" class="chip role">Ops Admin</a>
+    </div>
+  </header>
+
+  <main>
+    <div class="page-head">
+      <h1>Network Order Monitor</h1>
+      <p class="page-sub">Ops control room. Same Orders list component used by clinics, no clinic filter locked. Adds alert column + intervention actions. Every action audit-logged.</p>
+    </div>
+
+    <div class="kpi-row">
+      <div class="kpi">
+        <div class="label">Active orders</div>
+        <div class="num">142</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Awaiting accept &gt; 1h</div>
+        <div class="num">8</div>
+        <div class="delta warn">3 over 4h</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Rejected today</div>
+        <div class="num">3</div>
+        <div class="delta danger">Above target</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Avg ship time</div>
+        <div class="num">2.4d</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="row">
+        <div class="field"><label>Alert</label>
+          <select><option>Any</option><option>Stuck (no accept &gt; 1h)</option><option>Rejected</option><option>Address verification failed</option></select>
+        </div>
+        <div class="field"><label>Clinic</label><select><option>Any</option><option>Gameday Knoxville</option><option>Gameday Nashville</option><option>Gameday Memphis</option></select></div>
+        <div class="field"><label>Pharmacy</label><select><option>Any</option><option>LifeFile Hallandale</option><option>LifeFile Compounding</option><option>Empower</option></select></div>
+      </div>
+      <a href="#" class="btn tertiary" style="margin-top: 8px;">Columns ▾</a>
+    </div>
+
+    <div class="table-wrap responsive">
+      <table>
+        <thead>
+          <tr><th>Order</th><th>Clinic</th><th>Patient</th><th>Pharmacy</th><th>Status</th><th>Alert</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td data-label="Order"><a href="order-detail.html">ord-2cc8</a></td>
+            <td data-label="Clinic">Gameday Knoxville</td>
+            <td data-label="Patient">Alex Adams</td>
+            <td data-label="Pharmacy">LifeFile Compounding</td>
+            <td data-label="Status"><span class="status submitted">Submitted</span></td>
+            <td data-label="Alert"><span class="status stuck">No accept &gt; 4h</span></td>
+            <td data-label="Actions">
+              <div class="btn-row">
+                <a href="#" class="btn primary sm">Re-route</a>
+                <a href="#" class="btn ghost sm">Contact</a>
+                <a href="#" class="btn ghost sm">Cancel</a>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td data-label="Order"><a href="order-detail.html">ord-4d12</a></td>
+            <td data-label="Clinic">Gameday Memphis</td>
+            <td data-label="Patient">Lee Kim</td>
+            <td data-label="Pharmacy">Empower</td>
+            <td data-label="Status"><span class="status rejected">Rejected (line)</span></td>
+            <td data-label="Alert">Out of stock</td>
+            <td data-label="Actions">
+              <div class="btn-row">
+                <a href="#" class="btn primary sm">Re-route</a>
+                <a href="#" class="btn ghost sm">Contact</a>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td data-label="Order"><a href="order-detail.html">ord-8e7c</a></td>
+            <td data-label="Clinic">Gameday Nashville</td>
+            <td data-label="Patient">Pat Pike</td>
+            <td data-label="Pharmacy">LifeFile Hallandale</td>
+            <td data-label="Status"><span class="status submitted">Submitted</span></td>
+            <td data-label="Alert"><span class="status stuck">Address verify failed</span></td>
+            <td data-label="Actions">
+              <div class="btn-row">
+                <a href="#" class="btn secondary sm">Open address</a>
+                <a href="#" class="btn ghost sm">Contact</a>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note">
+      <strong>Every Ops action audit-logged</strong> (PRD § F14). The <a href="audit-log.html">Audit Log</a> is the queryable view; per-entity drill-down is via the audit-log filter (e.g. ?target=ord-2cc8).
+    </div>
+  </main>
+
+  <script src="nav.js"></script>
+</body>
+</html>

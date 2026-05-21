@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HeroScript — Sign in</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="wf-banner">Wireframe · V1 proposed shape — not the currently built app</div>
+  <header class="appbar">
+    <a href="index.html" class="logo">HeroScript</a>
+    <div style="flex:1"></div>
+    <a href="index.html" class="btn tertiary">Back to index</a>
+  </header>
+
+  <main style="max-width: 440px;">
+    <div class="page-head">
+      <h1>Sign in</h1>
+      <p class="page-sub">Email + one-time PIN, or password + MFA. Shell only — no real auth on this mockup.</p>
+    </div>
+
+    <div class="card">
+      <div class="field">
+        <label>Email</label>
+        <input type="email" value="prescriber@gameday.example" />
+      </div>
+      <div class="field">
+        <label>PIN (sent to email)</label>
+        <input type="text" placeholder="000000" />
+        <div class="help">Can send a new code in 28s</div>
+      </div>
+      <div class="btn-row" style="margin-top: 16px;">
+        <a href="dashboard.html" class="btn primary lg">Sign in</a>
+        <a href="#" class="btn ghost">Resend code</a>
+      </div>
+    </div>
+
+    <div class="card subtle">
+      <h3>First-time activation</h3>
+      <p class="muted"><small>Invite link from ClinicAdmin or HeroScript Ops → /activate/{token} → set password → enroll MFA → land on Dashboard.</small></p>
+    </div>
+  </main>
+
+  <script src="nav.js"></script>
+</body>
+</html>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HeroScript — Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="wf-banner">Wireframe · V1 proposed shape — not the currently built app</div>
+  <header class="appbar">
+    <button class="nav-toggle" data-nav-toggle aria-label="Menu">☰</button>
+    <a href="index.html" class="logo">HeroScript</a>
+    <nav>
+      <a href="dashboard.html" class="active">Dashboard</a>
+      <a href="patients.html">Patients</a>
+      <a href="orders.html">Orders</a>
+      <a href="refill-queue.html">Refills</a>
+      <a href="catalog.html">Catalog</a>
+    </nav>
+    <div class="appbar-right">
+      <span class="chip">Gameday Knoxville</span>
+      <a href="profile.html" class="chip role">Dr. Reeves · Prescriber</a>
+    </div>
+  </header>
+
+  <main>
+    <div class="page-head">
+      <h1>Good morning, Dr. Reeves</h1>
+      <p class="page-sub">2 drafts await your submission. Your DEA expires in 47 days — plan a renewal in <a href="credentials.html">Credentials</a>.</p>
+    </div>
+
+    <div class="kpi-row">
+      <div class="kpi">
+        <div class="label">Drafts to submit</div>
+        <div class="num">2</div>
+        <div class="delta warn">▲ 2 since yesterday</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Refills due · 7d</div>
+        <div class="num">5</div>
+        <div class="delta danger">1 overdue</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Open orders</div>
+        <div class="num">12</div>
+        <div class="delta">3 shipped this week</div>
+      </div>
+    </div>
+
+    <div class="card flush">
+      <div class="card-head">
+        <h3>Drafts awaiting your submission</h3>
+        <a href="orders.html" class="btn tertiary">View all orders →</a>
+      </div>
+      <div class="table-wrap responsive" style="border: none; box-shadow: none; border-radius: 0; margin: 0;">
+        <table>
+          <thead>
+            <tr><th>Order</th><th>Patient</th><th>Lines</th><th>Pharmacy</th><th>Drafted by</th><th></th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td data-label="Order"><a href="order-detail.html">ord-7c4e</a></td>
+              <td data-label="Patient">Sam Sample</td>
+              <td data-label="Lines">2 Rx · Testosterone Cyp, Anastrozole</td>
+              <td data-label="Pharmacy">LifeFile Hallandale</td>
+              <td data-label="Drafted by">Tara (MA)</td>
+              <td data-label=""><a href="order-detail.html" class="btn primary sm">Review &amp; submit</a></td>
+            </tr>
+            <tr>
+              <td data-label="Order"><a href="order-detail.html">ord-9b21</a></td>
+              <td data-label="Patient">Jordan Jones</td>
+              <td data-label="Lines">1 Rx · Testosterone Cyp</td>
+              <td data-label="Pharmacy">Empower</td>
+              <td data-label="Drafted by">Tara (MA)</td>
+              <td data-label=""><a href="order-detail.html" class="btn primary sm">Review &amp; submit</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="card">
+        <h3>Refill queue</h3>
+        <p style="margin-top:0;"><strong>5 patients</strong> due in next 7 days.</p>
+        <p><span class="status rejected">1 overdue</span> Sam Sample · Testosterone Cyp · 3 days late</p>
+        <div class="btn-row" style="margin-top: 12px;">
+          <a href="refill-queue.html" class="btn secondary">Open refill queue</a>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Recent activity</h3>
+        <ul style="padding-left: 18px; margin: 8px 0;">
+          <li>ord-5af3 <span class="status shipped">Shipped</span> · FedEx 7XX…9821 · Sam Sample</li>
+          <li>ord-2cc8 <span class="status accepted">Accepted</span> · LifeFile Hallandale</li>
+          <li>ord-1fea <span class="status submitted">Submitted</span> · 2h ago</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card subtle">
+      <h3>Quick actions</h3>
+      <div class="btn-row" style="margin-top: 8px;">
+        <a href="order-entry.html" class="btn primary">+ New order</a>
+        <a href="prescription-edit.html" class="btn secondary">+ Write Prescription</a>
+        <a href="patient-detail.html?new=1" class="btn ghost">+ Add patient</a>
+        <a href="refill-queue.html" class="btn ghost">Triage refills</a>
+      </div>
+    </div>
+
+    <div class="note">
+      <strong>Role variants:</strong>
+      <ul>
+        <li><strong>MedicalAssistant:</strong> "My drafts in progress" instead of "Drafts awaiting your submission". No DEA card or credentials link. Can draft Prescriptions but cannot sign — routes to assigned Prescriber.</li>
+        <li><strong>ClinicAdmin:</strong> Pending user invites, expiring DEA/state licenses across clinic, open invoices, last settlement.</li>
+        <li><strong>Ops Admin:</strong> Different nav shell — see <a href="order-monitor.html">Network Order Monitor</a>.</li>
+      </ul>
+    </div>
+  </main>
+
+  <footer class="audit-footer">
+    <span>All actions on this screen are audit-logged · 6-year retention</span>
+  </footer>
+
+  <script src="nav.js"></script>
+</body>
+</html>

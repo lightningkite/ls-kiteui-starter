@@ -18,7 +18,7 @@ import com.lightningkite.reactive.core.Constant
 import com.lightningkite.reactive.core.MutableReactive
 import com.lightningkite.reactive.core.Reactive
 import com.lightningkite.reactive.core.Signal
-import com.lightningkite.reactive.core.rememberSuspending
+import com.lightningkite.reactive.core.remember
 import com.lightningkite.services.data.toEmailAddress
 import com.lightningkite.services.database.Query
 import com.lightningkite.services.database.and
@@ -35,19 +35,19 @@ class ClinicSettingsPage : PageWithParent {
     private val editMode = Signal(false)
     private val draft = Signal<Clinic?>(null)
 
-    private val loadedClinic = rememberSuspending {
-        val session = currentSession() ?: return@rememberSuspending null
-        val cid = activeClinic() ?: return@rememberSuspending null
+    private val loadedClinic = remember {
+        val session = currentSession() ?: return@remember null
+        val cid = activeClinic() ?: return@remember null
         session.clinics[cid].invoke()
     }
 
-    private val me = rememberSuspending {
+    private val me = remember {
         currentSession()?.self?.invoke()
     }
 
-    private val memberships = rememberSuspending {
-        val session = currentSession() ?: return@rememberSuspending emptyList()
-        val cid = activeClinic() ?: return@rememberSuspending emptyList()
+    private val memberships = remember {
+        val session = currentSession() ?: return@remember emptyList()
+        val cid = activeClinic() ?: return@remember emptyList()
         session.clinicMemberships.query(
             Query(condition<ClinicMembership> {
                 (it.clinic eq cid) and (it.acceptedAt neq null) and (it.deactivatedAt eq null)
@@ -55,12 +55,12 @@ class ClinicSettingsPage : PageWithParent {
         )()
     }
 
-    private val myMembership: Reactive<ClinicMembership?> = rememberSuspending {
-        val u = me() ?: return@rememberSuspending null
+    private val myMembership: Reactive<ClinicMembership?> = remember {
+        val u = me() ?: return@remember null
         memberships().firstOrNull { it.user == u._id }
     }
 
-    private val isClinicAdmin: Reactive<Boolean> = rememberSuspending {
+    private val isClinicAdmin: Reactive<Boolean> = remember {
         myMembership()?.role == ClinicRole.ClinicAdmin
     }
 

@@ -8,7 +8,7 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.reactive.context.invoke
 import com.lightningkite.reactive.core.Reactive
-import com.lightningkite.reactive.core.rememberSuspending
+import com.lightningkite.reactive.core.remember
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Clock
 
@@ -46,29 +46,29 @@ fun ElementWriter.CanAddTheme.orderRowContent(
     showClinic: Boolean = false,
     showAlert: Boolean = false,
 ) = col {
-    val pharmacyOrder = rememberSuspending {
-        val session = currentSession() ?: return@rememberSuspending null
+    val pharmacyOrder = remember {
+        val session = currentSession() ?: return@remember null
         order().fulfilled?.by?.let { session.pharmacyOrders[it].invoke() }
     }
-    val shipment = rememberSuspending {
-        val session = currentSession() ?: return@rememberSuspending null
+    val shipment = remember {
+        val session = currentSession() ?: return@remember null
         order().shipment?.let { session.shipments[it].invoke() }
     }
-    val patient = rememberSuspending {
-        val session = currentSession() ?: return@rememberSuspending null
+    val patient = remember {
+        val session = currentSession() ?: return@remember null
         session.patients[order().patient].invoke()
     }
-    val product = rememberSuspending {
-        val session = currentSession() ?: return@rememberSuspending null
+    val product = remember {
+        val session = currentSession() ?: return@remember null
         session.products[order().product].invoke()
     }
-    val prescriber = rememberSuspending {
-        val session = currentSession() ?: return@rememberSuspending null
+    val prescriber = remember {
+        val session = currentSession() ?: return@remember null
         session.users[order().prescribedBy].invoke()
     }
-    val clinic = rememberSuspending {
-        if (!showClinic) return@rememberSuspending null
-        val session = currentSession() ?: return@rememberSuspending null
+    val clinic = remember {
+        if (!showClinic) return@remember null
+        val session = currentSession() ?: return@remember null
         session.clinics[order().clinic].invoke()
     }
 

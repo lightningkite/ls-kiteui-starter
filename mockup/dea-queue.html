@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HeroScript — DEA Verification Queue</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="wf-banner">Wireframe · V1 proposed shape — not the currently built app</div>
+  <header class="appbar">
+    <button class="nav-toggle" data-nav-toggle aria-label="Menu">☰</button>
+    <a href="index.html" class="logo">HeroScript</a>
+    <nav>
+      <a href="order-monitor.html">Monitor</a>
+      <a href="dea-queue.html" class="active">DEA Queue</a>
+      <a href="invoices.html">Invoices</a>
+      <a href="audit-log.html">Audit Log</a>
+    </nav>
+    <div class="appbar-right">
+      <a href="profile.html" class="chip role">Ops Admin</a>
+    </div>
+  </header>
+
+  <main>
+    <div class="page-head">
+      <h1>DEA Verification Queue</h1>
+      <p class="page-sub">Filtered <code>PrescriberLicensing</code> view: pending DEA reviews + pending state-license reviews + expiring at 60/30/7 days. Click → User detail with Verify modal pre-opened.</p>
+    </div>
+
+    <div class="card">
+      <div class="row">
+        <div class="field"><label>Status</label>
+          <select><option>Pending verification</option><option>Expiring 60d</option><option>Expiring 30d</option><option>Expiring 7d</option><option>Expired</option></select>
+        </div>
+        <div class="field"><label>Type</label>
+          <select><option>Any</option><option>DEA</option><option>State medical license</option></select>
+        </div>
+      </div>
+    </div>
+
+    <div class="table-wrap responsive">
+      <table>
+        <thead>
+          <tr><th>Prescriber</th><th>Clinic(s)</th><th>Type</th><th>Number</th><th>Expires</th><th>Image</th><th></th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td data-label="Prescriber">Dr. Maya Aronson</td>
+            <td data-label="Clinics">Gameday Nashville</td>
+            <td data-label="Type">DEA</td>
+            <td data-label="Number">MA9182733</td>
+            <td data-label="Expires">2027-03-22</td>
+            <td data-label="Image"><a href="#">view</a></td>
+            <td data-label=""><a href="#" class="btn primary sm">Open verification</a></td>
+          </tr>
+          <tr>
+            <td data-label="Prescriber">Dr. Sam Park</td>
+            <td data-label="Clinics">Gameday Memphis</td>
+            <td data-label="Type">State (TN)</td>
+            <td data-label="Number">MD-91255</td>
+            <td data-label="Expires">2027-01-15</td>
+            <td data-label="Image"><a href="#">view</a></td>
+            <td data-label=""><a href="#" class="btn primary sm">Open verification</a></td>
+          </tr>
+          <tr>
+            <td data-label="Prescriber">Dr. Helena Reeves</td>
+            <td data-label="Clinics">Gameday Knoxville, Nashville</td>
+            <td data-label="Type">DEA (expiring)</td>
+            <td data-label="Number">BR1234567</td>
+            <td data-label="Expires"><span class="status pending">2026-07-06 · 47d</span></td>
+            <td data-label="Image"><a href="#">view</a></td>
+            <td data-label=""><a href="#" class="btn secondary sm">Send reminder</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note">
+      V1 is a manual review queue. V2 adds Verisys auto-lookup. Each approval writes a <code>PrescriberLicensing.Review</code> with byUser, approved, notes, at — fully audit-logged.
+    </div>
+  </main>
+
+  <script src="nav.js"></script>
+</body>
+</html>

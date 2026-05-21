@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HeroScript Wireframe — Index</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="wf-banner">Wireframe · V1 proposed shape — not the currently built app</div>
+  <header class="appbar">
+    <button class="nav-toggle" data-nav-toggle aria-label="Menu">☰</button>
+    <a href="index.html" class="logo">HeroScript</a>
+    <nav>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="patients.html">Patients</a>
+      <a href="orders.html">Orders</a>
+      <a href="refill-queue.html">Refills</a>
+      <a href="catalog.html">Catalog</a>
+    </nav>
+    <div class="appbar-right">
+      <span class="chip">Gameday Knoxville</span>
+      <a href="profile.html" class="chip role">Dr. Reeves · Prescriber</a>
+    </div>
+  </header>
+
+  <main>
+    <div class="page-head">
+      <h1>HeroScript V1 — click-through wireframe</h1>
+      <p class="page-sub">Discussion artifact for Jon. Embodies the basket-first Order shape priced in the estimate. The currently built Kotlin app composes one prescription per order; the proposed shape (estimate § Major forks) is what this mockup demonstrates.</p>
+    </div>
+
+    <div class="note">
+      <strong>Reading the wireframe:</strong>
+      <ul>
+        <li><strong>Prescription</strong> is durable. It's the clinical authorization (patient + product + sig + endsAt) and exists independently of any fulfillment.</li>
+        <li><strong>Order</strong> is a basket of fulfillments. One ship-to, one pharmacy, N <code>PrescriptionOrder</code> lines (each against an existing or just-written Prescription), one dispatch.</li>
+        <li><strong>ID.me</strong> fires when signing a <em>new Prescription</em>, not at order submit. Refill orders against existing Rxs reuse the prior approval.</li>
+        <li><strong>Sig templates</strong> are a static client-side catalog that populates a freehand instructions textarea.</li>
+        <li><strong>Pharmacy licensing</strong> filters on ship-to state. Pharmacy eligibility = intersection of all basket products ∩ licensed states.</li>
+      </ul>
+    </div>
+
+    <h2>Alternative model shapes</h2>
+    <div class="card" style="border-color: #b8d6d4;">
+      <p style="margin-top: 0;">The order model has a real fork. Two axes (durable Prescription? separate dispatch entity?) generate three viable shapes. This mockup walks <strong>Combined Basket</strong>; the alternative is mocked too.</p>
+      <ul>
+        <li><strong>Combined Basket (this mockup).</strong> One screen: patient → lines → pharmacy → submit. <a href="order-entry.html">Walk through Order Entry →</a></li>
+        <li><strong>Separated Procurement.</strong> Prescribers approve; a procurement operator picks pharmacies in batch later. Enables clinical-shipping batching. <a href="procurement-queue.html">View Procurement Queue →</a></li>
+        <li><strong>Flat Order (PRD § 09).</strong> No durable Prescription. Described in comparison only — not recommended.</li>
+      </ul>
+      <p><a href="model-comparison.html" class="btn primary sm">Open full model comparison →</a></p>
+      <p style="margin-bottom: 0;"><small class="muted">Recommendation between Separated Procurement and Combined Basket depends on Gameday's mix of clinic-bulk-shipping vs direct-to-patient. The comparison page poses the question to ask Jon.</small></p>
+    </div>
+
+    <h2>Clinic screens</h2>
+    <ul class="screen-list">
+      <li>
+        <a class="screen-link" href="login.html"><span class="num-badge">01</span>Login</a>
+        <small>Email + PIN. Shell only — no auth.</small>
+      </li>
+      <li>
+        <a class="screen-link" href="dashboard.html"><span class="num-badge">02</span>Dashboard</a>
+        <small>Role-segmented widgets. Demo shows Prescriber; MA / ClinicAdmin / Ops variants called out.</small>
+      </li>
+      <li>
+        <a class="screen-link" href="patients.html"><span class="num-badge">03</span>Patients list</a>
+        <small>Clinic-scoped patient table with filters.</small>
+      </li>
+      <li>
+        <a class="screen-link" href="patient-detail.html"><span class="num-badge">04</span>Patient · Overview</a>
+        <small>Identity, address, consent. Tabs for Prescriptions / Orders / Shipments / Clinical info.</small>
+      </li>
+      <li>
+        <a class="screen-link" href="prescriptions.html"><span class="num-badge">04b</span>Patient · Prescriptions</a>
+        <small>Durable Rx list. Each Rx → <a href="prescription-edit.html">edit</a> or "Create order from this Rx."</small>
+      </li>
+      <li>
+        <a class="screen-link" href="patient-detail-orders.html"><span class="num-badge">04c</span>Patient · Orders</a>
+        <small>All orders ever placed for this patient (filter-locked Orders list).</small>
+      </li>
+      <li>
+        <a class="screen-link" href="patient-detail-shipments.html"><span class="num-badge">04d</span>Patient · Shipments</a>
+        <small>All shipments to this patient (filter-locked Shipments list).</small>
+      </li>
+      <li>
+        <a class="screen-link" href="clinical-edit.html"><span class="num-badge">04e</span>Patient · Clinical info</a>
+        <small>Allergies / diseases / other medications. Three-state UI per section.</small>
+      </li>
+      <li>
+        <a class="screen-link" href="prescription-edit.html"><span class="num-badge">04f</span>Write / edit Prescription</a>
+        <small>The clinical authorization screen. Sign fires ID.me (per-Rx cadence).</small>
+      </li>
+      <li>
+        <a class="screen-link" href="catalog.html"><span class="num-badge">05</span>Catalog list</a>
+        <small>Read-only product list. Click through to <a href="catalog-detail.html">product detail</a>.</small>
+      </li>
+      <li>
+        <a class="screen-link" href="catalog-detail.html"><span class="num-badge">05b</span>Catalog detail</a>
+        <small>One product: forms, strengths, pharmacy mappings, lead times.</small>
+      </li>
+      <li>
+        <a class="screen-link" href="order-entry.html"><span class="num-badge">06</span>Order Entry — basket flow</a>
+        <small>Step 1 patient/ship-to → Step 2 add Rx lines (existing or new) → Step 3 pick eligible pharmacy → Step 4 review &amp; submit.</small>
+      </li>
+      <li>
+        <a class="screen-link" href="idme-modal.html"><span class="num-badge">06b</span>ID.me step-up modal</a>
+        <small>The per-Rx step-up — fires when signing a new prescription.</small>
+      </li>
+      <li>
+        <a class="screen-link" href="order-detail.html"><span class="num-badge">07</span>Order Detail</a>
+        <small>Basket view: header + timeline + per-line accept/reject/shipment + sibling shipments.</small>
+      </li>
+      <li>
+        <a class="screen-link" href="orders.html"><span class="num-badge">08</span>Orders list</a>
+        <small>Table with status pills. Click a row → Order Detail.</small>
+      </li>
+      <li>
+        <a class="screen-link" href="refill-queue.html"><span class="num-badge">09</span>Refill Queue</a>
+        <small>Rxs approaching exhaustion. One-click reorder reuses prior ID.me approval.</small>
+      </li>
+      <li>
+        <a class="screen-link" href="profile.html"><span class="num-badge">10</span>Profile</a>
+        <small>Identity, MFA, clinic memberships. DEA + ID.me on <a href="credentials.html">Credentials</a>.</small>
+      </li>
+      <li>
+        <a class="screen-link" href="credentials.html"><span class="num-badge">10b</span>Credentials (sub-page)</a>
+        <small>DEA license, state medical licenses, ID.me linkage.</small>
+      </li>
+    </ul>
+
+    <h2>Ops screens (HeroScript internal)</h2>
+    <ul class="screen-list">
+      <li>
+        <a class="screen-link" href="order-monitor.html"><span class="num-badge">11</span>Network Order Monitor</a>
+        <small>KPI tiles + network-wide order table with intervention actions.</small>
+      </li>
+      <li>
+        <a class="screen-link" href="dea-queue.html"><span class="num-badge">12</span>DEA Verification Queue</a>
+        <small>Pending DEA + state-license reviews. Click into User detail with Verify modal.</small>
+      </li>
+      <li>
+        <a class="screen-link" href="invoices.html"><span class="num-badge">13</span>Invoices</a>
+        <small>Daily settlement. Dual-context (clinic-scoped vs Ops global).</small>
+      </li>
+      <li>
+        <a class="screen-link" href="audit-log.html"><span class="num-badge">14</span>Audit Log</a>
+        <small>Append-only event store. Actor, role, target, payload hash. 6-year retention.</small>
+      </li>
+    </ul>
+
+    <h2>Alternative-model screens (Separated Procurement)</h2>
+    <ul class="screen-list">
+      <li>
+        <a class="screen-link" href="model-comparison.html"><span class="num-badge">M</span>Model comparison</a>
+        <small>Side-by-side of the three viable shapes + recommendation question for Jon.</small>
+      </li>
+      <li>
+        <a class="screen-link" href="procurement-queue.html"><span class="num-badge">P1</span>Procurement Queue</a>
+        <small>Approved-not-dispatched orders grouped by destination. "Group &amp; dispatch" CTA per group.</small>
+      </li>
+      <li>
+        <a class="screen-link" href="procurement-dispatch.html"><span class="num-badge">P2</span>Confirm dispatch</a>
+        <small>Picks pharmacy across all selected orders. Creates the <code>PharmacyOrder</code> on confirm.</small>
+      </li>
+      <li>
+        <a class="screen-link" href="procurement-success.html"><span class="num-badge">P3</span>Dispatch success</a>
+        <small>Confirmation toast + back-to-queue.</small>
+      </li>
+    </ul>
+
+    <p class="muted"><small>All links open static HTML in the same folder. No JS framework, no real data. Resize narrow to see the mobile collapse.</small></p>
+  </main>
+
+  <footer class="audit-footer">
+    <span>All actions are audit-logged · 6-year retention (HIPAA § 164.530(j))</span>
+  </footer>
+
+  <script src="nav.js"></script>
+</body>
+</html>

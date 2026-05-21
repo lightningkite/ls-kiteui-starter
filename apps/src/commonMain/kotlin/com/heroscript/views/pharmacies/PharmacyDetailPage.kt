@@ -16,7 +16,7 @@ import com.lightningkite.reactive.core.Constant
 import com.lightningkite.reactive.core.MutableReactive
 import com.lightningkite.reactive.core.Reactive
 import com.lightningkite.reactive.core.Signal
-import com.lightningkite.reactive.core.rememberSuspending
+import com.lightningkite.reactive.core.remember
 import com.lightningkite.services.data.toEmailAddress
 import com.lightningkite.services.data.toPhoneNumber
 import com.lightningkite.services.database.*
@@ -34,24 +34,24 @@ class PharmacyDetailPage(
     private val editMode = Signal(startInEditMode)
     private val draft = Signal<Pharmacy?>(null)
 
-    private val isOps = rememberSuspending {
+    private val isOps = remember {
         (currentSession()?.self?.invoke()?.role ?: UserRole.User) >= UserRole.Admin
     }
 
-    private val loaded = rememberSuspending {
-        val session = currentSession() ?: return@rememberSuspending null
+    private val loaded = remember {
+        val session = currentSession() ?: return@remember null
         session.pharmacies[id].invoke()
     }
 
-    private val mappings = rememberSuspending {
-        val session = currentSession() ?: return@rememberSuspending emptyList()
+    private val mappings = remember {
+        val session = currentSession() ?: return@remember emptyList()
         session.productPharmacyMappings.query(
             Query(condition<ProductPharmacyMapping> { it.pharmacy eq id })
         )()
     }
 
-    private val orders = rememberSuspending {
-        val session = currentSession() ?: return@rememberSuspending emptyList()
+    private val orders = remember {
+        val session = currentSession() ?: return@remember emptyList()
         session.pharmacyOrders.query(
             Query(
                 condition = condition<PharmacyOrder> { it.pharmacy eq id },
@@ -308,8 +308,8 @@ class PharmacyDetailPage(
                 if (list.isEmpty()) return@reactive
                 list.forEach { mapping ->
                     card.col {
-                        val productName = rememberSuspending {
-                            val session = currentSession() ?: return@rememberSuspending ""
+                        val productName = remember {
+                            val session = currentSession() ?: return@remember ""
                             session.products[mapping.product].invoke()?.name ?: ""
                         }
                         row {
@@ -349,8 +349,8 @@ class PharmacyDetailPage(
                 if (list.isEmpty()) return@reactive
                 list.forEach { po ->
                     card.col {
-                        val clinicName = rememberSuspending {
-                            val session = currentSession() ?: return@rememberSuspending ""
+                        val clinicName = remember {
+                            val session = currentSession() ?: return@remember ""
                             session.clinics[po.clinic].invoke()?.name ?: ""
                         }
                         row {

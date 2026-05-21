@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HeroScript — Refill queue</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="wf-banner">Wireframe · V1 proposed shape — not the currently built app</div>
+  <header class="appbar">
+    <button class="nav-toggle" data-nav-toggle aria-label="Menu">☰</button>
+    <a href="index.html" class="logo">HeroScript</a>
+    <nav>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="patients.html">Patients</a>
+      <a href="orders.html">Orders</a>
+      <a href="refill-queue.html" class="active">Refills</a>
+      <a href="catalog.html">Catalog</a>
+    </nav>
+    <div class="appbar-right">
+      <span class="chip">Gameday Knoxville</span>
+      <a href="profile.html" class="chip role">Dr. Reeves · Prescriber</a>
+    </div>
+  </header>
+
+  <main>
+    <div class="page-head">
+      <h1>Refill queue</h1>
+      <p class="page-sub">Open prescriptions approaching exhaustion. Refill due = last order date + willLastDays. <strong>Refills reuse the prior ID.me approval</strong> — no step-up at reorder.</p>
+    </div>
+
+    <div class="card">
+      <div class="row">
+        <div class="field"><label>Due in</label>
+          <select><option>All</option><option>Overdue</option><option>Within 3 days</option><option>Within 7 days</option><option>Within 30 days</option></select>
+        </div>
+        <div class="field"><label>Prescriber</label><select><option>Any</option><option>Dr. Reeves</option><option>Dr. Allen</option></select></div>
+        <div class="field"><label>Product</label><input placeholder="search…" /></div>
+      </div>
+    </div>
+
+    <div class="table-wrap responsive">
+      <table>
+        <thead>
+          <tr><th>Patient</th><th>Prescription</th><th>Last order</th><th>Refill due</th><th>Prior pharmacy</th><th></th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td data-label="Patient">Sam Sample</td>
+            <td data-label="Prescription">Testosterone Cyp · 200 mg/mL · 10 mL</td>
+            <td data-label="Last order">2026-04-22</td>
+            <td data-label="Refill due"><span class="status rejected">Overdue · 3d</span></td>
+            <td data-label="Prior pharmacy">LifeFile Hallandale</td>
+            <td data-label="">
+              <div class="btn-row">
+                <a href="order-entry.html?refill=1" class="btn primary sm">Reorder</a>
+                <a href="#" class="btn ghost sm">Snooze 7d</a>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td data-label="Patient">Jordan Jones</td>
+            <td data-label="Prescription">Semaglutide · 2.5 mg/mL · 5 mL</td>
+            <td data-label="Last order">2026-05-01</td>
+            <td data-label="Refill due"><span class="status inprocess">Due in 4d</span></td>
+            <td data-label="Prior pharmacy">Empower</td>
+            <td data-label="">
+              <div class="btn-row">
+                <a href="order-entry.html?refill=1" class="btn primary sm">Reorder</a>
+                <a href="#" class="btn ghost sm">Snooze 7d</a>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td data-label="Patient">Alex Adams</td>
+            <td data-label="Prescription">Testosterone Cyp · 200 mg/mL · 10 mL</td>
+            <td data-label="Last order">2026-04-30</td>
+            <td data-label="Refill due"><span class="status inprocess">Due in 6d</span></td>
+            <td data-label="Prior pharmacy">LifeFile Compounding</td>
+            <td data-label="">
+              <div class="btn-row">
+                <a href="order-entry.html?refill=1" class="btn primary sm">Reorder</a>
+                <a href="#" class="btn ghost sm">Snooze 7d</a>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td data-label="Patient">Sam Sample</td>
+            <td data-label="Prescription">Anastrozole · 1 mg · 30 tabs</td>
+            <td data-label="Last order">2026-04-22</td>
+            <td data-label="Refill due"><span class="status accepted">Due in 28d</span></td>
+            <td data-label="Prior pharmacy">LifeFile Hallandale</td>
+            <td data-label="">
+              <a href="order-entry.html?refill=1" class="btn secondary sm">Reorder</a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note">
+      <strong>Snooze</strong> is client-only in V1 (per-device, session-scoped). Cross-device persistence would need a new <code>RefillSnooze</code> entity — flagged as V1.5.<br>
+      <strong>Reorder</strong> opens Order Entry in refill mode with Prescription pre-locked. Because the prior approval is reused, submit happens without an ID.me step-up.
+    </div>
+  </main>
+
+  <footer class="audit-footer">
+    <span>All actions on this screen are audit-logged · 6-year retention</span>
+  </footer>
+
+  <script src="nav.js"></script>
+</body>
+</html>

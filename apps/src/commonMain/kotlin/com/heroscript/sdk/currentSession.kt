@@ -38,21 +38,21 @@ val currentSession: Reactive<UserSession?> = rememberSuspending {
         null
     }
 }.also { currentSession ->
-    AppScope.reactiveSuspending {
-        val s = currentSession() ?: run {
-            tokenLog.info("Deregstering token logged out")
-            deregisterToken()
-            return@reactiveSuspending
-        }
-        suppressConnectivityIssues {
-            tokenLog.info("Starting register")
-            fcmToken()?.takeIf { it.isNotEmpty() }?.let {
-                tokenLog.info("Registering token")
-                s.api.fcmToken.registerToken(FcmToken.ID(it))
-                tokenLog.info("Registered token")
-            }
-        }
-    }
+//    AppScope.reactiveSuspending {
+//        val s = currentSession() ?: run {
+//            tokenLog.info("Deregstering token logged out")
+//            deregisterToken()
+//            return@reactiveSuspending
+//        }
+//        suppressConnectivityIssues {
+//            tokenLog.info("Starting register")
+//            fcmToken()?.takeIf { it.isNotEmpty() }?.let {
+//                tokenLog.info("Registering token")
+//                s.api.fcmToken.registerToken(FcmToken.ID(it))
+//                tokenLog.info("Registered token")
+//            }
+//        }
+//    }
 }
 
 val currentSessionFailed = BasicListenable()

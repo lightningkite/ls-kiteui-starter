@@ -15,7 +15,7 @@ import com.lightningkite.reactive.core.Constant
 import com.lightningkite.reactive.core.Reactive
 import com.lightningkite.reactive.core.Signal
 import com.lightningkite.reactive.core.remember
-import com.lightningkite.reactive.core.rememberSuspending
+import com.lightningkite.reactive.core.remember
 import com.lightningkite.services.database.*
 import kotlinx.coroutines.delay
 import kotlinx.datetime.TimeZone
@@ -40,44 +40,44 @@ class InvoiceListPage : PageWithParent {
     @QueryParameter
     val clinicFilter = Signal<Clinic.ID?>(null)
 
-    private val isOps = rememberSuspending {
+    private val isOps = remember {
         (currentSession()?.self?.invoke()?.role ?: UserRole.User) >= UserRole.Admin
     }
 
-    private val isActiveClinicAdmin = rememberSuspending {
-        val session = currentSession() ?: return@rememberSuspending false
-        val cid = activeClinic() ?: return@rememberSuspending false
+    private val isActiveClinicAdmin = remember {
+        val session = currentSession() ?: return@remember false
+        val cid = activeClinic() ?: return@remember false
         session.activeMemberships().any { it.clinic == cid && it.role == ClinicRole.ClinicAdmin }
     }
 
-    private val allClinics = rememberSuspending {
-        if (!isOps()) return@rememberSuspending emptyList()
+    private val allClinics = remember {
+        if (!isOps()) return@remember emptyList()
         currentSession()?.clinics?.query(Query<Clinic>())?.invoke() ?: emptyList()
     }
 
-    private val clinicNameById = rememberSuspending {
+    private val clinicNameById = remember {
         allClinics().associate { it._id to it.name }
     }
 
-    private val clinicOptions = rememberSuspending {
+    private val clinicOptions = remember {
         listOf<Clinic.ID?>(null) + allClinics().map { it._id }
     }
 
     /**
-     * Built as a rememberSuspending because it depends on other rememberSuspending values
+     * Built as a remember because it depends on other remember values
      * (`isOps`, `isActiveClinicAdmin`). Using a non-suspending `remember` here caused the
      * outer reactive graph to re-throw ReactiveLoading repeatedly during initial load,
      * which surfaced as a JS stack overflow inside lazyColumn's Remember chain.
      */
-    val data = rememberSuspending {
-        val session = currentSession() ?: return@rememberSuspending null
+    val data = remember {
+        val session = currentSession() ?: return@remember null
         val opsView = isOps()
 
         val clinicCondition = if (opsView) {
             clinicFilter()?.let { id -> condition<ClinicInvoice> { it.clinic eq id } }
         } else {
-            val cid = activeClinic() ?: return@rememberSuspending null
-            if (!isActiveClinicAdmin()) return@rememberSuspending null
+            val cid = activeClinic() ?: return@remember null
+            if (!isActiveClinicAdmin()) return@remember null
             condition<ClinicInvoice> { it.clinic eq cid }
         }
 
@@ -114,7 +114,7 @@ class InvoiceListPage : PageWithParent {
             expanding.shownWhen { isOps() || (activeClinic() != null && isActiveClinicAdmin()) }.col {
                 filterRow()
 
-                val items = rememberSuspending { data()?.invoke() ?: emptyList() }
+                val items = remember { data()?.invoke() ?: emptyList() }
 
                 expanding.lazyColumn(
                     items = items,
@@ -179,8 +179,8 @@ class InvoiceListPage : PageWithParent {
     }
 
     private fun ElementWriter.CanAddTheme.invoiceRow(invoice: Reactive<ClinicInvoice>) = col {
-        val clinic = rememberSuspending {
-            val session = currentSession() ?: return@rememberSuspending null
+        val clinic = remember {
+            val session = currentSession() ?: return@remember null
             session.clinics[invoice().clinic].invoke()
         }
         row {

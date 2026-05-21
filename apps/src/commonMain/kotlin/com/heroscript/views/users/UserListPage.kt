@@ -16,7 +16,7 @@ import com.lightningkite.reactive.core.Constant
 import com.lightningkite.reactive.core.Reactive
 import com.lightningkite.reactive.core.Signal
 import com.lightningkite.reactive.core.remember
-import com.lightningkite.reactive.core.rememberSuspending
+import com.lightningkite.reactive.core.remember
 import com.lightningkite.services.database.*
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.seconds
@@ -49,7 +49,7 @@ class UserListPage : PageWithParent {
     @QueryParameter
     val clinicNameQuery = Signal("")
 
-    private val isOps = rememberSuspending {
+    private val isOps = remember {
         (currentSession()?.self?.invoke()?.role ?: UserRole.User) >= UserRole.Admin
     }
 
@@ -57,14 +57,14 @@ class UserListPage : PageWithParent {
      * Resolves the clinic-name filter to a set of user IDs holding an active membership in any
      * matching clinic. Empty filter → null (no clinic-membership constraint applied).
      */
-    private val clinicMemberUserIds = rememberSuspending {
-        val session = currentSession() ?: return@rememberSuspending null
+    private val clinicMemberUserIds = remember {
+        val session = currentSession() ?: return@remember null
         val q = clinicNameQuery().trim()
-        if (q.isBlank()) return@rememberSuspending null
+        if (q.isBlank()) return@remember null
         val matchingClinics = session.clinics.query(
             Query(condition<Clinic> { it.name.contains(q, ignoreCase = true) })
         )()
-        if (matchingClinics.isEmpty()) return@rememberSuspending emptySet<User.ID>()
+        if (matchingClinics.isEmpty()) return@remember emptySet<User.ID>()
         val clinicIds = matchingClinics.map { it._id }.toSet()
         val memberships = session.clinicMemberships.query(
             Query(condition<ClinicMembership> {

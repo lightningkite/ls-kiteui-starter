@@ -22,6 +22,7 @@ import com.lightningkite.reactive.core.Constant
 import com.lightningkite.reactive.core.MutableReactive
 import com.lightningkite.reactive.core.Reactive
 import com.lightningkite.reactive.core.Signal
+import com.lightningkite.reactive.core.remember
 import com.lightningkite.reactive.core.rememberSuspending
 import com.lightningkite.services.data.toEmailAddress
 import com.lightningkite.services.database.Query
@@ -51,25 +52,25 @@ class ClinicDetailPage(
     private val firstAdminFirstName = Signal("")
     private val firstAdminLastName = Signal("")
 
-    private val isOps = rememberSuspending {
+    private val isOps = remember {
         (currentSession()?.self?.invoke()?.role ?: UserRole.User) >= UserRole.Admin
     }
 
-    private val loaded = rememberSuspending {
-        val session = currentSession() ?: return@rememberSuspending null
-        if (newClinicMode()) return@rememberSuspending null
+    private val loaded = remember {
+        val session = currentSession() ?: return@remember null
+        if (newClinicMode()) return@remember null
         session.clinics[id].invoke()
     }
 
-    private val memberships = rememberSuspending {
-        val session = currentSession() ?: return@rememberSuspending emptyList()
-        if (newClinicMode()) return@rememberSuspending emptyList()
+    private val memberships = remember {
+        val session = currentSession() ?: return@remember emptyList()
+        if (newClinicMode()) return@remember emptyList()
         session.clinicMemberships.query(
             Query(condition<ClinicMembership> { it.clinic eq id })
         )()
     }
 
-    private val activeMemberUserIds = rememberSuspending {
+    private val activeMemberUserIds = remember {
         memberships().filter { it.isActive }.map { it.user }.toSet()
     }
 
