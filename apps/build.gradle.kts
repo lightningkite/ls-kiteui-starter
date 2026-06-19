@@ -93,6 +93,7 @@ kotlin {
             // Required properties
             // Specify the required Pod version here. Otherwise, the Gradle project version is used.
             version = "1.0"
+            // TEMPLATE TODO: Replace these placeholder strings with your app's real description and homepage URL.
             summary = "Some description for a Kotlin/Native module"
             homepage = "Link to a Kotlin/Native module homepage"
             ios.deploymentTarget = "14.0"

@@ -81,7 +81,8 @@ fun ElementWriter.checkAppVersion() {
                             onClick { close() }
                         }
 
-//                            TODO: When apps are published replace
+                        // TEMPLATE TODO: Once your app is published, uncomment the button below
+                        // and replace the toast with a deep link or openTab() call to your store listing.
 //                            expanding.buttonTheme.button {
 //                                centered.text("Go To Store")
 //                                onClick {
