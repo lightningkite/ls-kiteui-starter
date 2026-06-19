@@ -10,7 +10,7 @@ This is a Kotlin multiplatform starter project using KiteUI for the frontend and
 - **KiteUI** (v8): Lightning Kite's declarative UI framework for multiplatform apps
 - **Lightning Server** (v5): Backend framework with typed endpoints, sessions, and WebSocket support
 - **Service Abstractions** (initial): Database, file storage, notifications, and email abstractions
-- Kotlin 2.2.20 with context parameters enabled
+- Kotlin (see `gradle/libs.versions.toml` for the exact version) with context parameters enabled
 - Firebase Cloud Messaging for push notifications
 - MongoDB/JSON file database support
 - AWS Lambda deployment support
