@@ -18,7 +18,6 @@ application {
 dependencies {
 
     implementation(project(":shared"))
-    implementation(libs.kotliner.cli)
     implementation(libs.csvDurable)
     implementation(libs.lightningServer.core)
     implementation(libs.lightningServer.typed)
