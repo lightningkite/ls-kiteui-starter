@@ -272,7 +272,29 @@ fun copyRecursively(source: File, target: File): Boolean {
     }
 }
 
+val PLACEHOLDER_APP_NAME = oldAppName
+val PLACEHOLDER_PACKAGE_NAME = oldPackage
+
 fun personalize(config: Config) {
+    // Fail fast if the caller forgot to replace the placeholder values.
+    if (config.appName == PLACEHOLDER_APP_NAME || config.packageName == PLACEHOLDER_PACKAGE_NAME) {
+        error(
+            """
+            |
+            |  ERROR: personalize() was called with placeholder values.
+            |  You must edit the call at the bottom of this file and supply your real
+            |  appName, packageName, and rootUsers before running the script.
+            |
+            |  Example:
+            |    personalize(
+            |        appName = "My Awesome App",
+            |        packageName = "com.mycompany.myapp",
+            |        rootUsers = setOf("admin@mycompany.com")
+            |    )
+            """.trimMargin()
+        )
+    }
+
     val newPackage = config.packageName
 
     println("Personalizing project:")
@@ -285,24 +307,24 @@ fun personalize(config: Config) {
     println("Step 1: Updating Kotlin files...")
     updateKotlinFiles(config)
 
-    // Step 3: Update Android manifest
-    println("\nStep 3: Updating AndroidManifest.xml...")
+    // Step 2: Update Android manifest
+    println("\nStep 2: Updating AndroidManifest.xml...")
     updateAndroidManifest(config)
 
-    // Step 4: Update Firebase configuration
-    println("\nStep 4: Updating Firebase configuration...")
+    // Step 3: Update Firebase configuration
+    println("\nStep 3: Updating Firebase configuration...")
     updateFirebaseConfig(config)
 
-    // Step 5: Update UserEndpoints with root users and app store tester
-    println("\nStep 5: Updating UserEndpoints...")
+    // Step 4: Update UserEndpoints with root users and app store tester
+    println("\nStep 4: Updating UserEndpoints...")
     updateUserEndpoints(config)
 
-    // Step 6: Move directory structures (do this last so other updates can find files)
-    println("\nStep 6: Moving package directories...")
+    // Step 5: Move directory structures (do this last so other updates can find files)
+    println("\nStep 5: Moving package directories...")
     movePackageDirectories(config)
 
-    // Step 7: Run KSP to generate database paths for the new package
-    println("\nStep 7: Running KSP to generate database paths...")
+    // Step 6: Run KSP to generate database paths for the new package
+    println("\nStep 6: Running KSP to generate database paths...")
     println("  Executing: $gradlewCommand :shared:kspKotlinJs")
     val kspResult = ProcessBuilder(gradlewCommand, ":shared:kspKotlinJs")
         .inheritIO()
@@ -344,11 +366,12 @@ fun personalize(
 ) =
     personalize(Config(appName, packageName, rootUsers, appStoreTesterEmail))
 
-// Example usage:
-
-personalize(
-    appName = "My Awesome App",
-    packageName = "com.mycompany.myapp",
-    rootUsers = setOf("admin@mycompany.com"),
-    appStoreTesterEmail = "appstoretester@mycompany.com"
-)
+// TEMPLATE TODO: Replace the values below with your own, then uncomment and run:
+//   kotlinc -script personalize.main.kts
+//
+// personalize(
+//     appName = "My Awesome App",
+//     packageName = "com.mycompany.myapp",
+//     rootUsers = setOf("admin@mycompany.com"),
+//     appStoreTesterEmail = "appstoretester@mycompany.com"
+// )
