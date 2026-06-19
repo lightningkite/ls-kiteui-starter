@@ -4,18 +4,6 @@ package com.lightningkite.lskiteuistarter.sdk
 
 interface Api {
 	fun withHeaderCalculator(calculator: suspend () -> List<Pair<String, String>>): Api
-	/**
-	 * Example Endpoint
-	 * 
-	 * **Auth Requirements:** No Requirements
-	 * */
-	suspend fun exampleEndpoint(): kotlin.Int
-	/**
-	 * Example Endpoint
-	 * 
-	 * **Auth Requirements:** User with root access
-	 * */
-	suspend fun exampleEndpoint(input: kotlin.Int): kotlin.Int
 
 	val uploadEarlyEndpoint: com.lightningkite.lightningserver.files.ClientUploadEarlyEndpoints
 
@@ -37,7 +25,7 @@ interface Api {
 		}
 		val email: EmailApi
 
-		interface TimeBasedOTPProof : com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lightningserver.sessions.TotpSecret, kotlin.uuid.Uuid>, com.lightningkite.lightningserver.sessions.proofs.ProofClientEndpoints.TimeBasedOTP {
+		interface TimeBasedOTPProof : com.lightningkite.lightningserver.sessions.proofs.ProofClientEndpoints.TimeBasedOTP, com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lightningserver.sessions.TotpSecret, kotlin.uuid.Uuid> {
 		}
 		val totp: TimeBasedOTPProof
 
