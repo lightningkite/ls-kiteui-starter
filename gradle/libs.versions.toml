@@ -6,13 +6,13 @@ graalVmNative = "0.11.4"
 jsPlainObjects = "2.3.0"
 kfc = "16.5.0"
 kotlin = "2.3.21"
-kiteui = "8.0.0-prerelease-379"
+kiteui = "8.1.1-version8cleanup-25-local"
 kotlinerCli = "1.0.5"
 kotlinxSerializationCsvDurable = "0.2.21-1"
 ksp = "2.3.6"
-lightningServer = "5.0.3-1"
-lightningServerKiteui = "9.0.0-prerelease-179"
-serviceAbstractions = "1.0.2-1"
+lightningServer = "5.2.0-version5archimprovements-36-7a673e46"
+lightningServerKiteui = "9.1.1-4"
+serviceAbstractions = "1.2.0-9-dad48bf4"
 coroutines = "1.10.2"
 shadow = "8.1.1"
 
@@ -21,6 +21,7 @@ coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", ve
 coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version = { ref = "coroutines" } }
 csvDurable = { module = "com.lightningkite:kotlinx-serialization-csv-durable", version = { ref = "kotlinxSerializationCsvDurable" } }
 kiteui = { module = "com.lightningkite.kiteui:library", version = { ref = "kiteui" } }
+kiteui-test = { module = "com.lightningkite.kiteui:test-utilities", version = { ref = "kiteui" } }
 lightningServer-core = { module = "com.lightningkite.lightningserver:core", version = { ref = "lightningServer" } }
 lightningServer-core-shared = { module = "com.lightningkite.lightningserver:core-shared", version = { ref = "lightningServer" } }
 lightningServer-engine-aws = { module = "com.lightningkite.lightningserver:engine-aws-serverless", version = { ref = "lightningServer" } }

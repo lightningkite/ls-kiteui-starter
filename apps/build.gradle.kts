@@ -32,9 +32,9 @@ repositories {
 
 kotlin {
     applyDefaultHierarchyTemplate()
+    jvm("jvmSsr")
     androidTarget()
     if (onMac) {
-        iosX64()
         iosArm64()
         iosSimulatorArm64()
     }

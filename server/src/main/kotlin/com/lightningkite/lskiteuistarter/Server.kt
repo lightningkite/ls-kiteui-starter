@@ -19,6 +19,7 @@ import com.lightningkite.lightningserver.websockets.MultiplexWebSocketHandler
 import com.lightningkite.lightningserver.websockets.QueryParamWebSocketHandler
 import com.lightningkite.lskiteuistarter.UserAuth.RoleCache.userRole
 import com.lightningkite.lskiteuistarter.data.*
+import com.lightningkite.services.LoggingTelemetryBackend
 import com.lightningkite.services.cache.Cache
 import com.lightningkite.services.cache.dynamodb.DynamoDbCache
 import com.lightningkite.services.data.MaxLength
@@ -57,6 +58,7 @@ object Server : ServerBuilder() {
         JavaSmtpEmailService
         S3PublicFileSystem
         DynamoDbCache
+        LoggingTelemetryBackend
 
         AuthRequirement.isSuperUser = UserAuth.require { it.userRole() >= UserRole.Root }
     }

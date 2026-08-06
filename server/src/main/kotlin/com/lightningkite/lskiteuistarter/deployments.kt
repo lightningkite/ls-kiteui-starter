@@ -18,7 +18,8 @@ import com.lightningkite.services.email.javasmtp.awsSesDomain
 import com.lightningkite.services.email.javasmtp.awsSesDomainConfiguration
 import com.lightningkite.services.email.javasmtp.awsSesSmtp
 import com.lightningkite.services.files.s3.awsS3Bucket
-import com.lightningkite.services.otel.OpenTelemetrySettings
+import com.lightningkite.services.telemetry.TelemetryBackend
+import com.lightningkite.services.terraform.AwsVpc
 import com.lightningkite.services.terraform.TerraformProvider
 import com.lightningkite.services.terraform.TerraformProviderImport
 import com.lightningkite.services.terraform.byVariable
@@ -49,6 +50,7 @@ object LkEnv : TerraformAwsServerlessDomainBuilder<Server>(Server) {
     override val emergencyContact = "joseph@lightningkite.com".toEmailAddress()
 
     override val region = Region.US_WEST_2!!
+    override val applicationVpc: AwsVpc = AwsVpc.None
 
     override val secretsSource: SecretSource = AwsSecretSource(projectPrefix, idPrefix = displayName.snakeCase(), region)
 
@@ -65,7 +67,7 @@ object LkEnv : TerraformAwsServerlessDomainBuilder<Server>(Server) {
         files.awsS3Bucket(signedUrlDuration = 1.days)
         cache.awsDynamoDb()
         secretBasis.generated()
-        telemetrySettings.direct(OpenTelemetrySettings("console", batching = null))
+        telemetrySettings.direct(TelemetryBackend.Settings(url = "console"))
         cors.direct(CorsSettings(
             limitToDomains = listOf("*"),
             limitToHeaders = listOf("*"),

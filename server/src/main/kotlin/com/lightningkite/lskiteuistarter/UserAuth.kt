@@ -170,6 +170,7 @@ object UserAuth : PrincipalType<User, User.ID>, ServerBuilder() {
     class SessionEndpoints : AuthEndpoints<User, User.ID>(
         principal = UserAuth,
         database = Server.database,
+        cache = Server.cache,
     ) {
         context(server: ServerRuntime)
         override suspend fun requiredProofStrengthFor(subject: User): Int {

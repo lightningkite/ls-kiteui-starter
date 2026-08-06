@@ -21,7 +21,7 @@ val sessionToken = PersistentProperty<String?>("sessionToken", null)
 
 val currentSession: Reactive<UserSession?> = rememberSuspending {
     val token = sessionToken() ?: return@rememberSuspending null
-    val api = selectedApi().api
+    val api = apiOverride() ?: selectedApi().api
 
     val authApi = api.withHeaderCalculator(api.userAuth.accessToken(token))
     try {
