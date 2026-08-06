@@ -35,6 +35,7 @@ import kotlin.uuid.Uuid
 object UserEndpoints : ServerBuilder() {
     val info = Server.database.modelInfo(
         auth = UserAuth.require(),
+        tableName = "User",
         permissions = {
             val allowedRoles = UserRole.entries.filter { it <= auth.userRole() }
 

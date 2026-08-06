@@ -3,11 +3,10 @@ package com.lightningkite.lskiteuistarter.sdk
 import com.lightningkite.lightningserver.HttpMethod
 import com.lightningkite.lightningserver.typed.Fetcher
 import kotlinx.serialization.ContextualSerializer
-import kotlinx.serialization.builtins.serializer
-import kotlinx.serialization.builtins.MapSerializer
-import kotlinx.serialization.builtins.ListSerializer
-import kotlinx.serialization.builtins.nullable
+import kotlinx.serialization.builtins.*
+import kotlinx.serialization.ExperimentalSerializationApi
 
+@OptIn(ExperimentalSerializationApi::class)
 class LiveApi(val fetcher: Fetcher) : Api {
 	override fun withHeaderCalculator(calculator: suspend () -> List<Pair<String, String>>): LiveApi = 
 		LiveApi(fetcher.withHeaderCalculator(calculator))
@@ -26,7 +25,7 @@ class LiveApi(val fetcher: Fetcher) : Api {
 		}
 		override val email = LiveEmailApi()
 
-		inner class LiveTimeBasedOTPProof : Api.UserAuthApi.TimeBasedOTPProof, com.lightningkite.lightningserver.sessions.proofs.ProofClientEndpoints.TimeBasedOTP by com.lightningkite.lightningserver.sessions.proofs.LiveProofClientEndpoints.TimeBasedOTP(fetcher, "auth/proof/totp", ), com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lightningserver.sessions.TotpSecret, kotlin.uuid.Uuid> by com.lightningkite.lightningserver.typed.LiveClientModelRestEndpoints(fetcher, "auth/proof/totp/secrets", com.lightningkite.lightningserver.sessions.TotpSecret.serializer(), kotlin.uuid.Uuid.serializer()) {
+		inner class LiveTimeBasedOTPProof : Api.UserAuthApi.TimeBasedOTPProof, com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lightningserver.sessions.TotpSecret, kotlin.uuid.Uuid> by com.lightningkite.lightningserver.typed.LiveClientModelRestEndpoints(fetcher, "auth/proof/totp/secrets", com.lightningkite.lightningserver.sessions.TotpSecret.serializer(), kotlin.uuid.Uuid.serializer()), com.lightningkite.lightningserver.sessions.proofs.ProofClientEndpoints.TimeBasedOTP by com.lightningkite.lightningserver.sessions.proofs.LiveProofClientEndpoints.TimeBasedOTP(fetcher, "auth/proof/totp", ) {
 		}
 		override val totp = LiveTimeBasedOTPProof()
 

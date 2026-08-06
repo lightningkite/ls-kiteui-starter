@@ -15,6 +15,7 @@ object MembershipEndpoints : ServerBuilder() {
 
     val info = Server.database.modelInfo(
         auth = UserAuth.require(),
+        tableName = "Membership",
         permissions = {
             val isSystemAdmin = auth.userRole() >= UserRole.Admin
             val myMemberships = auth.memberships()

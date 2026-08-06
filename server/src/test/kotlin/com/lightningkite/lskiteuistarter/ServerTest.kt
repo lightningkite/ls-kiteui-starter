@@ -17,7 +17,7 @@ import com.lightningkite.services.database.condition
 import com.lightningkite.services.database.eq
 import com.lightningkite.services.database.insertOne
 import com.lightningkite.services.database.modification
-import com.lightningkite.toEmailAddress
+import com.lightningkite.services.data.toEmailAddress
 import kotlinx.coroutines.runBlocking
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -211,11 +211,11 @@ class ServerTest {
             val userAuth = UserAuth.testAuth(regularUser)
 
             // User can read their own record
-            val self = UserEndpoints.rest.detail.test(regularUser._id, userAuth, Unit)
+            val self = UserEndpoints.rest.endpoints.detail.test(regularUser._id, userAuth, Unit)
             assertEquals("User", self.name)
 
             // User can modify their own name
-            val updated = UserEndpoints.rest.modify.test(
+            val updated = UserEndpoints.rest.endpoints.modify.test(
                 regularUser._id, userAuth,
                 modification<User> { it.name assign "Updated Name" }
             )
@@ -225,7 +225,7 @@ class ServerTest {
             // The updateRestrictions narrow the query condition so the record doesn't match,
             // resulting in NotFoundException (the record "disappears" when attempting forbidden modifications).
             assertFailsWith<NotFoundException> {
-                UserEndpoints.rest.modify.test(
+                UserEndpoints.rest.endpoints.modify.test(
                     regularUser._id, userAuth,
                     modification<User> { it.role assign UserRole.Admin }
                 )
@@ -249,13 +249,13 @@ class ServerTest {
             val userAuth = UserAuth.testAuth(regularUser)
 
             // Admin can list users they have permission to see
-            val adminResults = UserEndpoints.rest.list.test(adminAuth, Query<User>())
+            val adminResults = UserEndpoints.rest.endpoints.list.test(adminAuth, Query<User>())
             assertTrue(adminResults.isNotEmpty(), "Admin should see at least one user")
             assertTrue(adminResults.any { it._id == adminUser._id }, "Admin should see themselves")
             assertTrue(adminResults.any { it._id == regularUser._id }, "Admin should see the regular user")
 
             // Regular user can only see their own record
-            val userResults = UserEndpoints.rest.list.test(userAuth, Query<User>())
+            val userResults = UserEndpoints.rest.endpoints.list.test(userAuth, Query<User>())
             assertEquals(1, userResults.size, "Regular user should only see themselves")
             assertEquals(regularUser._id, userResults.first()._id)
         }

@@ -12,7 +12,6 @@ import com.lightningkite.lskiteuistarter.sdk.currentSession
 import com.lightningkite.reactive.context.await
 import com.lightningkite.reactive.core.Constant
 import com.lightningkite.reactive.core.Reactive
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Routable("/")

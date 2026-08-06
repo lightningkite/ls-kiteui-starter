@@ -5,6 +5,6 @@ import com.lightningkite.kiteui.root
 
 fun main() {
     root(appTheme) {
-        app(PageNavigator { AutoRoutes }, PageNavigator { AutoRoutes })
+        app(PageNavigator { AutoRoutes })
     }
 }
