@@ -33,6 +33,7 @@ import com.lightningkite.services.files.ExternalFileSystem
 import com.lightningkite.services.files.s3.S3ExternalFileSystem
 import com.lightningkite.services.notifications.NotificationService
 import com.lightningkite.services.notifications.fcm.FcmNotificationClient
+import com.lightningkite.services.otel.OtelTelemetryBackend
 
 object Server : ServerBuilder() {
     override val annotationValidators: Runtime<AnnotationValidators> = Runtime.Cached {
@@ -49,7 +50,9 @@ object Server : ServerBuilder() {
     val files = setting("files", ExternalFileSystem.Settings())
 
     init {
-        install(CorsInterceptor(cors))
+        val securityHeaders = install(SecurityHeadersInterceptor())
+        val accessLog = install(AccessLogInterceptor())
+        val corsInterceptor = install(CorsInterceptor(cors))
         registerBasicMediaTypeCoders()
 
         MongoDatabase
@@ -59,6 +62,7 @@ object Server : ServerBuilder() {
         S3ExternalFileSystem
         DynamoDbCache
         LoggingTelemetryBackend
+        OtelTelemetryBackend
 
         AuthRequirement.isSuperUser = UserAuth.require { it.userRole() >= UserRole.Root }
     }

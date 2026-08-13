@@ -11,7 +11,7 @@ plugins {
 
 buildscript {
     repositories {
-        mavenLocal()
+//        mavenLocal()
         maven("https://lightningkite-maven.s3.us-west-2.amazonaws.com")
         google()
         mavenCentral()
@@ -21,7 +21,7 @@ buildscript {
 allprojects {
     group = "com.lightningkite.lskiteuistarter"
     repositories {
-        mavenLocal()
+//        mavenLocal()
         maven("https://lightningkite-maven.s3.us-west-2.amazonaws.com")
         google()
         mavenCentral()

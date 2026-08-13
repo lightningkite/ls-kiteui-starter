@@ -2,7 +2,7 @@ rootProject.name = "lskiteuistarter"
 
 pluginManagement {
     repositories {
-        mavenLocal()
+//        mavenLocal()
         maven("https://lightningkite-maven.s3.us-west-2.amazonaws.com")
         google()
         gradlePluginPortal()

@@ -7,7 +7,10 @@ import com.lightningkite.lightningserver.definition.telemetrySettings
 import com.lightningkite.lightningserver.engine.awsserverless.AwsAdapter
 import com.lightningkite.lightningserver.terraform.AwsSecretSource
 import com.lightningkite.lightningserver.terraform.SecretSource
+import com.lightningkite.lightningserver.terraform.awsserverless.GrafanaAlert
 import com.lightningkite.lightningserver.terraform.awsserverless.TerraformAwsServerlessDomainBuilder
+import com.lightningkite.lightningserver.terraform.awsserverless.grafanaAlerts
+import com.lightningkite.lightningserver.terraform.awsserverless.otelGrafanaCloud
 import com.lightningkite.lightningserver.terraform.generated
 import com.lightningkite.services.LoggingSettings
 import com.lightningkite.services.cache.dynamodb.awsDynamoDb
@@ -67,7 +70,16 @@ object LkEnv : TerraformAwsServerlessDomainBuilder<Server>(Server) {
         files.awsS3Bucket(signedUrlDuration = 1.days)
         cache.awsDynamoDb()
         secretBasis.generated()
-        telemetrySettings.direct(TelemetryBackend.Settings(url = "console"))
+        telemetrySettings.otelGrafanaCloud(
+            instanceId = "1548711",
+            zone = "prod-us-west-0",
+        )
+        grafanaAlerts(
+            grafanaCloudStackSlug = "lightningkite",
+            alerts = GrafanaAlert.httpErrors(displayName, errorThreshold = 5) +
+                    GrafanaAlert.httpLatency(displayName, p99ThresholdMs = 5000) +
+                    GrafanaAlert.httpLiveness(displayName),
+        )
         cors.direct(CorsSettings(
             limitToDomains = listOf("*"),
             limitToHeaders = listOf("*"),
@@ -82,7 +94,10 @@ object LkEnv : TerraformAwsServerlessDomainBuilder<Server>(Server) {
 
 object LkEnvDeploy {
     @JvmStatic
-    fun main(vararg args: String) = LkEnv.deploy()
+    fun main(vararg args: String) {
+        ProcessBuilder("./gradlew", "server:lambda").inheritIO().start().waitFor()
+        LkEnv.deploy()
+    }
 }
 object LkEnvEdit {
     @JvmStatic
