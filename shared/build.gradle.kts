@@ -32,6 +32,11 @@ kotlin {
                 srcDir(file("build/generated/ksp/common/commonMain/kotlin"))
             }
         }
+        val commonTest by getting {
+            dependencies {
+                implementation(kotlin("test"))
+            }
+        }
     }
     compilerOptions {
         optIn.add("kotlin.time.ExperimentalTime")

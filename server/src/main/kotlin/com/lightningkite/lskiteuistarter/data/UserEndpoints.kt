@@ -8,7 +8,7 @@ import com.lightningkite.lightningserver.runtime.now
 import com.lightningkite.lightningserver.sessions.PasswordSecret
 import com.lightningkite.lightningserver.sessions.subjectId
 import com.lightningkite.lightningserver.typed.ModelRestEndpoints
-import com.lightningkite.lightningserver.typed.ModelRestEndpointsAndUpdatesWebsocket.Companion.plus
+import com.lightningkite.lightningserver.typed.ModelRestEndpointsAndUpdatesWebSocket.Companion.plus
 import com.lightningkite.lightningserver.typed.ModelRestUpdatesWebsocket
 import com.lightningkite.lightningserver.typed.auth
 import com.lightningkite.lightningserver.typed.modelInfo
