@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		18B1699A2B926C4400D89B98 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18B169992B926C4400D89B98 /* AppDelegate.swift */; };
-		18B1699E2B926C4400D89B98 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18B1699D2B926C4400D89B98 /* ViewController.swift */; };
 		18B169A32B926C4600D89B98 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 18B169A22B926C4600D89B98 /* Assets.xcassets */; };
 		18B169A62B926C4600D89B98 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 18B169A42B926C4600D89B98 /* LaunchScreen.storyboard */; };
 		18B169B12B926C4600D89B98 /* rock_templateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18B169B02B926C4600D89B98 /* rock_templateTests.swift */; };
@@ -40,7 +39,6 @@
 		180E7CEE2D8DF24900E6C79B /* test.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = test.h; sourceTree = "<group>"; };
 		18B169962B926C4400D89B98 /* app.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = app.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		18B169992B926C4400D89B98 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		18B1699D2B926C4400D89B98 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		18B169A22B926C4600D89B98 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		18B169A52B926C4600D89B98 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		18B169A72B926C4600D89B98 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -124,7 +122,6 @@
 				73E5BB782BFEB59000214C91 /* app.entitlements */,
 				18B169992B926C4400D89B98 /* AppDelegate.swift */,
 				180E7CEE2D8DF24900E6C79B /* test.h */,
-				18B1699D2B926C4400D89B98 /* ViewController.swift */,
 				18B169A22B926C4600D89B98 /* Assets.xcassets */,
 				18B169A42B926C4600D89B98 /* LaunchScreen.storyboard */,
 				18B169A72B926C4600D89B98 /* Info.plist */,
@@ -335,9 +332,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-app-appUITests/Pods-app-appUITests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-app-appUITests/Pods-app-appUITests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -374,9 +375,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-app/Pods-app-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-app/Pods-app-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -434,7 +439,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				18B1699E2B926C4400D89B98 /* ViewController.swift in Sources */,
 				18B1699A2B926C4400D89B98 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -611,7 +615,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 148;
-				DEVELOPMENT_TEAM = NSQM3N8S4P;
+				DEVELOPMENT_TEAM = EF4N5K3F2Q;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = I386;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -656,7 +660,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 148;
-				DEVELOPMENT_TEAM = NSQM3N8S4P;
+				DEVELOPMENT_TEAM = EF4N5K3F2Q;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = app/Info.plist;

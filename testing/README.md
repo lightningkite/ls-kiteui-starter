@@ -51,17 +51,8 @@ mcp__claude-in-chrome__find(tabId=..., query='login button')
 | `prepare-browser-test.sh` | All-in-one: stops servers, starts fresh, outputs instructions |
 | `start-backend.sh` | Start backend on :8081, save admin token |
 | `start-frontend.sh` | Start Vite frontend on :8941 |
+| `start-all.sh` | Start backend + frontend |
 | `stop-all.sh` | Stop all test servers |
-| `api.sh` | Make authenticated API calls |
-
-## API Script Usage
-
-```bash
-./testing/api.sh GET /meta/health
-./testing/api.sh GET /auth/session/self
-./testing/api.sh POST /users/query '{"condition":{"Always":true}}'
-VERBOSE=1 ./testing/api.sh GET /auth/session/self
-```
 
 ## Configuration Files
 

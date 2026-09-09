@@ -12,19 +12,16 @@ import com.lightningkite.lskiteuistarter.sdk.currentSession
 import com.lightningkite.reactive.context.await
 import com.lightningkite.reactive.core.Constant
 import com.lightningkite.reactive.core.Reactive
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Routable("/")
 class LandingPage : Page, FullscreenPage {
-    override val title: Reactive<String> get() = Constant("Home")
+    override val title: Reactive<String> get() = Constant("Loading")
     override fun ElementWriter.CanAddTheme.render() {
         launch {
             if (currentSession.await() != null) {
-                println("Have Session")
                 context.pageNavigator.reset(HomePage())
             } else {
-                println("NO Session")
                 context.pageNavigator.reset(LoginPage())
             }
         }

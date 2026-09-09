@@ -7,10 +7,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 This is a Kotlin multiplatform starter project using KiteUI for the frontend and Lightning Server for the backend. It supports Android, iOS, and web (via JS) on the frontend, with a JVM-based backend server.
 
 **Key Technologies:**
-- **KiteUI** (v7.0.0): Lightning Kite's declarative UI framework for multiplatform apps
-- **Lightning Server** (v5.0.0): Backend framework with typed endpoints, sessions, and WebSocket support
-- **Service Abstractions** (v0.0.1): Database, file storage, notifications, and email abstractions
-- Kotlin 2.2.20 with context parameters enabled
+- **KiteUI** (v8): Lightning Kite's declarative UI framework for multiplatform apps
+- **Lightning Server** (v5): Backend framework with typed endpoints, sessions, and WebSocket support
+- **Service Abstractions** (initial): Database, file storage, notifications, and email abstractions
+- Kotlin (see `gradle/libs.versions.toml` for the exact version) with context parameters enabled
 - Firebase Cloud Messaging for push notifications
 - MongoDB/JSON file database support
 - AWS Lambda deployment support
@@ -229,6 +229,71 @@ After running `prepare-browser-test.sh`, use Claude's Chrome MCP tools:
 - `testing/settings.testing.json` - Testing-specific settings (port 8081, debug mode)
 - `testing/.admin-token` - Admin session token (generated when debug mode enabled)
 - See `testing/README.md` for full documentation
+
+## Adding a New Feature (Step-by-Step)
+
+<!-- by Claude — Walkthrough for LLMs and developers adding a new REST model + UI -->
+
+Follow this sequence to add a complete new feature (e.g., a "Project" model):
+
+1. **Add model** to `shared/src/commonMain/kotlin/.../models.kt`
+   - Annotate with `@Serializable` and `@GenerateDataClassPaths`
+   - Use `Uuid.random()` for IDs, implement `HasId<Uuid>`
+   - Add any enums for status/role in the same file
+
+2. **Create endpoints** in `server/src/main/kotlin/.../data/ProjectEndpoints.kt`
+   - Follow the existing `OrganizationEndpoints` pattern: `modelInfo` + `ModelRestEndpoints`
+   - Define `ModelPermissions` with appropriate `create`/`read`/`update`/`delete` conditions
+   - Use `updateRestrictions` to lock down immutable fields
+
+3. **Wire into Server.kt**
+   - Add `val projects = path.path("projects") module ProjectEndpoints` to `Server.kt`
+
+4. **Add auth cache** (if needed for permission checks)
+   - Follow the `MembershipsCache` pattern in `UserAuth.kt`
+   - Add to `UserAuth.precache` list
+   - Reference from endpoint permissions
+
+5. **Add tests** to `server/src/test/kotlin/.../ServerTest.kt`
+   - CRUD test: insert via table, read via endpoint
+   - Permission boundary test: verify unauthorized access fails
+
+6. **Regenerate SDK**
+   ```bash
+   ./gradlew :server:generateSdk
+   ```
+
+7. **Create UI screen** in `apps/src/commonMain/kotlin/.../`
+   - Implement as a `@Serializable` screen class
+   - Use `currentSession()` for API access
+   - Follow existing `HomeScreen.kt` or `LoginScreen.kt` patterns
+
+8. **Add navigation** in `App.kt`
+   - Register the new screen in the `PageNavigator` configuration
+   - Add a navigation link from the appropriate existing screen
+
+9. **Verify**
+   ```bash
+   ./testing/prepare-browser-test.sh
+   ```
+   Use Chrome MCP tools to visually verify the new screen.
+
+## Mobile Deployment
+
+<!-- by Claude -->
+
+```bash
+# Android
+./gradlew :apps:publishAndroid          # Build AAB + upload to Play internal track
+./gradlew :apps:promoteAndroid          # Promote internal → production
+
+# iOS (requires Fastlane: bundle install)
+./gradlew :apps:setupMatch              # One-time: generate cert + profile → S3
+./gradlew :apps:publishIos              # Match certs + build + upload to TestFlight
+./gradlew :apps:submitIos               # Submit for App Store review
+```
+
+See `local.properties.example` for required credentials.
 
 ## Important Notes
 

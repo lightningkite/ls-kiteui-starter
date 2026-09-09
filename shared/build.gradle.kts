@@ -13,10 +13,9 @@ kotlin {
     applyDefaultHierarchyTemplate()
     androidTarget()
     jvm()
-    js(IR) {
+    js {
         browser()
     }
-    iosX64()
     iosArm64()
     iosSimulatorArm64()
 
@@ -31,6 +30,11 @@ kotlin {
             }
             kotlin {
                 srcDir(file("build/generated/ksp/common/commonMain/kotlin"))
+            }
+        }
+        val commonTest by getting {
+            dependencies {
+                implementation(kotlin("test"))
             }
         }
     }

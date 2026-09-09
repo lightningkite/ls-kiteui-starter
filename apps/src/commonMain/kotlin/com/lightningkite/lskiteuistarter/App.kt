@@ -15,7 +15,6 @@ import com.lightningkite.kiteui.views.centered
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.exceptionMessage
 import com.lightningkite.kiteui.views.l2.appNav
-import com.lightningkite.kiteui.views.l2.dialog
 import com.lightningkite.lskiteuistarter.extensions.toAppPlatform
 import com.lightningkite.lskiteuistarter.sdk.currentSession
 import com.lightningkite.lskiteuistarter.sdk.installLoggedOutErrors
@@ -35,7 +34,6 @@ import com.lightningkite.services.database.condition
 import com.lightningkite.services.database.eq
 import kotlinx.coroutines.launch
 
-//val defaultTheme = brandBasedExperimental("bsa", normalBack = Color.white)
 val defaultTheme = Theme.flat2("default", Angle(0.55f))// brandBasedExperimental("bsa", normalBack = Color.white)
 val appTheme = Signal(defaultTheme)
 
@@ -43,7 +41,7 @@ val appTheme = Signal(defaultTheme)
 val fcmToken: Signal<String?> = Signal(null)
 val setFcmToken = { token: String -> fcmToken.value = token } // This is for iOS. It is used in the iOS app. Do not remove.
 
-fun ViewWriter.app(navigator: PageNavigator, dialog: PageNavigator) {
+fun ViewWriter.app(navigator: PageNavigator) {
     context.exceptionHandlers.installSmartHandlers()
     context.exceptionHandlers.installLsError()
     context.exceptionHandlers.installLoggedOutErrors()
@@ -72,7 +70,7 @@ fun ViewWriter.app(navigator: PageNavigator, dialog: PageNavigator) {
 
     checkAppVersion()
 
-    return appNav(navigator, dialog) {
+    return appNav(navigator) {
         appName = "LS KiteUI Starter"
         ::navItems {
             listOf(

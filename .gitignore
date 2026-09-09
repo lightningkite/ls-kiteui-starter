@@ -19,3 +19,10 @@ version.js
 kotlin-js-store
 plan.tfplan
 .terraform
+# Testing artifacts (lk-testing-scripts)
+testing/.backend.log
+testing/.frontend.log
+testing/.admin-token
+testing/.scripts-source
+testing/.scripts-version
+

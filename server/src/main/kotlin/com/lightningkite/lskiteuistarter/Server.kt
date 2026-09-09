@@ -13,13 +13,13 @@ import com.lightningkite.lightningserver.media.Media
 import com.lightningkite.lightningserver.plainText
 import com.lightningkite.lightningserver.serialization.StandardWithExternalModule
 import com.lightningkite.lightningserver.serialization.registerBasicMediaTypeCoders
-import com.lightningkite.lightningserver.typed.ApiHttpHandler
 import com.lightningkite.lightningserver.typed.MetaEndpoints
 import com.lightningkite.lightningserver.typed.sdk.module
 import com.lightningkite.lightningserver.websockets.MultiplexWebSocketHandler
 import com.lightningkite.lightningserver.websockets.QueryParamWebSocketHandler
 import com.lightningkite.lskiteuistarter.UserAuth.RoleCache.userRole
 import com.lightningkite.lskiteuistarter.data.*
+import com.lightningkite.services.LoggingTelemetryBackend
 import com.lightningkite.services.cache.Cache
 import com.lightningkite.services.cache.dynamodb.DynamoDbCache
 import com.lightningkite.services.data.MaxLength
@@ -29,10 +29,11 @@ import com.lightningkite.services.database.mongodb.MongoDatabase
 import com.lightningkite.services.database.validation.AnnotationValidators
 import com.lightningkite.services.email.EmailService
 import com.lightningkite.services.email.javasmtp.JavaSmtpEmailService
-import com.lightningkite.services.files.PublicFileSystem
-import com.lightningkite.services.files.s3.S3PublicFileSystem
+import com.lightningkite.services.files.ExternalFileSystem
+import com.lightningkite.services.files.s3.S3ExternalFileSystem
 import com.lightningkite.services.notifications.NotificationService
 import com.lightningkite.services.notifications.fcm.FcmNotificationClient
+import com.lightningkite.services.otel.OtelTelemetryBackend
 
 object Server : ServerBuilder() {
     override val annotationValidators: Runtime<AnnotationValidators> = Runtime.Cached {
@@ -46,18 +47,22 @@ object Server : ServerBuilder() {
     val notifications = setting("notifications", default = NotificationService.Settings("console"))
     val webUrl = setting("webUrl", "http://localhost:8080")
     val cors = setting("cors", CorsSettings())
-    val files = setting("files", PublicFileSystem.Settings())
+    val files = setting("files", ExternalFileSystem.Settings())
 
     init {
-        install(CorsInterceptor(cors))
+        val securityHeaders = install(SecurityHeadersInterceptor())
+        val accessLog = install(AccessLogInterceptor())
+        val corsInterceptor = install(CorsInterceptor(cors))
         registerBasicMediaTypeCoders()
 
         MongoDatabase
         JsonFileDatabase
         FcmNotificationClient
         JavaSmtpEmailService
-        S3PublicFileSystem
+        S3ExternalFileSystem
         DynamoDbCache
+        LoggingTelemetryBackend
+        OtelTelemetryBackend
 
         AuthRequirement.isSuperUser = UserAuth.require { it.userRole() >= UserRole.Root }
     }
@@ -74,21 +79,13 @@ object Server : ServerBuilder() {
     )
     val localFileServer = path.path("files") include FileSystemEndpoints(files)
 
-    val example = path.path("example-endpoint").get bind ApiHttpHandler(
-        summary = "Example Endpoint",
-        auth = noAuth,
-        implementation = { _: Unit -> 42 }
-    )
-    val example2 = path.path("example-endpoint").post bind ApiHttpHandler(
-        summary = "Example Endpoint",
-        auth = UserAuth.require(),
-        implementation = { number: Int -> number + 42 }
-    )
-
     val appReleases = path.path("app-releases") module AppReleaseEndpoints
     val users = path.path("users") module UserEndpoints
     val authEndpoints = path.path("auth") module UserAuth
     val fcmTokens = path.path("fcmTokens") module FcmTokenEndpoints
+
+    val organizations = path.path("organizations") module OrganizationEndpoints
+    val memberships = path.path("memberships") module MembershipEndpoints
 
     val multiplex = path.path("multiplex") bind MultiplexWebSocketHandler()
     val base = path bind QueryParamWebSocketHandler()

@@ -18,7 +18,6 @@ application {
 dependencies {
 
     implementation(project(":shared"))
-    implementation(libs.kotliner.cli)
     implementation(libs.csvDurable)
     implementation(libs.lightningServer.core)
     implementation(libs.lightningServer.typed)
@@ -38,7 +37,6 @@ dependencies {
     implementation(libs.services.notifications.firebase)
     implementation(libs.services.email.javasmtp)
     implementation(libs.services.files.s3)
-    implementation(libs.kotliner.cli)
 
     ksp(libs.services.database.processor)
 

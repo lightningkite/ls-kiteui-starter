@@ -17,6 +17,7 @@ import com.lightningkite.services.notifications.NotificationData
 object FcmTokenEndpoints : ServerBuilder() {
     val info = Server.database.modelInfo(
         auth = UserAuth.require(),
+        tableName = "FcmToken",
         permissions = {
             val admin = condition<FcmToken>(auth.userRole() >= UserRole.Admin)
             val mine = condition<FcmToken> { it.user eq auth.id }
@@ -33,7 +34,7 @@ object FcmTokenEndpoints : ServerBuilder() {
     val registerEndpoint = path.path("register").post bind ApiHttpHandler(
         summary = "Register Token",
         auth = UserAuth.require(),
-        implementation = { id: String ->
+        implementation = { id: FcmToken.ID ->
             info.table().upsertOne(
                 condition { it._id eq id },
                 modification { it.user assign auth.id },
@@ -56,7 +57,7 @@ object FcmTokenEndpoints : ServerBuilder() {
             val token = info.table().getOrNotFound(request.arg1)
             if (token.user != auth.id && auth.userRole() < UserRole.Admin) throw ForbiddenException("You don't own this token.")
             Server.notifications().send(
-                listOf(token._id), NotificationData(
+                listOf(token._id.raw), NotificationData(
                     notification = Notification(
                         title = "Test Notification",
                         body = "This is the test notification you requested.",

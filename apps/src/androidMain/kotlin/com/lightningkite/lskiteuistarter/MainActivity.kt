@@ -24,7 +24,6 @@ import kotlin.uuid.Uuid
 class MainActivity : KiteUiActivity() {
     companion object {
         val main = PageNavigator { AutoRoutes }
-        val dialog = PageNavigator { AutoRoutes }
     }
 
     override val theme: ReactiveContext.() -> Theme
@@ -41,6 +40,6 @@ class MainActivity : KiteUiActivity() {
 //            Sentry.captureException(ex)
         }
 
-        viewWriter.app(main, dialog)
+        viewWriter.app(main)
     }
 }

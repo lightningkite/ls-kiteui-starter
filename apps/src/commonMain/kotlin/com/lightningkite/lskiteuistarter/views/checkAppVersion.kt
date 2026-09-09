@@ -10,13 +10,13 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.dialog
 import com.lightningkite.lskiteuistarter.extensions.toAppPlatform
+import com.lightningkite.lskiteuistarter.platform
 import com.lightningkite.lskiteuistarter.sdk.selectedApi
 import com.lightningkite.reactive.context.await
 import com.lightningkite.reactive.core.AppScope
 import com.lightningkite.services.database.Query
 import com.lightningkite.services.database.condition
 import com.lightningkite.services.database.eq
-import com.mycompany.myapp.platform
 import kotlinx.coroutines.launch
 
 private var appUpdateChecked = false
@@ -81,7 +81,8 @@ fun ElementWriter.checkAppVersion() {
                             onClick { close() }
                         }
 
-//                            TODO: When apps are published replace
+                        // TEMPLATE TODO: Once your app is published, uncomment the button below
+                        // and replace the toast with a deep link or openTab() call to your store listing.
 //                            expanding.buttonTheme.button {
 //                                centered.text("Go To Store")
 //                                onClick {

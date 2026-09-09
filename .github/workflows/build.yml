@@ -1,0 +1,43 @@
+# by Claude — CI build template for Lightning Server + KiteUI projects
+name: Build
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Run server tests
+        run: ./gradlew :server:test
+
+      - name: Build web frontend (development)
+        run: ./gradlew :apps:jsBrowserDevelopmentWebpack
+
+      - name: Build web frontend (production)
+        run: ./gradlew :apps:viteBuild
+
+      - name: Upload test reports on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: |
+            server/build/reports/tests/
+            apps/build/reports/tests/
+          retention-days: 14

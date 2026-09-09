@@ -7,18 +7,35 @@ import com.lightningkite.lightningserver.encryption.secureHash
 import com.lightningkite.lightningserver.runtime.now
 import com.lightningkite.lightningserver.sessions.PasswordSecret
 import com.lightningkite.lightningserver.sessions.subjectId
-import com.lightningkite.lightningserver.typed.*
-import com.lightningkite.lightningserver.typed.ModelRestEndpointsAndUpdatesWebsocket.Companion.plus
+import com.lightningkite.lightningserver.typed.ModelRestEndpoints
+import com.lightningkite.lightningserver.typed.ModelRestEndpointsAndUpdatesWebSocket.Companion.plus
+import com.lightningkite.lightningserver.typed.ModelRestUpdatesWebsocket
+import com.lightningkite.lightningserver.typed.auth
+import com.lightningkite.lightningserver.typed.modelInfo
+import com.lightningkite.lightningserver.typed.startupOnce
 import com.lightningkite.lskiteuistarter.*
 import com.lightningkite.lskiteuistarter.UserAuth.RoleCache.userRole
+import com.lightningkite.lskiteuistarter._id
+import com.lightningkite.lskiteuistarter.email
+import com.lightningkite.lskiteuistarter.role
 import com.lightningkite.services.data.EmailAddress
 import com.lightningkite.services.data.toEmailAddress
-import com.lightningkite.services.database.*
+import com.lightningkite.services.database.Condition
+import com.lightningkite.services.database.ModelPermissions
+import com.lightningkite.services.database.Table
+import com.lightningkite.services.database.condition
+import com.lightningkite.services.database.eq
+import com.lightningkite.services.database.findOne
+import com.lightningkite.services.database.insertOne
+import com.lightningkite.services.database.inside
+import com.lightningkite.services.database.or
+import com.lightningkite.services.database.updateRestrictions
 import kotlin.uuid.Uuid
 
 object UserEndpoints : ServerBuilder() {
-    private val info = Server.database.modelInfo(
+    val info = Server.database.modelInfo(
         auth = UserAuth.require(),
+        tableName = "User",
         permissions = {
             val allowedRoles = UserRole.entries.filter { it <= auth.userRole() }
 

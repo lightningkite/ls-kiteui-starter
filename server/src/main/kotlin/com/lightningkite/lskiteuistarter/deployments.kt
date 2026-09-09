@@ -7,21 +7,26 @@ import com.lightningkite.lightningserver.definition.telemetrySettings
 import com.lightningkite.lightningserver.engine.awsserverless.AwsAdapter
 import com.lightningkite.lightningserver.terraform.AwsSecretSource
 import com.lightningkite.lightningserver.terraform.SecretSource
+import com.lightningkite.lightningserver.terraform.awsserverless.GrafanaAlert
 import com.lightningkite.lightningserver.terraform.awsserverless.TerraformAwsServerlessDomainBuilder
+import com.lightningkite.lightningserver.terraform.awsserverless.grafanaAlerts
+import com.lightningkite.lightningserver.terraform.awsserverless.otelGrafanaCloud
 import com.lightningkite.lightningserver.terraform.generated
 import com.lightningkite.services.LoggingSettings
 import com.lightningkite.services.cache.dynamodb.awsDynamoDb
+import com.lightningkite.services.data.snakeCase
+import com.lightningkite.services.data.toEmailAddress
 import com.lightningkite.services.database.mongodb.mongodbAtlasFree
 import com.lightningkite.services.email.javasmtp.awsSesDomain
+import com.lightningkite.services.email.javasmtp.awsSesDomainConfiguration
 import com.lightningkite.services.email.javasmtp.awsSesSmtp
 import com.lightningkite.services.files.s3.awsS3Bucket
-import com.lightningkite.services.otel.OpenTelemetrySettings
+import com.lightningkite.services.telemetry.TelemetryBackend
+import com.lightningkite.services.terraform.AwsVpc
 import com.lightningkite.services.terraform.TerraformProvider
 import com.lightningkite.services.terraform.TerraformProviderImport
 import com.lightningkite.services.terraform.byVariable
 import com.lightningkite.services.terraform.direct
-import com.lightningkite.snakeCase
-import com.lightningkite.toEmailAddress
 import kotlinx.serialization.json.JsonObject
 import software.amazon.awssdk.regions.Region
 import java.io.File
@@ -48,6 +53,7 @@ object LkEnv : TerraformAwsServerlessDomainBuilder<Server>(Server) {
     override val emergencyContact = "joseph@lightningkite.com".toEmailAddress()
 
     override val region = Region.US_WEST_2!!
+    override val applicationVpc: AwsVpc = AwsVpc.None
 
     override val secretsSource: SecretSource = AwsSecretSource(projectPrefix, idPrefix = displayName.snakeCase(), region)
 
@@ -59,12 +65,21 @@ object LkEnv : TerraformAwsServerlessDomainBuilder<Server>(Server) {
 
         loggingSettings.direct(LoggingSettings())
         database.mongodbAtlasFree(orgId = "6323a65c43d66b56a2ea5aea")
-        awsSesDomain("email",emergencyContact)
-        email.awsSesSmtp("email")
+        val config = awsSesDomainConfiguration("email",emergencyContact)
+        email.awsSesSmtp(config)
         files.awsS3Bucket(signedUrlDuration = 1.days)
         cache.awsDynamoDb()
         secretBasis.generated()
-        telemetrySettings.direct(OpenTelemetrySettings("console", batching = null))
+        telemetrySettings.otelGrafanaCloud(
+            instanceId = "1548711",
+            zone = "prod-us-west-0",
+        )
+        grafanaAlerts(
+            grafanaCloudStackSlug = "lightningkite",
+            alerts = GrafanaAlert.httpErrors(displayName, errorThreshold = 5) +
+                    GrafanaAlert.httpLatency(displayName, p99ThresholdMs = 5000) +
+                    GrafanaAlert.httpLiveness(displayName),
+        )
         cors.direct(CorsSettings(
             limitToDomains = listOf("*"),
             limitToHeaders = listOf("*"),
@@ -77,15 +92,18 @@ object LkEnv : TerraformAwsServerlessDomainBuilder<Server>(Server) {
     }
 }
 
-object DemoEnvDeploy {
+object LkEnvDeploy {
     @JvmStatic
-    fun main(vararg args: String) = LkEnv.deploy()
+    fun main(vararg args: String) {
+        ProcessBuilder("./gradlew", "server:lambda").inheritIO().start().waitFor()
+        LkEnv.deploy()
+    }
 }
-object DemoEnvEdit {
+object LkEnvEdit {
     @JvmStatic
     fun main(vararg args: String) = LkEnv.editVars()
 }
-object DemoEnvPrepare {
+object LkEnvPrepare {
     @JvmStatic
     fun main(vararg args: String): Unit = LkEnv.prepareTerraform().let(::println)
 }

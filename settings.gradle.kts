@@ -14,3 +14,4 @@ pluginManagement {
 include(":apps")
 include(":server")
 include(":shared")
+include(":integration-tests")

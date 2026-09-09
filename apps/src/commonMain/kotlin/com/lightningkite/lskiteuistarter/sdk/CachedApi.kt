@@ -10,4 +10,6 @@ open class CachedApi(val uncached: Api) {
 	open val totpSecrets = ModelCache(uncached.userAuth.totp, com.lightningkite.lightningserver.sessions.TotpSecret.serializer())
 	open val passwordSecrets = ModelCache(uncached.userAuth.password, com.lightningkite.lightningserver.sessions.PasswordSecret.serializer())
 	open val fcmTokens = ModelCache(uncached.fcmToken, com.lightningkite.lskiteuistarter.FcmToken.serializer())
+	open val organizations = ModelCache(uncached.organization, com.lightningkite.lskiteuistarter.Organization.serializer())
+	open val memberships = ModelCache(uncached.membership, com.lightningkite.lskiteuistarter.Membership.serializer())
 }

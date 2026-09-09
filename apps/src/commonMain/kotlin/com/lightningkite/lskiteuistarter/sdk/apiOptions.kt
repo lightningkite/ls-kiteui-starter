@@ -4,6 +4,7 @@ import com.lightningkite.kiteui.reactive.PersistentProperty
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.lightningserver.networking.BulkFetcher
+import com.lightningkite.reactive.core.Signal
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.serialization.Serializable
 
@@ -32,5 +33,17 @@ enum class ApiOption(val apiName: String, val http: String, val ws: String) {
 }
 
 val selectedApi = PersistentProperty<ApiOption>("apiOption", getDefaultServerBackend())
+
+/**
+ * Test-only override for the active [Api]. When non-null, session resolution
+ * ([currentSession]) uses this instead of the [selectedApi] backend.
+ *
+ * It's a reactive [Signal] so that changing it forces `currentSession` to recompute —
+ * integration tests set a fresh in-process-server-backed `LiveApi` per test, and `currentSession`
+ * must repoint at it. Integration tests set this to a `LiveApi` backed by an in-process Lightning
+ * Server (via `TestRunnerFetcher`), so the real frontend talks to a real server without HTTP.
+ * Always null in production.
+ */
+val apiOverride = Signal<Api?>(null)
 
 expect fun getDefaultServerBackend(): ApiOption

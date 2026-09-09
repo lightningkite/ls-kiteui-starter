@@ -5,13 +5,13 @@ import com.lightningkite.lightningserver.auth.*
 import com.lightningkite.lightningserver.definition.builder.ServerBuilder
 import com.lightningkite.lightningserver.http.post
 import com.lightningkite.lightningserver.runtime.ServerRuntime
-import com.lightningkite.lightningserver.sessions.AuthEndpoints
+import com.lightningkite.lightningserver.sessions.*
 import com.lightningkite.lightningserver.sessions.proofs.*
 import com.lightningkite.lightningserver.sessions.proofs.extensions.constrainAttemptRate
-import com.lightningkite.lightningserver.typed.ApiHttpHandler
-import com.lightningkite.lightningserver.typed.AuthAccess
-import com.lightningkite.lightningserver.typed.auth
+import com.lightningkite.lightningserver.typed.*
 import com.lightningkite.lightningserver.typed.sdk.module
+import com.lightningkite.lskiteuistarter.data.MembershipEndpoints
+import com.lightningkite.lskiteuistarter.data.UserEndpoints
 import com.lightningkite.lskiteuistarter.data.UserEndpoints.AppStoreTester
 import com.lightningkite.lskiteuistarter.data.UserEndpoints.info
 import com.lightningkite.services.data.EmailAddress
@@ -19,10 +19,17 @@ import com.lightningkite.services.data.toEmailAddress
 import com.lightningkite.services.database.*
 import com.lightningkite.services.email.Email
 import com.lightningkite.services.email.EmailAddressWithName
+import kotlinx.coroutines.flow.toList
+import kotlinx.html.html
+import kotlinx.html.stream.createHTML
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.builtins.SetSerializer
+import kotlinx.serialization.builtins.serializer
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Instant
+import kotlin.uuid.Uuid
 
 
 object UserAuth : PrincipalType<User, User.ID>, ServerBuilder() {
@@ -44,7 +51,7 @@ object UserAuth : PrincipalType<User, User.ID>, ServerBuilder() {
         else -> super.fetchByProperty(property, value)
     }
 
-    override val precache: List<AuthCacheKey<User, *>> = listOf(RoleCache)
+    override val precache: List<AuthCacheKey<User, *>> = listOf(RoleCache, MembershipsCache)
 
 
     // caching
@@ -62,6 +69,36 @@ object UserAuth : PrincipalType<User, User.ID>, ServerBuilder() {
         context(_: ServerRuntime)
         suspend fun AuthAccess<User>.userRole() = auth.userRole()
     }
+
+    @Serializable
+    data class SimplifiedMembership(
+        val _id: Membership.ID,
+        val organization: Organization.ID,
+        val role: MemberRole,
+    )
+
+    object MembershipsCache : AuthCacheKey<User, Set<SimplifiedMembership>> {
+        override val id: String = "memberships"
+        override val serializer: KSerializer<Set<SimplifiedMembership>> = SetSerializer(SimplifiedMembership.serializer())
+        override val expireAfter: Duration = 5.minutes
+
+        context(_: ServerRuntime)
+        override suspend fun calculate(input: Authentication<User>): Set<SimplifiedMembership> {
+            return MembershipEndpoints.info.table()
+                .find(condition { (it.user eq input.id) and (it.deactivatedAt eq null) })
+                .toList()
+                .map { SimplifiedMembership(it._id, it.organization, it.role) }
+                .toSet()
+        }
+
+        context(_: ServerRuntime)
+        suspend fun Authentication<User>.memberships() = get(MembershipsCache)
+        context(_: ServerRuntime)
+        suspend fun AuthAccess<User>.memberships() = auth.memberships()
+    }
+
+    @Suppress("UNUSED_PARAMETER")
+    fun hasFeature(flag: FeatureFlag): Boolean = false
 
     private val proofs = path.path("proof")
 
@@ -133,6 +170,7 @@ object UserAuth : PrincipalType<User, User.ID>, ServerBuilder() {
     class SessionEndpoints : AuthEndpoints<User, User.ID>(
         principal = UserAuth,
         database = Server.database,
+        cache = Server.cache,
     ) {
         context(server: ServerRuntime)
         override suspend fun requiredProofStrengthFor(subject: User): Int {
@@ -141,7 +179,7 @@ object UserAuth : PrincipalType<User, User.ID>, ServerBuilder() {
 
             val methods = server.proofMethods
                 .filter { it.established(UserAuth, subject) }
-                .filter { it.info.via != this@UserAuth.backupCodes.info.via }
+                .filter { it.info.via != UserAuth.backupCodes.info.via }
 
             return if (methods.size > 1) 20 else 10
         }
@@ -151,5 +189,26 @@ object UserAuth : PrincipalType<User, User.ID>, ServerBuilder() {
 
         context(server: ServerRuntime)
         override suspend fun sessionStaleAfter(subject: User): Duration? = null
+
+        context(_: ServerRuntime)
+        suspend fun createSession(
+            subjectId: User.ID,
+            label: String? = null,
+            expires: Instant? = null,
+            stale: Instant? = null,
+            scopes: Set<GrantedScope> = setOf(GrantedScope.root),
+            oauthClient: String? = null,
+            derivedFrom: Uuid? = null,
+        ): Pair<Session<User, User.ID>, RefreshToken> {
+            return newSession(
+                subjectId = subjectId,
+                label = label,
+                expires = expires,
+                stale = stale,
+                scopes = scopes,
+                oauthClient = oauthClient,
+                derivedFrom = derivedFrom,
+            )
+        }
     }
 }
