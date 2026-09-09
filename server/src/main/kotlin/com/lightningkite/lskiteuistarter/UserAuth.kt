@@ -97,9 +97,6 @@ object UserAuth : PrincipalType<User, User.ID>, ServerBuilder() {
         suspend fun AuthAccess<User>.memberships() = auth.memberships()
     }
 
-    @Suppress("UNUSED_PARAMETER")
-    fun hasFeature(flag: FeatureFlag): Boolean = false
-
     private val proofs = path.path("proof")
 
     val pins = PinHandler(Server.cache, "pins")

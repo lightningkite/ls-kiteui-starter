@@ -29,7 +29,7 @@ fun engine(setup: KtorEngine.() -> Unit) {
 
     val before = TimeSource.Monotonic.markNow()
     val built = Server.build()
-    println("Server built in ${before.elapsedNow()}")
+    logger.info { "Server built in ${before.elapsedNow()}" }
 
     engine = KtorEngine(built, Clock.App).apply {
         settings.loadFromFile(settingsFile, internalSerializersModule)
