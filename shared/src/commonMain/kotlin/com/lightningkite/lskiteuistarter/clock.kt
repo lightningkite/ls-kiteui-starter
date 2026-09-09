@@ -1,22 +1,22 @@
 package com.lightningkite.lskiteuistarter
 
-import com.lightningkite.ZonedDateTime
-import com.lightningkite.nowLocal
+import com.lightningkite.services.data.ZonedDateTime
+import com.lightningkite.services.data.nowLocal
 import kotlin.time.Clock
 import kotlin.time.Instant
 
-private var lsKiteuiStarterClock: Clock = Clock.System
+private var appClock: Clock = Clock.System
 
-val Clock.Companion.lsKiteuiStarter: Clock get() = lsKiteuiStarterClock
+val Clock.Companion.App: Clock get() = appClock
 
 @RequiresOptIn("Meant to only be used in tests.")
 annotation class TestOnly
 
 @TestOnly
-fun setLskiteuistarterClockForTesting(clock: Clock) {
-    println("WARN!! lskiteuistarter clock is being set to $clock.")
-    lsKiteuiStarterClock = clock
+fun setAppClockForTesting(clock: Clock) {
+    println("WARN!! App clock is being set to $clock.")
+    appClock = clock
 }
 
-fun now(): Instant = Clock.lsKiteuiStarter.now()
-fun nowLocal(): ZonedDateTime = Clock.lsKiteuiStarter.nowLocal()
+fun now(): Instant = Clock.App.now()
+fun nowLocal(): ZonedDateTime = Clock.App.nowLocal()

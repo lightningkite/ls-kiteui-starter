@@ -1,31 +1,28 @@
 package com.lightningkite.lskiteuistarter
 
-import com.lightningkite.EmailAddress
 import com.lightningkite.lightningserver.NotFoundException
 import com.lightningkite.lightningserver.auth.*
 import com.lightningkite.lightningserver.definition.builder.ServerBuilder
 import com.lightningkite.lightningserver.http.post
 import com.lightningkite.lightningserver.runtime.ServerRuntime
-import com.lightningkite.lightningserver.sessions.*
+import com.lightningkite.lightningserver.sessions.AuthEndpoints
 import com.lightningkite.lightningserver.sessions.proofs.*
 import com.lightningkite.lightningserver.sessions.proofs.extensions.constrainAttemptRate
-import com.lightningkite.lightningserver.typed.*
+import com.lightningkite.lightningserver.typed.ApiHttpHandler
+import com.lightningkite.lightningserver.typed.AuthAccess
+import com.lightningkite.lightningserver.typed.auth
 import com.lightningkite.lightningserver.typed.sdk.module
-import com.lightningkite.lskiteuistarter.data.UserEndpoints
 import com.lightningkite.lskiteuistarter.data.UserEndpoints.AppStoreTester
 import com.lightningkite.lskiteuistarter.data.UserEndpoints.info
+import com.lightningkite.services.data.EmailAddress
+import com.lightningkite.services.data.toEmailAddress
 import com.lightningkite.services.database.*
 import com.lightningkite.services.email.Email
 import com.lightningkite.services.email.EmailAddressWithName
-import com.lightningkite.toEmailAddress
-import kotlinx.html.html
-import kotlinx.html.stream.createHTML
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.builtins.serializer
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Instant
-import kotlin.uuid.Uuid
 
 
 object UserAuth : PrincipalType<User, User.ID>, ServerBuilder() {
@@ -144,7 +141,7 @@ object UserAuth : PrincipalType<User, User.ID>, ServerBuilder() {
 
             val methods = server.proofMethods
                 .filter { it.established(UserAuth, subject) }
-                .filter { it.info.via != backupCodes.info.via }
+                .filter { it.info.via != this@UserAuth.backupCodes.info.via }
 
             return if (methods.size > 1) 20 else 10
         }
