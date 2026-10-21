@@ -1,6 +1,5 @@
 package com.lightningkite.lskiteuistarter.data
 
-import com.lightningkite.lightningserver.auth.id
 import com.lightningkite.lightningserver.auth.require
 import com.lightningkite.lightningserver.definition.builder.ServerBuilder
 import com.lightningkite.lightningserver.typed.ModelRestEndpoints

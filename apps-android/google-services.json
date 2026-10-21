@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "879697728997",
+    "project_id": "cargo-relay",
+    "storage_bucket": "cargo-relay.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:879697728997:android:499dd0cdae63f591200b0c",
+        "android_client_info": {
+          "package_name": "net.cargorelay.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBixu3zUuPf3f0d4Vwh_gGqye4rNy0_sbk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

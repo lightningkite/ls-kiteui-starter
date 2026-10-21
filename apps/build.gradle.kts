@@ -12,7 +12,7 @@ import kotlin.collections.set
 val onMac = System.getProperty("os.name").contains("Mac", ignoreCase = true)
 
 plugins {
-    alias(libs.plugins.androidApp)
+    alias(libs.plugins.androidKmpLibrary)
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.serialization)
     if (System.getProperty("os.name").contains("Mac", ignoreCase = true)) {
@@ -33,7 +33,14 @@ repositories {
 kotlin {
     applyDefaultHierarchyTemplate()
     jvm("jvmSsr")
-    androidTarget()
+    android {
+        // Must match the KiteUI packageName below: the generated Resources.android.kt uses an unqualified R.
+        namespace = "com.lightningkite.lskiteuistarter"
+        compileSdk = 36
+        minSdk = 26
+        enableCoreLibraryDesugaring = true
+        androidResources { enable = true }
+    }
     if (onMac) {
         iosArm64()
         iosSimulatorArm64()
@@ -50,7 +57,7 @@ kotlin {
     }
 
     sourceSets {
-        val commonMain by getting {
+        val commonMain = getByName("commonMain") {
             dependencies {
                 api(libs.kiteui)
                 api(libs.csvDurable)
@@ -61,25 +68,25 @@ kotlin {
                 api(project(":shared"))
             }
         }
-        val androidMain by getting {
+        val androidMain = getByName("androidMain") {
             dependencies {
                 api(libs.firebase.messaging.ktx)
             }
         }
         if (onMac) {
-            val iosMain by getting {
+            val iosMain = getByName("iosMain") {
                 dependencies {
                 }
             }
         }
-        val jsMain by getting {
+        val jsMain = getByName("jsMain") {
             dependencies {
                 implementation(npm("firebase", "10.7.1"))
             }
         }
 
 
-        val commonTest by getting {
+        val commonTest = getByName("commonTest") {
             dependencies {
                 implementation(kotlin("test"))
             }
@@ -119,54 +126,8 @@ kotlin {
     }
 }
 
-android {
-    namespace = "com.lightningkite.lskiteuistarter"
-    compileSdk = 36
-
-    defaultConfig {
-        applicationId = "com.lightningkite.lskiteuistarter"
-        minSdk = 26
-        targetSdk = 36
-        versionCode = 1
-        versionName = "0.0.1"
-
-        testInstrumentationRunner = "android.support.test.runner.AndroidJUnitRunner"
-    }
-
-    packaging {
-        resources.excludes.add("com/lightningkite/lightningserver/lightningdb.txt")
-        resources.excludes.add("com/lightningkite/lightningserver/lightningdb-log.txt")
-    }
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-        isCoreLibraryDesugaringEnabled = true
-    }
-    val props = project.rootProject.file("local.properties").takeIf { it.exists() }?.inputStream()?.use { stream ->
-        Properties().apply { load(stream) }
-    }
-    if (props != null && props.getProperty("signingKeystore") != null) {
-        signingConfigs {
-            this.create("release") {
-                storeFile = project.rootProject.file(props.getProperty("signingKeystore"))
-                storePassword = props.getProperty("signingPassword")
-                keyAlias = props.getProperty("signingAlias")
-                keyPassword = props.getProperty("signingAliasPassword")
-            }
-        }
-        buildTypes {
-            this.getByName("release") {
-                this.isMinifyEnabled = false
-                this.proguardFiles(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro")
-                this.signingConfig = signingConfigs.getByName("release")
-            }
-        }
-    }
-
-    dependencies {
-        coreLibraryDesugaring(libs.desugarJdkLibs)
-    }
+dependencies {
+    coreLibraryDesugaring(libs.desugarJdkLibs)
 }
 
 rootProject.plugins.withType<org.jetbrains.kotlin.gradle.targets.js.yarn.YarnPlugin> {
@@ -269,23 +230,6 @@ fun ascKeyContent(): String {
     val path = localProperties?.getProperty("ios.ascKeyPath") ?: return ""
     val file = rootProject.file(path)
     return if (file.exists()) Base64.getEncoder().encodeToString(file.readBytes()) else ""
-}
-
-tasks.register<Exec>("publishAndroid") {
-    group = "deploy"
-    description = "Build signed AAB then upload to Play Store internal track via Fastlane"
-    dependsOn("bundleRelease")  // Gradle builds + signs; Fastlane only uploads
-    workingDir = rootProject.projectDir
-    environment("PLAY_STORE_JSON_KEY_PATH", localProperties?.getProperty("playStoreJsonKeyPath") ?: "")
-    commandLine("bundle", "exec", "fastlane", "android", "internal")
-}
-
-tasks.register<Exec>("promoteAndroid") {
-    group = "deploy"
-    description = "Promote the current Play Store internal track build to production via Fastlane"
-    workingDir = rootProject.projectDir
-    environment("PLAY_STORE_JSON_KEY_PATH", localProperties?.getProperty("playStoreJsonKeyPath") ?: "")
-    commandLine("bundle", "exec", "fastlane", "android", "promote_to_production")
 }
 
 // Shared AWS + match env vars for all iOS tasks - by Claude

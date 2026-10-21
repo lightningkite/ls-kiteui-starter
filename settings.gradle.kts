@@ -12,6 +12,7 @@ pluginManagement {
 
 
 include(":apps")
+include(":apps-android")
 include(":server")
 include(":shared")
 include(":integration-tests")

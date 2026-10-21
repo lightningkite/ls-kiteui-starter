@@ -5,13 +5,12 @@ import com.lightningkite.lightningserver.auth.*
 import com.lightningkite.lightningserver.definition.builder.ServerBuilder
 import com.lightningkite.lightningserver.http.post
 import com.lightningkite.lightningserver.runtime.ServerRuntime
-import com.lightningkite.lightningserver.sessions.*
+import com.lightningkite.lightningserver.sessions.AuthEndpoints
 import com.lightningkite.lightningserver.sessions.proofs.*
 import com.lightningkite.lightningserver.sessions.proofs.extensions.constrainAttemptRate
 import com.lightningkite.lightningserver.typed.*
 import com.lightningkite.lightningserver.typed.sdk.module
 import com.lightningkite.lskiteuistarter.data.MembershipEndpoints
-import com.lightningkite.lskiteuistarter.data.UserEndpoints
 import com.lightningkite.lskiteuistarter.data.UserEndpoints.AppStoreTester
 import com.lightningkite.lskiteuistarter.data.UserEndpoints.info
 import com.lightningkite.services.data.EmailAddress
@@ -20,20 +19,18 @@ import com.lightningkite.services.database.*
 import com.lightningkite.services.email.Email
 import com.lightningkite.services.email.EmailAddressWithName
 import kotlinx.coroutines.flow.toList
-import kotlinx.html.html
-import kotlinx.html.stream.createHTML
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.SetSerializer
-import kotlinx.serialization.builtins.serializer
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Instant
-import kotlin.uuid.Uuid
 
 
 object UserAuth : PrincipalType<User, User.ID>, ServerBuilder() {
-    // principal fields
+
+    // ----- Principal Fields -----
 
     override val subjectSerializer: KSerializer<User> = User.serializer()
     override val idSerializer: KSerializer<User.ID> = User.ID.serializer()
@@ -45,6 +42,7 @@ object UserAuth : PrincipalType<User, User.ID>, ServerBuilder() {
     override suspend fun fetchByProperty(property: String, value: String): User? = when (property) {
         "email" -> User.info.table().run {
             findOne(condition { it.email eq value.toEmailAddress() })
+                // This is optional. If you want signing in and signing up to be the same thing this is how you do it
                 ?: insertOne(User(email = value.toEmailAddress(), name = ""))
         }
 
@@ -53,8 +51,13 @@ object UserAuth : PrincipalType<User, User.ID>, ServerBuilder() {
 
     override val precache: List<AuthCacheKey<User, *>> = listOf(RoleCache, MembershipsCache)
 
+    override fun normalizePropertyValue(property: String, value: String): String = when (property) {
+        "email" -> email.proof.normalize(value)
 
-    // caching
+        else -> super.normalizePropertyValue(property, value)
+    }
+
+    // ----- Caching ------
 
     object RoleCache : AuthCacheKey<User, UserRole> {
         override val id: String = "role"
@@ -66,6 +69,7 @@ object UserAuth : PrincipalType<User, User.ID>, ServerBuilder() {
 
         context(_: ServerRuntime)
         suspend fun Authentication<User>.userRole() = get(RoleCache)
+
         context(_: ServerRuntime)
         suspend fun AuthAccess<User>.userRole() = auth.userRole()
     }
@@ -79,7 +83,8 @@ object UserAuth : PrincipalType<User, User.ID>, ServerBuilder() {
 
     object MembershipsCache : AuthCacheKey<User, Set<SimplifiedMembership>> {
         override val id: String = "memberships"
-        override val serializer: KSerializer<Set<SimplifiedMembership>> = SetSerializer(SimplifiedMembership.serializer())
+        override val serializer: KSerializer<Set<SimplifiedMembership>> =
+            SetSerializer(SimplifiedMembership.serializer())
         override val expireAfter: Duration = 5.minutes
 
         context(_: ServerRuntime)
@@ -93,26 +98,40 @@ object UserAuth : PrincipalType<User, User.ID>, ServerBuilder() {
 
         context(_: ServerRuntime)
         suspend fun Authentication<User>.memberships() = get(MembershipsCache)
+
         context(_: ServerRuntime)
         suspend fun AuthAccess<User>.memberships() = auth.memberships()
     }
+
+    // ----- Proofs -----
 
     private val proofs = path.path("proof")
 
     val pins = PinHandler(Server.cache, "pins")
 
     val email = proofs.path("email") module EmailEndpoints(pins)
-    val totp = proofs.path("totp") module TimeBasedOTPProofEndpoints(Server.database, Server.cache)
-    val password = proofs.path("password") module PasswordProofEndpoints(Server.database, Server.cache)
-    val backupCodes = proofs.path("backup-codes") module BackupCodeEndpoints(Server.database, Server.cache)
-    val session = path.path("session") include SessionEndpoints()
+    val totp = proofs.path("totp") module TimeBasedOTPProofEndpoints(
+        Server.database,
+        Server.cache,
+        proofExpiration = 10.minutes
+    )
+    val password = proofs.path("password") module PasswordProofEndpoints(
+        Server.database,
+        Server.cache,
+        proofExpiration = 10.minutes
+    )
+    val backupCodes = proofs.path("backup-codes") module BackupCodeEndpoints(
+        Server.database,
+        Server.cache,
+        proofExpiration = 10.minutes
+    )
 
     class EmailEndpoints(val pins: PinHandler) : ServerBuilder() {
         val proof = path include EmailProofEndpoints(
             pin = pins,
             email = Server.email,
             emailTemplate = { to, pin ->
-                val name = User.info.table().findOne(condition { it.email eq to.toEmailAddress() })?.name
+                val name = User.info.table().findOne(condition { it.email eq to })?.name
                 Email(
                     subject = "Log In Code",
                     to = listOf(EmailAddressWithName(to)),
@@ -130,6 +149,20 @@ object UserAuth : PrincipalType<User, User.ID>, ServerBuilder() {
                         }
                     }
                 )
+            },
+            proofExpiration = 10.minutes,
+            screenEmail = { email ->
+
+                // Here you can prevent emails from being sent out to emails that are not associated with a user in the system
+                // If you want to separate out signing in and signing up this is how you would do it.
+                // If you want to do any other kind of screening, such as the domain you can do it here.
+                // ScreeningResult.Reject is what you use when you want to return an explicit denial message and 400.
+                /*if(User.info.table().findOne(condition { it.email eq email }) == null)
+                    PinBasedProofEndpoints.ScreeningResult.Suppress
+                else
+                    PinBasedProofEndpoints.ScreeningResult.Allow*/
+
+                PinBasedProofEndpoints.ScreeningResult.Allow
             }
         )
 
@@ -164,6 +197,10 @@ object UserAuth : PrincipalType<User, User.ID>, ServerBuilder() {
         )
     }
 
+    // ----- Session Configuration and Endpoints -----
+
+    val session = path.path("session") include SessionEndpoints()
+
     class SessionEndpoints : AuthEndpoints<User, User.ID>(
         principal = UserAuth,
         database = Server.database,
@@ -182,30 +219,16 @@ object UserAuth : PrincipalType<User, User.ID>, ServerBuilder() {
         }
 
         context(server: ServerRuntime)
-        override suspend fun sessionExpiration(subject: User): Instant? = null
+        override suspend fun sessionExpiration(subject: User): Instant = now() + 365.days
 
         context(server: ServerRuntime)
-        override suspend fun sessionStaleAfter(subject: User): Duration? = null
+        override suspend fun sessionStaleAfter(subject: User): Duration = 7.days
 
-        context(_: ServerRuntime)
-        suspend fun createSession(
-            subjectId: User.ID,
-            label: String? = null,
-            expires: Instant? = null,
-            stale: Instant? = null,
-            scopes: Set<GrantedScope> = setOf(GrantedScope.root),
-            oauthClient: String? = null,
-            derivedFrom: Uuid? = null,
-        ): Pair<Session<User, User.ID>, RefreshToken> {
-            return newSession(
-                subjectId = subjectId,
-                label = label,
-                expires = expires,
-                stale = stale,
-                scopes = scopes,
-                oauthClient = oauthClient,
-                derivedFrom = derivedFrom,
-            )
+        context(server: ServerRuntime)
+        override suspend fun permitAuthentication(subject: User): Boolean {
+            // This is where you can prevent a user from logging in because they are disabled or any other reason you want
+            return super.permitAuthentication(subject)
         }
+
     }
 }

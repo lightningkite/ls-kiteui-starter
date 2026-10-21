@@ -11,6 +11,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.server.netty.*
 import kotlin.time.Clock
 import kotlin.time.TimeSource
+import kotlin.time.measureTime
 
 private lateinit var settingsFile: KFile
 
@@ -21,7 +22,7 @@ fun setup(settings: KFile = KFile("settings.json")) {
 private var engine: KtorEngine? = null
 private val logger = KotlinLogging.logger("com.lightningkite.lskiteuistarter")
 
-fun engine(setup: KtorEngine.() -> Unit) {
+fun withEngine(setup: KtorEngine.() -> Unit) {
     engine?.let {
         setup(it)
         return
@@ -38,9 +39,13 @@ fun engine(setup: KtorEngine.() -> Unit) {
     }
 }
 
-fun serve() = engine { start(Netty) }
+fun serve() = withEngine { start(Netty) }
+fun predeploy() = withEngine {
+    val preDeployTime = TimeSource.Monotonic.measureTime { runPreDeploy() }
+    println("Pre Deploy finished in $preDeployTime")
+}
 
-fun sdk() = engine {
+fun sdk() = withEngine {
     val folder = KFile("apps/src/commonMain/kotlin/com/lightningkite/lskiteuistarter/sdk")
     logger.info { "Generating FetcherSdk" }
     FetcherSdk("com.lightningkite.lskiteuistarter.sdk").write(folder)
@@ -54,6 +59,7 @@ fun main(vararg args: String) = cli(
     setup = ::setup,
     available = listOf(
         ::serve,
+        ::predeploy,
         ::sdk,
     ),
     useInteractive = true,
