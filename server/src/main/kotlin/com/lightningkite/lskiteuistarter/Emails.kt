@@ -111,13 +111,10 @@ fun HTML.emailBase(centralContent: EmailContentBuilder.() -> Unit) {
                                     }
                                 }
                             }
-
                         })
-
                     }
                 }
             }
         }
-
     }
 }

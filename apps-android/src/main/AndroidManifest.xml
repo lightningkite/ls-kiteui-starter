@@ -10,7 +10,7 @@
             android:supportsRtl="true"
             android:theme="@style/Theme.Template">
         <activity
-                android:name=".MainActivity"
+                android:name="com.lightningkite.lskiteuistarter.MainActivity"
                 android:windowSoftInputMode="adjustResize"
                 android:exported="true">
             <intent-filter>
@@ -21,18 +21,18 @@
         </activity>
 
         <meta-data
-            android:name="com.google.firebase.messaging.default_notification_icon"
-            android:resource="@mipmap/ic_launcher"
-        />
+                android:name="com.google.firebase.messaging.default_notification_icon"
+                android:resource="@mipmap/ic_launcher"
+                />
 
         <meta-data
-            android:name="com.google.firebase.messaging.default_notification_channel_id"
-            android:value="default" />
+                android:name="com.google.firebase.messaging.default_notification_channel_id"
+                android:value="default" />
 
         <service
-            android:name="com.lightningkite.lskiteuistarter.utils.FCMService"
-            android:exported="false"
-        >
+                android:name="com.lightningkite.lskiteuistarter.utils.FCMService"
+                android:exported="false"
+                >
 
             <intent-filter>
 
@@ -43,13 +43,13 @@
 
 
         <provider
-            android:name="androidx.core.content.FileProvider"
-            android:authorities="com.lightningkite.lskiteuistarter.fileprovider"
-            android:exported="false"
-            android:grantUriPermissions="true">
+                android:name="androidx.core.content.FileProvider"
+                android:authorities="com.lightningkite.lskiteuistarter.fileprovider"
+                android:exported="false"
+                android:grantUriPermissions="true">
             <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/filepaths"/>
+                    android:name="android.support.FILE_PROVIDER_PATHS"
+                    android:resource="@xml/filepaths"/>
         </provider>
 
         <!-- Required: set your sentry.io project identifier (DSN) -->
@@ -57,9 +57,9 @@
 
         <!-- enable automatic breadcrumbs for user interactions (clicks, swipes, scrolls) -->
         <meta-data
-            android:name="io.sentry.traces.user-interaction.enable"
-            android:value="true"
-        />
+                android:name="io.sentry.traces.user-interaction.enable"
+                android:value="true"
+                />
         <!-- enable pageshot for crashes -->
         <meta-data android:name="io.sentry.attach-pageshot" android:value="true"/>
         <!-- enable view hierarchy for crashes -->
@@ -71,8 +71,8 @@
         <meta-data android:name="io.sentry.traces.profiling.sample-rate" android:value="1.0"/>
         <!-- enable app start profiling -->
         <meta-data
-            android:name="io.sentry.traces.profiling.enable-app-start"
-            android:value="true"/>
+                android:name="io.sentry.traces.profiling.enable-app-start"
+                android:value="true"/>
 
     </application>
 

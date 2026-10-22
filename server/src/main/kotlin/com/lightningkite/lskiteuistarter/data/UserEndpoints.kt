@@ -9,10 +9,10 @@ import com.lightningkite.lightningserver.sessions.PasswordSecret
 import com.lightningkite.lightningserver.sessions.subjectId
 import com.lightningkite.lightningserver.typed.ModelRestEndpoints
 import com.lightningkite.lightningserver.typed.ModelRestEndpointsAndUpdatesWebSocket.Companion.plus
-import com.lightningkite.lightningserver.typed.ModelRestUpdatesWebsocket
+import com.lightningkite.lightningserver.typed.ModelRestUpdatesWebSocket
 import com.lightningkite.lightningserver.typed.auth
 import com.lightningkite.lightningserver.typed.modelInfo
-import com.lightningkite.lightningserver.typed.startupOnce
+import com.lightningkite.lightningserver.typed.predeployOnce
 import com.lightningkite.lskiteuistarter.*
 import com.lightningkite.lskiteuistarter.UserAuth.RoleCache.userRole
 import com.lightningkite.lskiteuistarter._id
@@ -59,17 +59,16 @@ object UserEndpoints : ServerBuilder() {
 
     val User.Companion.info get() = this@UserEndpoints.info
 
-    val rest = path.path("rest") include ModelRestEndpoints(info) + ModelRestUpdatesWebsocket(info, User_email)
+    val rest = path.path("rest") include ModelRestEndpoints(info) + ModelRestUpdatesWebSocket(info, User_email)
 
 
     private suspend fun Table<User>.init(user: User): User =
         findOne(condition { it.email.eq(user.email) }) ?: insertOne(user)
-            ?: throw IllegalStateException("Failed to insert user ${user.email}")
 
     private val appStoreTesterId = User.ID(Uuid.parse("f00ffbaa-abf9-497d-a75a-442f1c77c1e9"))
     val User.ID.Companion.AppStoreTester get() = appStoreTesterId
 
-    val initAppStoreTester = path.path("initAppStoreTester") bind startupOnce(Server.database) {
+    val initAppStoreTester = path.path("initAppStoreTester") bind predeployOnce(Server.database) {
         val user = info.table().init(
             User(
                 _id = User.ID.AppStoreTester,
@@ -87,11 +86,11 @@ object UserEndpoints : ServerBuilder() {
                     hint = "Would have been given to you via separate instructions",
                     establishedAt = now()
                 )
-            )!!
+            )
         }
     }
 
-    val initAdminUsers = path.path("initAdminUser") bind startupOnce(Server.database) {
+    val initAdminUsers = path.path("initAdminUser") bind predeployOnce(Server.database) {
         suspend fun root(
             email: EmailAddress,
             id: Uuid = Uuid.random()
