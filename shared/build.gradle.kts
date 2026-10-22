@@ -16,8 +16,10 @@ kotlin {
     js {
         browser()
     }
-    iosArm64()
-    iosSimulatorArm64()
+    if (System.getProperty("os.name").contains("Mac", ignoreCase = true)) {
+        iosArm64()
+        iosSimulatorArm64()
+    }
 
     sourceSets {
         val commonMain by getting {
