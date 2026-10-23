@@ -9,7 +9,7 @@ import kotlin.collections.set
 
 // KMP currently doesn't disable iOS target and dependency resolution correctly when not on a mac.
 // So we work around it on non mac machines with this check
-val onMac = System.getProperty("os.name").contains("Mac", ignoreCase = true)
+val iosEnabled: Boolean by rootProject.extra
 
 plugins {
     alias(libs.plugins.androidKmpLibrary)
@@ -41,7 +41,7 @@ kotlin {
         enableCoreLibraryDesugaring = true
         androidResources { enable = true }
     }
-    if (onMac) {
+    if (iosEnabled) {
         iosArm64()
         iosSimulatorArm64()
     }
@@ -73,7 +73,7 @@ kotlin {
                 api(libs.firebase.messaging.ktx)
             }
         }
-        if (onMac) {
+        if (iosEnabled) {
             val iosMain = getByName("iosMain") {
                 dependencies {
                 }
@@ -93,7 +93,7 @@ kotlin {
         }
     }
 
-    if (onMac) {
+    if (iosEnabled) {
         // We have to manually call this because the shortcut isn't available when plugin is not applied and gradle will
         // fail even behind the if check
         (this as ExtensionAware).extensions.configure<CocoapodsExtension>("cocoapods", {
@@ -103,7 +103,7 @@ kotlin {
             // TEMPLATE TODO: Replace these placeholder strings with your app's real description and homepage URL.
             summary = "Some description for a Kotlin/Native module"
             homepage = "Link to a Kotlin/Native module homepage"
-            ios.deploymentTarget = "14.0"
+            ios.deploymentTarget = "15.0"
 
             // Optional properties
             // Configure the Pod name here instead of changing the Gradle project name
@@ -131,15 +131,15 @@ dependencies {
 }
 
 rootProject.plugins.withType<org.jetbrains.kotlin.gradle.targets.js.yarn.YarnPlugin> {
-    rootProject.the<YarnRootExtension>().yarnLockMismatchReport =
+    rootProject.the<YarnRootExtension>().yarnLockMismatchReportProperty =
         YarnLockMismatchReport.WARNING
-    rootProject.the<YarnRootExtension>().reportNewYarnLock = true
-    rootProject.the<YarnRootExtension>().yarnLockAutoReplace = true
+    rootProject.the<YarnRootExtension>().reportNewYarnLockProperty = true
+    rootProject.the<YarnRootExtension>().yarnLockAutoReplaceProperty = true
 }
 
 configure<KiteUiPluginExtension> {
     this.packageName = "com.lightningkite.lskiteuistarter"
-    this.iosProjectRoot = project.file("./ios/app")
+    this.iosProjectRoot = project.file("../apps-ios/app")
 }
 
 // Create symlink for Kotlin/JS source maps to resolve correctly
@@ -173,8 +173,9 @@ tasks.matching { it.name == "jsViteDev" || it.name == "jsBrowserDevelopmentRun" 
 }
 
 fun env(name: String, profile: String) {
-    tasks.create("deployWeb${name}Init", Exec::class.java) {
+    tasks.register("deployWeb${name}Init", Exec::class.java) {
         group = "deploy"
+        description = "Run 'terraform init' in the $name directory"
         this.dependsOn("viteBuild")
         this.environment("AWS_PROFILE", profile)
         val props = Properties()
@@ -183,8 +184,9 @@ fun env(name: String, profile: String) {
         this.args("init")
         this.workingDir = file("terraform/$name")
     }
-    tasks.create("deployWeb${name}", Exec::class.java) {
+    tasks.register("deployWeb${name}", Exec::class.java) {
         group = "deploy"
+        description = "Run 'terraform apply' in the $name directory"
         this.dependsOn("deployWeb${name}Init")
         this.environment("AWS_PROFILE", profile)
         val props = Properties()
