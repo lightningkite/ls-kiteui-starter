@@ -44,7 +44,7 @@ object UserAuth : PrincipalType<User, User.ID>, ServerBuilder() {
     context(server: ServerRuntime)
     override suspend fun fetchByProperty(property: String, value: String): User? = when (property) {
         "email" -> User.info.table().run {
-            findOne(condition { it.email eq value.toEmailAddress() })
+            findOne(Condition { it.email eq value.toEmailAddress() })
                 ?: insertOne(User(email = value.toEmailAddress(), name = ""))
         }
 
@@ -85,7 +85,7 @@ object UserAuth : PrincipalType<User, User.ID>, ServerBuilder() {
         context(_: ServerRuntime)
         override suspend fun calculate(input: Authentication<User>): Set<SimplifiedMembership> {
             return MembershipEndpoints.info.table()
-                .find(condition { (it.user eq input.id) and (it.deactivatedAt eq null) })
+                .find(Condition { (it.user eq input.id) and (it.deactivatedAt eq null) })
                 .toList()
                 .map { SimplifiedMembership(it._id, it.organization, it.role) }
                 .toSet()
@@ -115,7 +115,7 @@ object UserAuth : PrincipalType<User, User.ID>, ServerBuilder() {
             pin = pins,
             email = Server.email,
             emailTemplate = { to, pin ->
-                val name = User.info.table().findOne(condition { it.email eq to.toEmailAddress() })?.name
+                val name = User.info.table().findOne(Condition { it.email eq to.toEmailAddress() })?.name
                 Email(
                     subject = "Log In Code",
                     to = listOf(EmailAddressWithName(to)),

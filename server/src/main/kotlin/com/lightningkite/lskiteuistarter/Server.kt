@@ -37,7 +37,7 @@ import com.lightningkite.services.otel.OtelTelemetryBackend
 
 object Server : ServerBuilder() {
     override val annotationValidators: Runtime<AnnotationValidators> = Runtime.Cached {
-        AnnotationValidators.StandardWithExternalModule() + AnnotationValidators.Files() + AnnotationValidators.Media()
+        AnnotationValidators.StandardWithExternalModule() + AnnotationValidators.Files()
     }
 
     // Settings

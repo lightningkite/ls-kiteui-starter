@@ -19,8 +19,8 @@ object FcmTokenEndpoints : ServerBuilder() {
         auth = UserAuth.require(),
         tableName = "FcmToken",
         permissions = {
-            val admin = condition<FcmToken>(auth.userRole() >= UserRole.Admin)
-            val mine = condition<FcmToken> { it.user eq auth.id }
+            val admin: Condition<FcmToken> = Condition(auth.userRole() >= UserRole.Admin)
+            val mine = Condition<FcmToken> { it.user eq auth.id }
             ModelPermissions(
                 create = admin or mine,
                 read = admin or mine,
@@ -36,8 +36,8 @@ object FcmTokenEndpoints : ServerBuilder() {
         auth = UserAuth.require(),
         implementation = { id: FcmToken.ID ->
             info.table().upsertOne(
-                condition { it._id eq id },
-                modification { it.user assign auth.id },
+                Condition { it._id eq id },
+                Modification { it.user assign auth.id },
                 FcmToken(id, auth.id, userAgent = request.headers["User-Agent"]?.root ?: "?")
             )
         }

@@ -7,7 +7,7 @@
 - [ ] Copy `settings.suggested.json` to `settings.json` (it is gitignored), then run the server once to verify it starts:
   ```
   cp settings.suggested.json settings.json
-  ./gradlew :server:serve
+  ./gradlew :server:dev
   ```
   The first run confirms the default settings work. Edit `settings.json` to point at your real database, email service, etc.
 - [ ] **Firebase** — Replace the hardcoded starter-project Firebase credentials in **both** of these files with your own Firebase project values:

@@ -39,7 +39,7 @@ echo "Starting backend server on port $PORT..."
 echo "Using settings: $SETTINGS_FILE"
 
 # Start server in background with testing settings
-./gradlew :server:run --args="--settings $SETTINGS_FILE serve" > "$LOG_FILE" 2>&1 &
+./gradlew :server:run --args="--settings $SETTINGS_FILE dev" > "$LOG_FILE" 2>&1 &
 SERVER_PID=$!
 
 echo "Waiting for server to start (PID: $SERVER_PID)..."

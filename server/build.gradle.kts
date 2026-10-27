@@ -26,6 +26,7 @@ dependencies {
     implementation(libs.lightningServer.sessions)
     implementation(libs.lightningServer.sessions.email)
     implementation(libs.lightningServer.sessions.sms)
+    implementation(libs.lightningServer.sessions.totp)
     implementation(libs.lightningServer.engine.aws)
     implementation(libs.lightningServer.secretSource.aws)
     implementation(libs.lightningServer.engine.netty)
@@ -74,6 +75,13 @@ tasks.create("serve", JavaExec::class.java) {
     classpath(sourceSets.main.get().runtimeClasspath)
     mainClass.set("com.lightningkite.lskiteuistarter.MainKt")
     args("serve")
+    workingDir(project.rootDir)
+}
+tasks.register("dev", JavaExec::class.java) {
+    group = "application"
+    classpath(sourceSets.main.get().runtimeClasspath)
+    mainClass.set("com.lightningkite.lskiteuistarter.MainKt")
+    args("dev")
     workingDir(project.rootDir)
 }
 tasks.create("lambda", Copy::class.java) {

@@ -1,6 +1,6 @@
 package com.lightningkite.lskiteuistarter.utils
 
-import com.lightningkite.kiteui.ConsoleRoot
+import com.lightningkite.kiteui.Log
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.lightningserver.*
@@ -36,13 +36,13 @@ actual fun fcmSetup(): Unit {
             .then { serviceWorkerReg ->
 
                 val serviceWorker = serviceWorkerReg.installing ?: serviceWorkerReg.waiting ?: serviceWorkerReg.active
-                ConsoleRoot.log("Service worker state: ${serviceWorker?.state}")
+                Log.log("Service worker state: ${serviceWorker?.state}")
                 if(serviceWorker?.state == ServiceWorkerState.ACTIVATED) {
                     finishSetup(serviceWorkerReg, messaging)
                 } else {
                     serviceWorker?.addEventListener("statechange", { e ->
                         val target = e.target as ServiceWorker
-                        ConsoleRoot.log("Service worker state: ${target.state}")
+                        Log.log("Service worker state: ${target.state}")
                         if(target.state == ServiceWorkerState.ACTIVATED)
                             finishSetup(serviceWorkerReg, messaging)
                     })
@@ -91,7 +91,7 @@ private fun finishSetup(
             }
         serviceWorker.update()
     }
-    ConsoleRoot.info("FCM Registration complete.")
+    Log.info("FCM Registration complete.")
 }
 
 actual suspend fun requestNotificationPermissions(): Unit {

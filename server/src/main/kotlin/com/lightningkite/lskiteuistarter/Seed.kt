@@ -3,11 +3,16 @@
 // Only works when general.debug = true in settings.json.
 package com.lightningkite.lskiteuistarter
 
+import com.lightningkite.lightningserver.InternalLightningServerApi
 import com.lightningkite.lightningserver.definition.generalSettings
+import com.lightningkite.lightningserver.runtime.Execution
+import com.lightningkite.lightningserver.runtime.Invocation
+import com.lightningkite.lightningserver.runtime.execute
 import com.lightningkite.lskiteuistarter.data.MembershipEndpoints
 import com.lightningkite.lskiteuistarter.data.OrganizationEndpoints
 import com.lightningkite.lskiteuistarter.data.UserEndpoints
 import com.lightningkite.services.data.toEmailAddress
+import com.lightningkite.services.database.get
 import com.lightningkite.services.database.insertOne
 import kotlinx.coroutines.runBlocking
 import kotlin.uuid.Uuid
@@ -18,7 +23,9 @@ fun seed() = engine {
         return@engine
     }
 
-    runBlocking {
+    // Execution.Direct is the framework's sanctioned (but internal) way to run a script outside any request or task.
+    @OptIn(InternalLightningServerApi::class)
+    runBlocking { execute("seed", Invocation.Unrequested(Execution.Direct(Execution.ID.generate()))) {
         println("Seeding database with sample data...")
 
         val usersTable = UserEndpoints.info.table()
@@ -26,17 +33,19 @@ fun seed() = engine {
         val membershipsTable = MembershipEndpoints.info.table()
 
         // Admin user
+        val adminId = User.ID(Uuid.fromLongs(0L, 100L))
+        if (usersTable.get(adminId) != null) {
+            println("Admin user already exists, skipping seed.")
+            return@execute
+        }
         val admin = usersTable.insertOne(
             User(
-                _id = User.ID(Uuid.fromLongs(0L, 100L)),
+                _id = adminId,
                 email = "admin@example.com".toEmailAddress(),
                 name = "Alice Admin",
                 role = UserRole.Admin,
             )
-        ) ?: run {
-            println("Admin user already exists, skipping seed.")
-            return@runBlocking
-        }
+        )
         println("  Created admin user: ${admin.email} (${admin._id})")
 
         // Regular users
@@ -47,7 +56,7 @@ fun seed() = engine {
                 name = "Bob Builder",
                 role = UserRole.User,
             )
-        )!!
+        )
         println("  Created user: ${user1.email} (${user1._id})")
 
         val user2 = usersTable.insertOne(
@@ -57,7 +66,7 @@ fun seed() = engine {
                 name = "Carol Contractor",
                 role = UserRole.User,
             )
-        )!!
+        )
         println("  Created user: ${user2.email} (${user2._id})")
 
         // Organizations
@@ -66,7 +75,7 @@ fun seed() = engine {
                 _id = Organization.ID(Uuid.fromLongs(0L, 200L)),
                 name = "Acme Corp",
             )
-        )!!
+        )
         println("  Created org: ${org1.name} (${org1._id})")
 
         val org2 = orgsTable.insertOne(
@@ -74,7 +83,7 @@ fun seed() = engine {
                 _id = Organization.ID(Uuid.fromLongs(0L, 201L)),
                 name = "Widget Labs",
             )
-        )!!
+        )
         println("  Created org: ${org2.name} (${org2._id})")
 
         // Memberships
@@ -101,5 +110,5 @@ fun seed() = engine {
         println("=== Seed Complete ===")
         println("Admin token: '$token'")
         println("Use this token to authenticate API requests during development.")
-    }
+    } }
 }

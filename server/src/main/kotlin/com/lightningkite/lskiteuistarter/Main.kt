@@ -5,7 +5,7 @@ import com.lightningkite.lightningserver.engine.ktor.KtorEngine
 import com.lightningkite.lightningserver.settings.loadFromFile
 import com.lightningkite.lightningserver.typed.sdk.CachingSdk
 import com.lightningkite.lightningserver.typed.sdk.FetcherSdk
-import com.lightningkite.lightningserver.typed.sdk.SDK.write
+import com.lightningkite.lightningserver.typed.sdk.SDK.writeUsingDefaultSettings
 import com.lightningkite.services.kfile.KFile
 import io.github.oshai.kotlinlogging.KLogger
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -41,12 +41,21 @@ fun engine(setup: KtorEngine.() -> Unit) {
 
 fun serve() = engine { start(Netty) }
 
-fun sdk() = engine {
+// Prepares tables and indexes. Deploys run this once before cutover; AWS serverless invokes it through Terraform.
+fun predeploy() = engine { runPreDeploy() }
+
+// Local development: prepare the database, then serve, in one process.
+fun dev() = engine {
+    runPreDeployTasksBlocking()
+    start(Netty)
+}
+
+fun sdk() {
     val folder = KFile("apps/src/commonMain/kotlin/com/lightningkite/lskiteuistarter/sdk")
     Utils.logger.info { "Generating FetcherSdk" }
-    FetcherSdk("com.lightningkite.lskiteuistarter.sdk").write(folder)
+    FetcherSdk("com.lightningkite.lskiteuistarter.sdk").writeUsingDefaultSettings(Server, folder)
     Utils.logger.info { "Generating CachingSdk" }
-    CachingSdk("com.lightningkite.lskiteuistarter.sdk").write(folder)
+    CachingSdk("com.lightningkite.lskiteuistarter.sdk").writeUsingDefaultSettings(Server, folder)
     Utils.logger.info { "Done" }
 }
 
@@ -55,6 +64,8 @@ fun main(vararg args: String) = cli(
     setup = ::setup,
     available = listOf(
         ::serve,
+        ::predeploy,
+        ::dev,
         ::sdk,
         ::seed,
     ),

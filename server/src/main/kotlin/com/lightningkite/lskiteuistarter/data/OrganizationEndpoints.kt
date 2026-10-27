@@ -22,9 +22,9 @@ object OrganizationEndpoints : ServerBuilder() {
             val myOrgIds = myMemberships.map { it.organization }.toSet()
             val adminOrgIds = myMemberships.filter { it.role >= MemberRole.Admin }.map { it.organization }.toSet()
 
-            val systemAdmin = condition<Organization>(isSystemAdmin)
-            val isMember = condition<Organization> { it._id inside myOrgIds }
-            val isOrgAdmin = condition<Organization> { it._id inside adminOrgIds }
+            val systemAdmin: Condition<Organization> = Condition(isSystemAdmin)
+            val isMember = Condition<Organization> { it._id inside myOrgIds }
+            val isOrgAdmin = Condition<Organization> { it._id inside adminOrgIds }
 
             ModelPermissions(
                 create = systemAdmin,

@@ -9,9 +9,9 @@ interface Api {
 
 	val appRelease: com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lskiteuistarter.AppRelease, com.lightningkite.lskiteuistarter.AppRelease.ID>
 
-	val user: com.lightningkite.lightningserver.typed.ClientModelRestEndpointsAndUpdatesWebsocket<com.lightningkite.lskiteuistarter.User, com.lightningkite.lskiteuistarter.User.ID>
+	val user: com.lightningkite.lightningserver.typed.ClientModelRestEndpointsAndUpdatesWebSocket<com.lightningkite.lskiteuistarter.User, com.lightningkite.lskiteuistarter.User.ID>
 
-	interface UserAuthApi : com.lightningkite.lightningserver.sessions.proofs.AuthClientEndpoints<com.lightningkite.lskiteuistarter.User, com.lightningkite.lskiteuistarter.User.ID>, com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lightningserver.sessions.Session<com.lightningkite.lskiteuistarter.User, com.lightningkite.lskiteuistarter.User.ID>, kotlin.uuid.Uuid> {
+	interface UserAuthApi : com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lightningserver.sessions.Session<com.lightningkite.lskiteuistarter.User, com.lightningkite.lskiteuistarter.User.ID>, kotlin.uuid.Uuid>, com.lightningkite.lightningserver.sessions.proofs.AuthClientEndpoints<com.lightningkite.lskiteuistarter.User, com.lightningkite.lskiteuistarter.User.ID> {
 
 		interface EmailApi : com.lightningkite.lightningserver.sessions.proofs.ProofClientEndpoints.Email {
 			/**
@@ -29,7 +29,7 @@ interface Api {
 		}
 		val totp: TimeBasedOTPProof
 
-		interface PasswordProof : com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lightningserver.sessions.PasswordSecret, kotlin.uuid.Uuid>, com.lightningkite.lightningserver.sessions.proofs.ProofClientEndpoints.Password {
+		interface PasswordProof : com.lightningkite.lightningserver.sessions.proofs.ProofClientEndpoints.Password, com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lightningserver.sessions.PasswordSecret, kotlin.uuid.Uuid> {
 		}
 		val password: PasswordProof
 

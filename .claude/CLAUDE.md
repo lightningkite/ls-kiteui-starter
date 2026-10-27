@@ -31,7 +31,7 @@ ls-kiteui-starter/
 
 **shared/** - Multiplatform module defining core data models:
 - `User`, `UserRole`, `FcmToken` models with database annotations
-- Uses KSP processor to generate database paths (`@GenerateDataClassPaths`)
+- Uses KSP processor to generate typed fields for `@Queryable` models (`User.email`)
 - Compiled for Android, JVM, JS, and iOS targets
 
 **server/** - JVM application with Lightning Server:
@@ -54,7 +54,7 @@ ls-kiteui-starter/
 
 ```bash
 # Start the development server (localhost:8080)
-./gradlew :server:serve
+./gradlew :server:dev    # prepares the database (pre-deploy tasks), then serves
 
 # Run the server (alternative)
 ./gradlew :server:run
@@ -135,10 +135,10 @@ ls-kiteui-starter/
 4. Role-based permissions enforce access control in `ModelPermissions`
 
 **Database Abstraction:**
-- Models use `@GenerateDataClassPaths` for type-safe queries
+- Models use `@Queryable` (implies `@Serializable`) for type-safe queries
 - Supports MongoDB (`MongoDatabase`) and JSON files (`JsonFileDatabase`)
 - Connection string configured in `settings.json` under `"database"`
-- Database operations use `condition { }` DSL for queries
+- Database operations use the `Condition { }` and `Modification { }` builders, or fields directly (`User.email eq x`)
 
 ### Client-Side Architecture
 
@@ -167,7 +167,7 @@ ls-kiteui-starter/
 2. **Create endpoints** in `server/src/main/kotlin/.../*Endpoints.kt`
 3. **Regenerate SDK** with `./gradlew :server:generateSdk`
 4. **Implement UI** in `apps/src/commonMain/kotlin/.../`
-5. **Test locally** with `./gradlew :server:serve` + `./gradlew :apps:jsBrowserDevelopmentRun`
+5. **Test locally** with `./gradlew :server:dev` + `./gradlew :apps:jsBrowserDevelopmentRun`
 
 ## Configuration
 
@@ -237,7 +237,7 @@ After running `prepare-browser-test.sh`, use Claude's Chrome MCP tools:
 Follow this sequence to add a complete new feature (e.g., a "Project" model):
 
 1. **Add model** to `shared/src/commonMain/kotlin/.../models.kt`
-   - Annotate with `@Serializable` and `@GenerateDataClassPaths`
+   - Annotate with `@Queryable`
    - Use `Uuid.random()` for IDs, implement `HasId<Uuid>`
    - Add any enums for status/role in the same file
 

@@ -12,7 +12,7 @@ class SmokeTest {
     @Test
     fun loginScreenRenders() = integrationTest(
         initialPage = LoginPage(),
-    ) { _ ->
+    ) {
         waitForText("Sign in to get started")
     }
 
@@ -20,13 +20,11 @@ class SmokeTest {
     @Test
     fun authedUserSeesHome() = integrationTest(
         initialPage = HomePage(),
-        setup = { runtime ->
-            with(runtime) {
-                val user = createUser()
-                loginAs(user)
-            }
+        setup = {
+            val user = createUser()
+            loginAs(user)
         },
-    ) { _ ->
+    ) {
         waitForText("Welcome to your home page")
     }
 
@@ -40,7 +38,7 @@ class SmokeTest {
     @Test
     fun loggedOutUserRedirectedFromHome() = integrationTest(
         initialPage = HomePage(),
-    ) { _ ->
+    ) {
         waitForText("Sign in to get started")
     }
 
@@ -52,13 +50,11 @@ class SmokeTest {
     @Test
     fun sessionLossWhileOnHomeRedirectsToLogin() = integrationTest(
         initialPage = HomePage(),
-        setup = { runtime ->
-            with(runtime) {
-                val user = createUser()
-                loginAs(user)
-            }
+        setup = {
+            val user = createUser()
+            loginAs(user)
         },
-    ) { _ ->
+    ) {
         waitForText("Welcome to your home page")
         sessionToken.value = null
         waitForText("Sign in to get started")

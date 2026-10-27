@@ -45,30 +45,28 @@ class MembersPage : Page {
         scrolling.col {
             centered.h2("Members")
 
-            col {
-                forEachById(memberships, id = { it._id }) { membershipReactive ->
-                    card.row {
-                        expanding.col {
-                            text { ::content {
-                                val m = membershipReactive()
-                                val user = session().users[m.user]()
-                                "User: ${user?.name?.takeIf { it.isNotBlank() } ?: user?.email?.raw ?: m.user.toString()}"
-                            } }
-                            subtext { ::content {
-                                val m = membershipReactive()
-                                buildString {
-                                    append("Role: ${m.role.name}")
-                                    if (m.deactivatedAt != null) append(" (Deactivated)")
-                                }
-                            } }
-                        }
-                        col {
-                            subtext { ::content {
-                                val m = membershipReactive()
-                                val org = session().organizations[m.organization]()
-                                "Org: ${org?.name ?: m.organization.toString()}"
-                            } }
-                        }
+            renderListIn(ElementWriter::col, memberships, id = { it._id }) { membershipReactive ->
+                card.row {
+                    expanding.col {
+                        text { ::content {
+                            val m = membershipReactive()
+                            val user = session().users.item(m.user)()
+                            "User: ${user?.name?.takeIf { it.isNotBlank() } ?: user?.email?.raw ?: m.user.toString()}"
+                        } }
+                        subtext { ::content {
+                            val m = membershipReactive()
+                            buildString {
+                                append("Role: ${m.role.name}")
+                                if (m.deactivatedAt != null) append(" (Deactivated)")
+                            }
+                        } }
+                    }
+                    col {
+                        subtext { ::content {
+                            val m = membershipReactive()
+                            val org = session().organizations.item(m.organization)()
+                            "Org: ${org?.name ?: m.organization.toString()}"
+                        } }
                     }
                 }
             }

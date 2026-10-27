@@ -32,7 +32,7 @@ cp settings.suggested.json settings.json
 ### 3. Start the server
 
 ```bash
-./gradlew :server:serve          # runs on localhost:8080
+./gradlew :server:dev            # prepares the database, then runs on localhost:8080
 ```
 
 ### 4. Start the web frontend

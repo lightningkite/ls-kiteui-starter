@@ -9,7 +9,7 @@ import com.lightningkite.lightningserver.sessions.PasswordSecret
 import com.lightningkite.lightningserver.sessions.subjectId
 import com.lightningkite.lightningserver.typed.ModelRestEndpoints
 import com.lightningkite.lightningserver.typed.ModelRestEndpointsAndUpdatesWebSocket.Companion.plus
-import com.lightningkite.lightningserver.typed.ModelRestUpdatesWebsocket
+import com.lightningkite.lightningserver.typed.ModelRestUpdatesWebSocket
 import com.lightningkite.lightningserver.typed.auth
 import com.lightningkite.lightningserver.typed.modelInfo
 import com.lightningkite.lightningserver.typed.startupOnce
@@ -23,7 +23,6 @@ import com.lightningkite.services.data.toEmailAddress
 import com.lightningkite.services.database.Condition
 import com.lightningkite.services.database.ModelPermissions
 import com.lightningkite.services.database.Table
-import com.lightningkite.services.database.condition
 import com.lightningkite.services.database.eq
 import com.lightningkite.services.database.findOne
 import com.lightningkite.services.database.insertOne
@@ -40,10 +39,10 @@ object UserEndpoints : ServerBuilder() {
             val allowedRoles = UserRole.entries.filter { it <= auth.userRole() }
 
             val admin: Condition<User> =
-                if (auth.userRole() >= UserRole.Admin) condition { it.role inside allowedRoles }
+                if (auth.userRole() >= UserRole.Admin) Condition { it.role inside allowedRoles }
                 else Condition.Never
 
-            val self = condition<User> { it._id eq auth.id }
+            val self = Condition<User> { it._id eq auth.id }
 
             ModelPermissions(
                 create = admin,
@@ -59,12 +58,11 @@ object UserEndpoints : ServerBuilder() {
 
     val User.Companion.info get() = this@UserEndpoints.info
 
-    val rest = path.path("rest") include ModelRestEndpoints(info) + ModelRestUpdatesWebsocket(info, User_email)
+    val rest = path.path("rest") include ModelRestEndpoints(info) + ModelRestUpdatesWebSocket(info, User.email)
 
 
     private suspend fun Table<User>.init(user: User): User =
-        findOne(condition { it.email.eq(user.email) }) ?: insertOne(user)
-            ?: throw IllegalStateException("Failed to insert user ${user.email}")
+        findOne(Condition { it.email.eq(user.email) }) ?: insertOne(user)
 
     private val appStoreTesterId = User.ID(Uuid.parse("f00ffbaa-abf9-497d-a75a-442f1c77c1e9"))
     val User.ID.Companion.AppStoreTester get() = appStoreTesterId
@@ -79,7 +77,7 @@ object UserEndpoints : ServerBuilder() {
             )
         )
         UserAuth.password.modelInfo.table().run {
-            findOne(condition { it.subjectId eq user._id.toString() }) ?: insertOne(
+            findOne(Condition { it.subjectId eq user._id.toString() }) ?: insertOne(
                 PasswordSecret(
                     subjectId = user._id.toString(),
                     subjectType = "User",
@@ -87,7 +85,7 @@ object UserEndpoints : ServerBuilder() {
                     hint = "Would have been given to you via separate instructions",
                     establishedAt = now()
                 )
-            )!!
+            )
         }
     }
 
