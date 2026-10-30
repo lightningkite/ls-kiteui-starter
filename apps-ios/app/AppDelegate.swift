@@ -25,7 +25,7 @@ class AppDelegate: KiteUiAppDelegate, UIApplicationDelegate, UNUserNotificationC
        window = newWindow
        newWindow.makeKeyAndVisible()
 
-       App_iosKt.root(viewController: vc, mainNav: _mainNavigator, dialogNav: _dialogNavigator)
+       App_iosKt.root(viewController: vc, mainNav: _mainNavigator)
 
        return true
    }

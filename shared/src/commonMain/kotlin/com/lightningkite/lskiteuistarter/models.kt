@@ -111,8 +111,3 @@ data class Membership(
         override fun toString(): String = raw.toString()
     }
 }
-
-@Serializable
-enum class FeatureFlag {
-    // Add your project's feature flags here
-}

@@ -12,7 +12,7 @@ import com.lightningkite.lightningserver.typed.ModelRestEndpointsAndUpdatesWebSo
 import com.lightningkite.lightningserver.typed.ModelRestUpdatesWebSocket
 import com.lightningkite.lightningserver.typed.auth
 import com.lightningkite.lightningserver.typed.modelInfo
-import com.lightningkite.lightningserver.typed.startupOnce
+import com.lightningkite.lightningserver.typed.predeployOnce
 import com.lightningkite.lskiteuistarter.*
 import com.lightningkite.lskiteuistarter.UserAuth.RoleCache.userRole
 import com.lightningkite.lskiteuistarter._id
@@ -67,7 +67,7 @@ object UserEndpoints : ServerBuilder() {
     private val appStoreTesterId = User.ID(Uuid.parse("f00ffbaa-abf9-497d-a75a-442f1c77c1e9"))
     val User.ID.Companion.AppStoreTester get() = appStoreTesterId
 
-    val initAppStoreTester = path.path("initAppStoreTester") bind startupOnce(Server.database) {
+    val initAppStoreTester = path.path("initAppStoreTester") bind predeployOnce(Server.database) {
         val user = info.table().init(
             User(
                 _id = User.ID.AppStoreTester,
@@ -89,7 +89,7 @@ object UserEndpoints : ServerBuilder() {
         }
     }
 
-    val initAdminUsers = path.path("initAdminUser") bind startupOnce(Server.database) {
+    val initAdminUsers = path.path("initAdminUser") bind predeployOnce(Server.database) {
         suspend fun root(
             email: EmailAddress,
             id: Uuid = Uuid.random()

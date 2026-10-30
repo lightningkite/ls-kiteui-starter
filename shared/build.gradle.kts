@@ -1,9 +1,10 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
+    alias(libs.plugins.androidKmpLibrary)
     alias(libs.plugins.kotlinMultiplatform)
-    alias(libs.plugins.serialization)
-    alias(libs.plugins.androidLibrary)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.serialization)
 }
 
 group = "com.lightningkite.lskiteuistarter"
@@ -11,7 +12,15 @@ version = "1.0-SNAPSHOT"
 
 kotlin {
     applyDefaultHierarchyTemplate()
-    androidTarget()
+    android {
+        namespace = "com.lightningkite.lskiteuistarter.shared"
+        compileSdk = 36
+        minSdk = 26
+        enableCoreLibraryDesugaring = true
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_17)
+        }
+    }
     jvm()
     js {
         browser()
@@ -20,19 +29,19 @@ kotlin {
     iosSimulatorArm64()
 
     sourceSets {
-        val commonMain by getting {
+        val commonMain = getByName("commonMain") {
             dependencies {
                 api(libs.lightningServer.core.shared)
-                api(libs.lightningServer.typed.shared)
-                api(libs.lightningServer.sessions.shared)
                 api(libs.lightningServer.files.shared)
                 api(libs.lightningServer.media.shared)
+                api(libs.lightningServer.sessions.shared)
+                api(libs.lightningServer.typed.shared)
             }
             kotlin {
                 srcDir(file("build/generated/ksp/common/commonMain/kotlin"))
             }
         }
-        val commonTest by getting {
+        val commonTest = getByName("commonTest") {
             dependencies {
                 implementation(kotlin("test"))
             }
@@ -46,25 +55,8 @@ kotlin {
 }
 
 dependencies {
+    coreLibraryDesugaring(libs.desugarJdkLibs)
     configurations.filter { it.name.startsWith("ksp") && it.name != "ksp" }.forEach {
         add(it.name, libs.services.database.processor)
-    }
-}
-
-
-android {
-    namespace = "com.lightningkite.lskiteuistarter.shared"
-    compileSdk = 36
-
-    defaultConfig {
-        minSdk = 26
-    }
-    compileOptions {
-        isCoreLibraryDesugaringEnabled = true
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
-    dependencies {
-        coreLibraryDesugaring(libs.desugarJdkLibs)
     }
 }

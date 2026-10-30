@@ -58,7 +58,7 @@ object SeedData : ServerBuilder() {
     }
 }
 
-fun seed() = engine {
+fun seed() = withEngine {
     // Execution.Direct is the framework's sanctioned (but internal) way to run a script outside any request or task.
     @OptIn(InternalLightningServerApi::class)
     runBlocking { execute("seed", Invocation.Unrequested(Execution.Direct(Execution.ID.generate()))) {
