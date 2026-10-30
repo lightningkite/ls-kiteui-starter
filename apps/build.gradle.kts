@@ -23,7 +23,7 @@ plugins {
     alias(libs.plugins.kfc)
 }
 
-group = "com.lightningkite.lskiteuistarter"
+group = "com.lightningkite.lskiteuistarter.app"
 version = "1.0-SNAPSHOT"
 
 repositories {
@@ -35,7 +35,7 @@ kotlin {
     jvm("jvmSsr")
     android {
         // Must match the KiteUI packageName below: the generated Resources.android.kt uses an unqualified R.
-        namespace = "com.lightningkite.lskiteuistarter"
+        namespace = "com.lightningkite.lskiteuistarter.app"
         compileSdk = 36
         minSdk = 26
         enableCoreLibraryDesugaring = true

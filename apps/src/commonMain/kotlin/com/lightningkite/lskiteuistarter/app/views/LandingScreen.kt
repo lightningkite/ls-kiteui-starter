@@ -1,0 +1,32 @@
+package com.lightningkite.lskiteuistarter.app.views
+
+import com.lightningkite.kiteui.Routable
+import com.lightningkite.kiteui.navigation.Page
+import com.lightningkite.kiteui.navigation.pageNavigator
+import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.centered
+import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.kiteui.views.direct.activityIndicator
+import com.lightningkite.lskiteuistarter.app.FullscreenPage
+import com.lightningkite.lskiteuistarter.app.sdk.currentSession
+import com.lightningkite.reactive.context.await
+import com.lightningkite.reactive.core.Constant
+import com.lightningkite.reactive.core.Reactive
+import kotlinx.coroutines.launch
+
+@Routable("/")
+class LandingPage : Page, FullscreenPage {
+    override val title: Reactive<String> get() = Constant("Loading")
+    override fun ElementWriter.CanAddTheme.render() {
+        launch {
+            if (currentSession.await() != null) {
+                context.pageNavigator.reset(HomePage())
+            } else {
+                context.pageNavigator.reset(LoginPage())
+            }
+        }
+        frame {
+            centered.activityIndicator()
+        }
+    }
+}

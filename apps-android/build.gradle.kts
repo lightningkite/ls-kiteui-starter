@@ -6,7 +6,7 @@ plugins {
     alias(libs.plugins.androidApp)
 }
 
-group = "com.lightningkite.lskiteuistarter"
+group = "com.lightningkite.lskiteuistarter.app"
 version = "1.0-SNAPSHOT"
 
 repositories {
@@ -15,11 +15,11 @@ repositories {
 
 android {
     // Must differ from :apps's namespace; applicationId is what identifies the installed app.
-    namespace = "com.lightningkite.lskiteuistarter.android"
+    namespace = "com.lightningkite.lskiteuistarter.app.android"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.lightningkite.lskiteuistarter"
+        applicationId = "com.lightningkite.lskiteuistarter.app"
         minSdk = 26
         targetSdk = 36
         versionCode = 14
