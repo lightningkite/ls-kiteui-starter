@@ -1,0 +1,18 @@
+{
+    "resource": {
+        "aws_cloudwatch_event_rule": {
+            "scheduled_task_uploadearlycleanupUploads": {
+                "name": "ls-kiteui-starter_uploadearlycleanupUploads",
+                "schedule_expression": "rate(1440 minutes)"
+            }
+        },
+        "aws_cloudwatch_event_target": {
+            "scheduled_task_uploadearlycleanupUploads": {
+                "input": "{\"scheduled\": \"/upload-early/cleanupUploads\"}",
+                "rule": "${aws_cloudwatch_event_rule.scheduled_task_uploadearlycleanupUploads.name}",
+                "target_id": "lambda",
+                "arn": "${aws_lambda_alias.main.arn}"
+            }
+        }
+    }
+}

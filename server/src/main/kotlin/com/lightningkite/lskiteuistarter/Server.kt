@@ -45,7 +45,7 @@ object Server : ServerBuilder() {
     val database = setting("database", Database.Settings())
     val email = setting("email", EmailService.Settings())
     val notifications = setting("notifications", default = NotificationService.Settings("console"))
-    val webUrl = setting("webUrl", "http://localhost:8080")
+    val webUrl = setting("webUrl", "http://localhost:8941")
     val cors = setting("cors", CorsSettings())
     val files = setting("files", ExternalFileSystem.Settings())
 
@@ -86,6 +86,7 @@ object Server : ServerBuilder() {
 
     val organizations = path.path("organizations") module OrganizationEndpoints
     val memberships = path.path("memberships") module MembershipEndpoints
+    val seedData = path include SeedData
 
     val multiplex = path.path("multiplex") bind MultiplexWebSocketHandler()
     val base = path bind QueryParamWebSocketHandler()

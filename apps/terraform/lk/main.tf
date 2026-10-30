@@ -18,7 +18,7 @@ terraform {
 terraform {
   backend "s3" {
     bucket = "lightningkite-terraform"
-    key = "lskiteuistarter/frontend"
+    key    = "lskiteuistarter/frontend"
     region = "us-west-2"
   }
 }
@@ -34,13 +34,14 @@ provider "aws" {
 module "web" {
   source = "github.com/lightningkite/terraform-static-site.git?ref=1.2.0"
   providers = {
-    aws = aws
+    aws     = aws
     aws.acm = aws.acm
   }
   deployment_name  = "lskiteuistarter"
-  dist_folder = "../../build/vite/dist"
+  dist_folder      = "../../build/dist/js/production"
   domain_name      = "app.lskiteuistarter.cs.lightningkite.com"
   domain_name_zone = "cs.lightningkite.com"
-  react_mode = true
+  react_mode       = true
+  enable_www_redirect = false
 }
 

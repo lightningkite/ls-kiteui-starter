@@ -1,10 +1,11 @@
 // Populates a local database with sample data for development.
-// Run via: ./gradlew :server:serve --args="seed"
+// Run via: ./gradlew :server:run --args="seed"
 // Only works when general.debug = true in settings.json.
 package com.lightningkite.lskiteuistarter
 
 import com.lightningkite.lightningserver.InternalLightningServerApi
-import com.lightningkite.lightningserver.definition.generalSettings
+import com.lightningkite.lightningserver.definition.builder.ServerBuilder
+import com.lightningkite.lightningserver.fixtures.*
 import com.lightningkite.lightningserver.runtime.Execution
 import com.lightningkite.lightningserver.runtime.Invocation
 import com.lightningkite.lightningserver.runtime.execute
@@ -12,100 +13,60 @@ import com.lightningkite.lskiteuistarter.data.MembershipEndpoints
 import com.lightningkite.lskiteuistarter.data.OrganizationEndpoints
 import com.lightningkite.lskiteuistarter.data.UserEndpoints
 import com.lightningkite.services.data.toEmailAddress
-import com.lightningkite.services.database.get
-import com.lightningkite.services.database.insertOne
 import kotlinx.coroutines.runBlocking
 import kotlin.uuid.Uuid
 
-fun seed() = engine {
-    if (!generalSettings().debug) {
-        println("ERROR: Seed command requires general.debug = true in settings.json")
-        return@engine
+data class SeedConfig(override val seed: Long = 1, override val scale: Double = 1.0) : TestFixtureConfig
+
+object SeedData : ServerBuilder() {
+    val fixtures = FixtureRegistry<SeedConfig>()
+
+    // Seed ids must have a zero top half (as randomUuid() makes) so deleteSeedData() can find them.
+    val admin = User(
+        _id = User.ID(Uuid.fromLongs(0L, 100L)),
+        email = "admin@example.com".toEmailAddress(),
+        name = "Alice Admin",
+        role = UserRole.Admin,
+    )
+
+    val users = fixtures.seed(UserEndpoints.info) {
+        listOf(admin) + List((config.scale * 20).toInt()) {
+            User(_id = User.ID(randomUuid()), email = randomEmailAddress(), name = randomStringFullName())
+        }
     }
 
+    val organizations = fixtures.seed(OrganizationEndpoints.info) {
+        List((config.scale * 3).toInt()) {
+            Organization(_id = Organization.ID(randomUuid()), name = randomStringName().replaceFirstChar { it.uppercase() } + " Corp")
+        }
+    }
+
+    val memberships = fixtures.seed(MembershipEndpoints.info) {
+        val orgs = organizations()
+        val ownerships = orgs.map {
+            Membership(_id = Membership.ID(randomUuid()), organization = it._id, user = admin._id, role = MemberRole.Owner)
+        }
+        val members = users().filter { it != admin }.map {
+            Membership(
+                _id = Membership.ID(randomUuid()),
+                organization = orgs.random()._id,
+                user = it._id,
+                role = listOf(MemberRole.Member, MemberRole.Member, MemberRole.Admin).random(),
+            )
+        }
+        ownerships + members
+    }
+}
+
+fun seed() = engine {
     // Execution.Direct is the framework's sanctioned (but internal) way to run a script outside any request or task.
     @OptIn(InternalLightningServerApi::class)
     runBlocking { execute("seed", Invocation.Unrequested(Execution.Direct(Execution.ID.generate()))) {
-        println("Seeding database with sample data...")
+        // Fixtures insert fixed ids, so clear the previous run first.  Hand-made rows survive.
+        deleteSeedData()
+        SeedData.fixtures.execute(SeedConfig())
 
-        val usersTable = UserEndpoints.info.table()
-        val orgsTable = OrganizationEndpoints.info.table()
-        val membershipsTable = MembershipEndpoints.info.table()
-
-        // Admin user
-        val adminId = User.ID(Uuid.fromLongs(0L, 100L))
-        if (usersTable.get(adminId) != null) {
-            println("Admin user already exists, skipping seed.")
-            return@execute
-        }
-        val admin = usersTable.insertOne(
-            User(
-                _id = adminId,
-                email = "admin@example.com".toEmailAddress(),
-                name = "Alice Admin",
-                role = UserRole.Admin,
-            )
-        )
-        println("  Created admin user: ${admin.email} (${admin._id})")
-
-        // Regular users
-        val user1 = usersTable.insertOne(
-            User(
-                _id = User.ID(Uuid.fromLongs(0L, 101L)),
-                email = "bob@example.com".toEmailAddress(),
-                name = "Bob Builder",
-                role = UserRole.User,
-            )
-        )
-        println("  Created user: ${user1.email} (${user1._id})")
-
-        val user2 = usersTable.insertOne(
-            User(
-                _id = User.ID(Uuid.fromLongs(0L, 102L)),
-                email = "carol@example.com".toEmailAddress(),
-                name = "Carol Contractor",
-                role = UserRole.User,
-            )
-        )
-        println("  Created user: ${user2.email} (${user2._id})")
-
-        // Organizations
-        val org1 = orgsTable.insertOne(
-            Organization(
-                _id = Organization.ID(Uuid.fromLongs(0L, 200L)),
-                name = "Acme Corp",
-            )
-        )
-        println("  Created org: ${org1.name} (${org1._id})")
-
-        val org2 = orgsTable.insertOne(
-            Organization(
-                _id = Organization.ID(Uuid.fromLongs(0L, 201L)),
-                name = "Widget Labs",
-            )
-        )
-        println("  Created org: ${org2.name} (${org2._id})")
-
-        // Memberships
-        membershipsTable.insertOne(
-            Membership(organization = org1._id, user = admin._id, role = MemberRole.Owner)
-        )
-        membershipsTable.insertOne(
-            Membership(organization = org1._id, user = user1._id, role = MemberRole.Admin)
-        )
-        membershipsTable.insertOne(
-            Membership(organization = org1._id, user = user2._id, role = MemberRole.Member)
-        )
-        membershipsTable.insertOne(
-            Membership(organization = org2._id, user = admin._id, role = MemberRole.Admin)
-        )
-        membershipsTable.insertOne(
-            Membership(organization = org2._id, user = user2._id, role = MemberRole.Member)
-        )
-        println("  Created 5 memberships across 2 organizations")
-
-        // Print admin token for easy testing
-        val (_, token) = UserAuth.session.createSession(admin._id)
+        val (_, token) = UserAuth.session.createSession(SeedData.admin._id)
         println()
         println("=== Seed Complete ===")
         println("Admin token: '$token'")

@@ -9,7 +9,7 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.lskiteuistarter.sdk.*
 import com.lightningkite.lskiteuistarter.views.LandingPage
-import com.lightningkite.reactive.context.reactive
+import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import com.lightningkite.services.database.*
 import kotlinx.coroutines.delay
@@ -37,13 +37,26 @@ class MembersPage : Page {
 
         val session = currentSessionNotNull
 
+        val search = Signal("")
+        val matchingUsers = rememberSuspending {
+            val query = search().trim()
+            if (query.isEmpty()) return@rememberSuspending null
+            delay(300) // Typing restarts this block, so this debounces the search.
+            session().api.user.textQuery(TextIndexQuery(query)).map { it.model._id }
+        }
         val memberships = remember {
+            val users = matchingUsers()
             val s = session()
-            s.memberships.list(Query(Condition.Always))()
+            s.memberships.list(Query(if (users == null) Condition.Always else Condition { it.user inside users }))()
         }
 
         scrolling.col {
             centered.h2("Members")
+
+            textInput {
+                hint = "Search by name or email"
+                content bind search
+            }
 
             renderListIn(ElementWriter::col, memberships, id = { it._id }) { membershipReactive ->
                 card.row {

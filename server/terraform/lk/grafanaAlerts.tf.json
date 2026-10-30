@@ -1,0 +1,146 @@
+{
+    "data": {
+        "grafana_data_source": {
+            "mimir_lskiteuistarter": {
+                "name": "grafanacloud-lightningkite-prom"
+            }
+        }
+    },
+    "resource": {
+        "grafana_contact_point": {
+            "lskiteuistarter": {
+                "name": "LS KiteUI Starter Alerts",
+                "email": {
+                    "single_email": true,
+                    "addresses": [
+                        "joseph@lightningkite.com"
+                    ]
+                }
+            }
+        },
+        "grafana_folder": {
+            "lskiteuistarter": {
+                "title": "LS KiteUI Starter Alerts"
+            }
+        },
+        "grafana_rule_group": {
+            "lskiteuistarter": {
+                "folder_uid": "${grafana_folder.lskiteuistarter.uid}",
+                "interval_seconds": 60,
+                "name": "LS KiteUI Starter Application Alerts",
+                "rule": [
+                    {
+                        "condition": "A",
+                        "data": {
+                            "ref_id": "A",
+                            "datasource_uid": "${data.grafana_data_source.mimir_lskiteuistarter.uid}",
+                            "relative_time_range": {
+                                "from": 600,
+                                "to": 0
+                            },
+                            "model": "{\"expr\":\"sum(increase(http_server_errors_total{service_name=\\\"LS KiteUI Starter\\\"}[5m])) > 5\",\"refId\":\"A\"}"
+                        },
+                        "name": "LS KiteUI Starter: High 5xx Error Rate",
+                        "for": "300s",
+                        "annotations": {
+                            "summary": "High rate of 5xx errors detected",
+                            "description": "More than 5 server errors in the last 5 minutes for service LS KiteUI Starter."
+                        },
+                        "labels": {
+                            "severity": "critical",
+                            "service": "ls-kiteui-starter"
+                        }
+                    },
+                    {
+                        "condition": "A",
+                        "data": {
+                            "ref_id": "A",
+                            "datasource_uid": "${data.grafana_data_source.mimir_lskiteuistarter.uid}",
+                            "relative_time_range": {
+                                "from": 600,
+                                "to": 0
+                            },
+                            "model": "{\"expr\":\"(sum(rate(http_server_response_status_category_total{service_name=\\\"LS KiteUI Starter\\\", http_status_category=\\\"5xx\\\"}[5m]))) / (sum(rate(http_server_response_status_category_total{service_name=\\\"LS KiteUI Starter\\\", http_status_category=\\\"5xx\\\"}[30m])) + 0.001) > 10\",\"refId\":\"A\"}"
+                        },
+                        "name": "LS KiteUI Starter: 5xx Error Rate Spike",
+                        "for": "300s",
+                        "annotations": {
+                            "summary": "5xx error rate spike detected",
+                            "description": "5xx error rate has increased more than 10x over the 30-minute baseline for service LS KiteUI Starter."
+                        },
+                        "labels": {
+                            "severity": "warning",
+                            "service": "ls-kiteui-starter"
+                        }
+                    },
+                    {
+                        "condition": "A",
+                        "data": {
+                            "ref_id": "A",
+                            "datasource_uid": "${data.grafana_data_source.mimir_lskiteuistarter.uid}",
+                            "relative_time_range": {
+                                "from": 600,
+                                "to": 0
+                            },
+                            "model": "{\"expr\":\"histogram_quantile(0.99, sum(rate(http_server_request_duration_bucket{service_name=\\\"LS KiteUI Starter\\\"}[5m])) by (le)) > 5000\",\"refId\":\"A\"}"
+                        },
+                        "name": "LS KiteUI Starter: High P99 Latency",
+                        "for": "300s",
+                        "annotations": {
+                            "summary": "P99 request latency is too high",
+                            "description": "P99 latency exceeds 5000ms for service LS KiteUI Starter."
+                        },
+                        "labels": {
+                            "severity": "warning",
+                            "service": "ls-kiteui-starter"
+                        }
+                    },
+                    {
+                        "condition": "A",
+                        "data": {
+                            "ref_id": "A",
+                            "datasource_uid": "${data.grafana_data_source.mimir_lskiteuistarter.uid}",
+                            "relative_time_range": {
+                                "from": 600,
+                                "to": 0
+                            },
+                            "model": "{\"expr\":\"histogram_quantile(0.95, sum(rate(http_server_request_duration_bucket{service_name=\\\"LS KiteUI Starter\\\"}[5m])) by (le)) > 3000\",\"refId\":\"A\"}"
+                        },
+                        "name": "LS KiteUI Starter: High P95 Latency",
+                        "for": "300s",
+                        "annotations": {
+                            "summary": "P95 request latency is too high",
+                            "description": "P95 latency exceeds 3000ms for service LS KiteUI Starter."
+                        },
+                        "labels": {
+                            "severity": "warning",
+                            "service": "ls-kiteui-starter"
+                        }
+                    },
+                    {
+                        "condition": "A",
+                        "data": {
+                            "ref_id": "A",
+                            "datasource_uid": "${data.grafana_data_source.mimir_lskiteuistarter.uid}",
+                            "relative_time_range": {
+                                "from": 600,
+                                "to": 0
+                            },
+                            "model": "{\"expr\":\"sum(rate(http_server_request_count_total{service_name=\\\"LS KiteUI Starter\\\"}[15m])) == 0\",\"refId\":\"A\"}"
+                        },
+                        "name": "LS KiteUI Starter: No Traffic Detected",
+                        "for": "900s",
+                        "annotations": {
+                            "summary": "No traffic detected",
+                            "description": "No HTTP requests received in the last 15 minutes for service LS KiteUI Starter. Service may be down."
+                        },
+                        "labels": {
+                            "severity": "warning",
+                            "service": "ls-kiteui-starter"
+                        }
+                    }
+                ]
+            }
+        }
+    }
+}

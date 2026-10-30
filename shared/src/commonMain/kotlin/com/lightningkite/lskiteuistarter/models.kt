@@ -29,6 +29,7 @@ data class AppRelease(
 }
 
 @Queryable
+@TextIndex(["name", "email"])
 data class User(
     override val _id: ID = ID(Uuid.random()),
     @Index(IndexUniqueness.Unique) val email: EmailAddress,

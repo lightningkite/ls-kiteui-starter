@@ -40,11 +40,9 @@ class LoginPage : Page, FullscreenPage {
                     emailProof = api.userAuth.email,
                     oneTimePasswordProof = api.userAuth.totp,
                     backupCodeProof = api.userAuth.backupCode,
-//                    webAuthNProof = api.webAuthNProof,
-//                    webAuthNIncludePasskeyUI = true,
+                    webAuthNProof = api.userAuth.webAuthN,
                     passwordProof = api.userAuth.password,
                 ),
-//                subjectPath = "user",
                 subject = api.userAuth
             ) { token ->
                 sessionToken set token

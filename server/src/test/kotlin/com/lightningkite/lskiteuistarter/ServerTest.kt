@@ -4,6 +4,9 @@ package com.lightningkite.lskiteuistarter
 import com.lightningkite.lightningserver.ForbiddenException
 import com.lightningkite.lightningserver.NotFoundException
 import com.lightningkite.lightningserver.auth.testAuth
+import com.lightningkite.lightningserver.definition.GeneralServerSettings
+import com.lightningkite.lightningserver.definition.generalSettings
+import com.lightningkite.lightningserver.fixtures.deleteSeedData
 import com.lightningkite.lightningserver.runtime.test.execute
 import com.lightningkite.lightningserver.runtime.test.test
 import com.lightningkite.lightningserver.settings.set
@@ -15,9 +18,12 @@ import com.lightningkite.services.database.Condition
 import com.lightningkite.services.database.Database
 import com.lightningkite.services.database.Modification
 import com.lightningkite.services.database.Query
+import com.lightningkite.services.database.TextIndexQuery
+import com.lightningkite.services.database.inside
 import com.lightningkite.services.database.eq
 import com.lightningkite.services.database.insertOne
 import com.lightningkite.services.data.toEmailAddress
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -258,6 +264,56 @@ class ServerTest {
             val userResults = UserEndpoints.rest.endpoints.list.test(userAuth, Query<User>())
             assertEquals(1, userResults.size, "Regular user should only see themselves")
             assertEquals(regularUser._id, userResults.first()._id)
+        }
+    }
+
+    @Test
+    fun userTextSearchRespectsReadPermissions(): Unit = runBlocking {
+        Server.test(settings = { database set Database.Settings("ram") }) {
+            val admin = execute { UserEndpoints.info.table().insertOne(
+                User(email = "admin@test.com".toEmailAddress(), name = "Alice Admin", role = UserRole.Admin)
+            ) }
+            val bob = execute { UserEndpoints.info.table().insertOne(
+                User(email = "bob@test.com".toEmailAddress(), name = "Bob Builder")
+            ) }
+            val carol = execute { UserEndpoints.info.table().insertOne(
+                User(email = "carol@test.com".toEmailAddress(), name = "Carol Contractor")
+            ) }
+
+            val adminResults = UserEndpoints.rest.endpoints.textQuery.test(UserAuth.testAuth(admin), TextIndexQuery("bob"))
+            assertEquals(listOf(bob._id), adminResults.map { it.model._id })
+
+            val carolResults = UserEndpoints.rest.endpoints.textQuery.test(UserAuth.testAuth(carol), TextIndexQuery("bob"))
+            assertEquals(emptyList(), carolResults, "Search must not reveal users the caller can't read")
+        }
+    }
+
+    @Test
+    fun seedDataCanBeResetAndReseeded(): Unit = runBlocking {
+        Server.test(settings = {
+            database set Database.Settings("ram")
+            generalSettings set GeneralServerSettings(debug = true)
+        }) {
+            val handMade = execute { UserEndpoints.info.table().insertOne(
+                User(email = "real@test.com".toEmailAddress(), name = "Real Person")
+            ) }
+
+            execute { SeedData.fixtures.execute(SeedConfig()) }
+            val seededUsers = execute { UserEndpoints.info.table().find(Condition.Always).toList() }
+            assertNotNull(seededUsers.find { it._id == SeedData.admin._id })
+            assertEquals(1 + 21, seededUsers.size)
+            val adminOwnerships = execute {
+                MembershipEndpoints.info.table().find(Condition { it.user eq SeedData.admin._id }).toList()
+            }
+            assertEquals(3, adminOwnerships.size)
+
+            execute {
+                deleteSeedData()
+                SeedData.fixtures.execute(SeedConfig())
+            }
+            val reseeded = execute { UserEndpoints.info.table().find(Condition.Always).toList() }
+            assertEquals(seededUsers.map { it._id }.toSet(), reseeded.map { it._id }.toSet(), "Seeding is deterministic")
+            assertNotNull(reseeded.find { it._id == handMade._id }, "Hand-made rows survive a reset")
         }
     }
 }

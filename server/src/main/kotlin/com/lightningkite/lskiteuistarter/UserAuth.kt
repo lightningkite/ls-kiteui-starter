@@ -30,6 +30,7 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Instant
 import kotlin.uuid.Uuid
+import java.net.URI
 
 
 object UserAuth : PrincipalType<User, User.ID>, ServerBuilder() {
@@ -108,6 +109,24 @@ object UserAuth : PrincipalType<User, User.ID>, ServerBuilder() {
     val totp = proofs.path("totp") module TimeBasedOTPProofEndpoints(Server.database, Server.cache)
     val password = proofs.path("password") module PasswordProofEndpoints(Server.database, Server.cache)
     val backupCodes = proofs.path("backup-codes") module BackupCodeEndpoints(Server.database, Server.cache)
+    // Passkeys are scoped to the web app's domain.  Native apps need their own entries in allowedOrigins; see SETUP.md.
+    val webAuthN = proofs.path("webauthn") module WebAuthNProofEndpoints(
+        database = Server.database,
+        cache = Server.cache,
+        rpId = { URI(Server.webUrl()).host },
+        allowedOrigins = { setOf(URI(Server.webUrl()).let { "${it.scheme}://${it.authority}" }) },
+        registrationForUser = { subject, residentKey ->
+            val user = subject as User
+            WebAuthN.Registration.RegistrationOptions(
+                authenticatorSelection = WebAuthN.AuthenticatorSelectionOptions(residentKey = residentKey),
+                user = WebAuthN.PublicKeyCredentialUserEntity(
+                    id = user._id.toString(),
+                    name = user.email.raw,
+                    displayName = user.name.ifBlank { user.email.raw },
+                ),
+            )
+        },
+    )
     val session = path.path("session") include SessionEndpoints()
 
     class EmailEndpoints(val pins: PinHandler) : ServerBuilder() {
@@ -115,7 +134,7 @@ object UserAuth : PrincipalType<User, User.ID>, ServerBuilder() {
             pin = pins,
             email = Server.email,
             emailTemplate = { to, pin ->
-                val name = User.info.table().findOne(Condition { it.email eq to.toEmailAddress() })?.name
+                val name = User.info.table().findOne(Condition { it.email eq to })?.name
                 Email(
                     subject = "Log In Code",
                     to = listOf(EmailAddressWithName(to)),

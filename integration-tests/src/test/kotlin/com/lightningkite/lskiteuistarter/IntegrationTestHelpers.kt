@@ -24,6 +24,7 @@ import com.lightningkite.reactive.core.AppJob
 import com.lightningkite.services.data.toEmailAddress
 import com.lightningkite.services.database.Database
 import com.lightningkite.services.database.insertOne
+import com.lightningkite.services.email.EmailService
 import kotlinx.coroutines.runBlocking
 
 /**
@@ -37,14 +38,17 @@ import kotlinx.coroutines.runBlocking
  *
  * @param initialPage The page to render initially.
  * @param setup Seeds data / logs in. Runs with [ServerRuntime] context before the page renders.
- * @param block The test body, with UI-driver helpers.
+ * @param block The test body, with UI-driver helpers.  Its argument is the server, for `server.execute { ... }` checks.
  */
 fun integrationTest(
     initialPage: Page,
     setup: (suspend context(ServerRuntime) () -> Unit)? = null,
-    block: suspend UiTestScope.() -> Unit,
+    block: suspend UiTestScope.(server: TestRunner<Server>) -> Unit,
 ) {
-    Server.test(settings = { database set Database.Settings("ram") }) {
+    Server.test(settings = {
+        database set Database.Settings("ram")
+        email set EmailService.Settings("test")
+    }) {
         val runner = contextOf<TestRunner<Server>>()
         val api = LiveApi(TestRunnerFetcher(runner))
         val navigator = PageNavigator { AutoRoutes }
@@ -95,7 +99,7 @@ fun integrationTest(
             },
         ) {
             try {
-                block()
+                block(runner)
             } finally {
                 // Shut the root view down FIRST. The jvmSsr uiTest harness never tears the view
                 // down, so every reactive process / KiteUI watch() live-query coroutine launched by

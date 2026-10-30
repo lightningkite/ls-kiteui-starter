@@ -18,6 +18,7 @@ dependencies {
     implementation(libs.lightningServer.sessions)
     implementation(libs.lightningServer.client.serverUtils)
     implementation(libs.services.database)
+    implementation(libs.services.email)
 
     // Frontend app code (Pages, App, generated SDK, apiOverride) — the headless jvmSsr compilation.
     implementation(project(":apps")) {

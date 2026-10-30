@@ -1,0 +1,47 @@
+{
+    "provider": {
+        "mongodbatlas": [
+            {}
+        ],
+        "grafana": [
+            {
+                "url": "https://lightningkite.grafana.net",
+                "auth": "${var.grafana_cloud_service_account_token}"
+            }
+        ],
+        "aws": [
+            {
+                "region": "us-west-2"
+            },
+            {
+                "region": "us-east-1",
+                "alias": "acm"
+            }
+        ]
+    },
+    "terraform": {
+        "required_providers": {
+            "mongodbatlas": {
+                "source": "mongodb/mongodbatlas",
+                "version": "~> 2.7.0"
+            },
+            "grafana": {
+                "source": "grafana/grafana",
+                "version": "~> 4.27.0"
+            },
+            "aws": {
+                "source": "hashicorp/aws",
+                "version": "~> 6.34.0"
+            }
+        },
+        "required_version": "~> 1.0",
+        "backend": {
+            "s3": {
+                "bucket": "lightningkite-terraform",
+                "encrypt": true,
+                "region": "us-west-2",
+                "key": "ls-kiteui-starter"
+            }
+        }
+    }
+}

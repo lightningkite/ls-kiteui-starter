@@ -44,12 +44,12 @@ terraform {
 # Option 2: Remove this block entirely to use local state (fine for solo dev).
 
 provider "aws" {
-  region = "us-west-2"  # TODO: Change to your preferred region
+  region = "us-west-2" # TODO: Change to your preferred region
 }
 
 provider "aws" {
   alias  = "acm"
-  region = "us-east-1"  # ACM certs for CloudFront must be in us-east-1
+  region = "us-east-1" # ACM certs for CloudFront must be in us-east-1
 }
 
 module "web" {
@@ -60,9 +60,10 @@ module "web" {
   }
 
   # TODO: Customize these for your project
-  deployment_name  = "myproject"                        # S3 bucket name prefix
-  dist_folder      = "../../build/vite/dist"            # Path to Vite build output
-  domain_name      = "app.myproject.example.com"        # Your app's domain
-  domain_name_zone = "example.com"                      # Route 53 hosted zone
-  react_mode       = true                               # SPA routing (index.html fallback)
+  deployment_name  = "myproject" # S3 bucket name prefix
+  dist_folder      = "../../build/dist/js/production"
+  domain_name      = "app.myproject.example.com" # Your app's domain
+  domain_name_zone = "example.com"               # Route 53 hosted zone
+  react_mode       = true                        # SPA routing (index.html fallback)
+  enable_www_redirect = false
 }

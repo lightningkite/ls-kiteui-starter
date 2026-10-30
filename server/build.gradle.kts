@@ -27,6 +27,8 @@ dependencies {
     implementation(libs.lightningServer.sessions.email)
     implementation(libs.lightningServer.sessions.sms)
     implementation(libs.lightningServer.sessions.totp)
+    implementation(libs.lightningServer.sessions.webauthn)
+    implementation(libs.lightningServer.fixtures)
     implementation(libs.lightningServer.engine.aws)
     implementation(libs.lightningServer.secretSource.aws)
     implementation(libs.lightningServer.engine.netty)

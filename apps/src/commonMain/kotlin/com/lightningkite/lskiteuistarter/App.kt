@@ -8,7 +8,11 @@ import com.lightningkite.kiteui.exceptions.installLsError
 import com.lightningkite.kiteui.exceptions.installSmartHandlers
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.PageNavigator
+import com.lightningkite.kiteui.isDevelopment
+import com.lightningkite.kiteui.views.AiDriver
 import com.lightningkite.kiteui.views.ViewWriter
+import com.lightningkite.kiteui.views.produceExactlyOneElement
+import com.lightningkite.lskiteuistarter.views.SecurityPage
 import com.lightningkite.kiteui.views.buttonTheme
 import com.lightningkite.kiteui.views.card
 import com.lightningkite.kiteui.views.centered
@@ -70,18 +74,25 @@ fun ViewWriter.app(navigator: PageNavigator) {
 
     checkAppVersion()
 
-    return appNav(navigator) {
-        appName = "LS KiteUI Starter"
-        ::navItems {
-            listOf(
-                NavLink(title = "Home", icon = Icon.home) { HomePage() },
-            )
-        }
+    val rootView = produceExactlyOneElement {
+        appNav(navigator) {
+            appName = "LS KiteUI Starter"
+            ::navItems {
+                listOf(
+                    NavLink(title = "Home", icon = Icon.home) { HomePage() },
+                    NavLink(title = "Members", icon = Icon.group) { MembersPage() },
+                    NavLink(title = "Security", icon = Icon.person) { SecurityPage() },
+                )
+            }
 
-        ::exists {
-            navigator.currentPage() !is FullscreenPage
+            ::exists {
+                navigator.currentPage() !is FullscreenPage
+            }
         }
     }
+
+    // Lets AI agents drive the running dev app; start the relay with `./gradlew :apps:aiDriverStart`.
+    if (Platform.isDevelopment) AiDriver.connect(appName = "ls-kiteui-starter", rootView = { rootView }, navigator = { navigator })
 }
 
 interface FullscreenPage

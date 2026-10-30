@@ -55,7 +55,7 @@ object LkEnv : TerraformAwsServerlessDomainBuilder<Server>(Server) {
     override val region = Region.US_WEST_2!!
     override val applicationVpc: AwsVpc = AwsVpc.None
 
-    override val secretsSource: SecretSource = AwsSecretSource(projectPrefix, idPrefix = displayName.snakeCase(), region)
+    override val secretsSource: SecretSource = AwsSecretSource("lk", idPrefix = displayName.snakeCase(), region)
 
     override fun Server.settings() {
         require(TerraformProviderImport.mongodbAtlas)

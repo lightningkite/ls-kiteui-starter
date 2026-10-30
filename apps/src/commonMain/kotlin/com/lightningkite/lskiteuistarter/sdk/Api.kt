@@ -11,7 +11,7 @@ interface Api {
 
 	val user: com.lightningkite.lightningserver.typed.ClientModelRestEndpointsAndUpdatesWebSocket<com.lightningkite.lskiteuistarter.User, com.lightningkite.lskiteuistarter.User.ID>
 
-	interface UserAuthApi : com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lightningserver.sessions.Session<com.lightningkite.lskiteuistarter.User, com.lightningkite.lskiteuistarter.User.ID>, kotlin.uuid.Uuid>, com.lightningkite.lightningserver.sessions.proofs.AuthClientEndpoints<com.lightningkite.lskiteuistarter.User, com.lightningkite.lskiteuistarter.User.ID> {
+	interface UserAuthApi : com.lightningkite.lightningserver.sessions.proofs.AuthClientEndpoints<com.lightningkite.lskiteuistarter.User, com.lightningkite.lskiteuistarter.User.ID>, com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lightningserver.sessions.Session<com.lightningkite.lskiteuistarter.User, com.lightningkite.lskiteuistarter.User.ID>, kotlin.uuid.Uuid> {
 
 		interface EmailApi : com.lightningkite.lightningserver.sessions.proofs.ProofClientEndpoints.Email {
 			/**
@@ -25,7 +25,7 @@ interface Api {
 		}
 		val email: EmailApi
 
-		interface TimeBasedOTPProof : com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lightningserver.sessions.TotpSecret, kotlin.uuid.Uuid>, com.lightningkite.lightningserver.sessions.proofs.ProofClientEndpoints.TimeBasedOTP {
+		interface TimeBasedOTPProof : com.lightningkite.lightningserver.sessions.proofs.ProofClientEndpoints.TimeBasedOTP, com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lightningserver.sessions.TotpSecret, kotlin.uuid.Uuid> {
 		}
 		val totp: TimeBasedOTPProof
 
@@ -34,6 +34,10 @@ interface Api {
 		val password: PasswordProof
 
 		val backupCode: com.lightningkite.lightningserver.sessions.proofs.ProofClientEndpoints.BackupCode
+
+		interface WebAuthNProof : com.lightningkite.lightningserver.sessions.proofs.ProofClientEndpoints.WebAuthN, com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lightningserver.sessions.proofs.WebAuthNCredential, kotlin.String> {
+		}
+		val webAuthN: WebAuthNProof
 	}
 	val userAuth: UserAuthApi
 
