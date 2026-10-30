@@ -76,8 +76,9 @@ object LkEnv : TerraformAwsServerlessDomainBuilder<Server>(Server) {
                 limitToDomains = listOf("*"),
                 limitToHeaders = listOf("*"),
                 limitToMethods = listOf("*"),
-                allowCredentials = true,
                 exposedHeaders = listOf(),
+                allowCredentials = false,
+                cacheLength = 1.days,
             )
         )
         notifications.byVariable()
