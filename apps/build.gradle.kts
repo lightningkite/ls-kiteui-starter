@@ -176,7 +176,7 @@ fun env(name: String, profile: String) {
     tasks.register("deployWeb${name}Init", Exec::class.java) {
         group = "deploy"
         description = "Run 'terraform init' in the $name directory"
-        this.dependsOn("viteBuild")
+        this.dependsOn("jsBundleProduction")
         this.environment("AWS_PROFILE", profile)
         val props = Properties()
         props.entries.forEach { environment(it.key.toString().trim('"', ' '), it.value.toString().trim('"', ' ')) }
