@@ -7,7 +7,7 @@ import com.lightningkite.kiteui.suppressConnectivityIssues
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.lightningserver.LsErrorException
-import com.lightningkite.lightningserver.auth.AccessToken
+import com.lightningkite.lightningserver.auth.accessToken
 import com.lightningkite.lskiteuistarter.FcmToken
 import com.lightningkite.lskiteuistarter.fcmToken
 import com.lightningkite.reactive.context.invoke
@@ -23,7 +23,7 @@ val currentSession: Reactive<UserSession?> = rememberSuspending {
     val token = sessionToken() ?: return@rememberSuspending null
     val api = apiOverride() ?: selectedApi().api
 
-    val accessToken = AccessToken(api.userAuth, token)
+    val accessToken = api.userAuth.accessToken(token)
     val authApi = api.withMetadata { set("Authorization", accessToken()) }
     try {
         val self = authApi.userAuth.getSelf()
