@@ -5,14 +5,14 @@ firebaseMessagingKtx = "24.1.2"
 graalVmNative = "1.1.14"
 jsPlainObjects = "2.4.21"
 kfc = "19.16.0"
-kiteui = "8.4.0-prerelease-98-2bbadcf8b"
+kiteui = "8.4.0-prerelease-157-a268b1a68"
 kotlin = "2.4.21"
 kotlinerCli = "1.0.5"
 kotlinxSerializationCsvDurable = "0.2.21-1"
 ksp = "2.3.12"
-lightningServer = "5.3.0-telemetryclientingest-116-8df6ecf63"
-lightningServerKiteui = "9.3.0-telemetryclientingest-16-3c10ace-1-local"
-serviceAbstractions = "1.3.0-telemetryclientingest-94-092e6352"
+lightningServer = "5.4.0-prerelease-135-92d1dd830"
+lightningServerKiteui = "9.4.0-prerelease-49-f72cbee"
+serviceAbstractions = "1.4.0-prerelease-119-b1de33b7"
 
 [libraries]
 csvDurable = { module = "com.lightningkite:kotlinx-serialization-csv-durable", version = { ref = "kotlinxSerializationCsvDurable" } }
