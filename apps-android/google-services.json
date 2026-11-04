@@ -1,21 +1,21 @@
 {
   "project_info": {
-    "project_number": "879697728997",
-    "project_id": "cargo-relay",
-    "storage_bucket": "cargo-relay.firebasestorage.app"
+    "project_number": "763812266707",
+    "project_id": "ls-kiteui-starter-project",
+    "storage_bucket": "ls-kiteui-starter-project.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:879697728997:android:499dd0cdae63f591200b0c",
+        "mobilesdk_app_id": "1:763812266707:android:658f851a73b868ef0c0a26",
         "android_client_info": {
-          "package_name": "net.cargorelay.app"
+          "package_name": "com.lightningkite.lskiteuistarter"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyBixu3zUuPf3f0d4Vwh_gGqye4rNy0_sbk"
+          "current_key": "AIzaSyA-P12W75hqVZ8EG6ygWj4rrDHeFZEIH6o"
         }
       ],
       "services": {
