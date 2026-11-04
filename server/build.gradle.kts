@@ -1,8 +1,8 @@
 
 plugins {
-    alias(libs.plugins.kotlinJvm)
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
-    alias(libs.plugins.serialization)
     application
 }
 
@@ -16,7 +16,7 @@ application {
 dependencies {
 
     implementation(project(":shared"))
-    implementation(libs.csvDurable)
+    implementation(libs.csv.durable)
     implementation(libs.lightningServer.client.serverUtils)
     implementation(libs.lightningServer.core)
     implementation(libs.lightningServer.engine.aws)

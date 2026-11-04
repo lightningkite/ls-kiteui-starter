@@ -3,7 +3,7 @@ import java.util.*
 // The Android app shell for :apps. AGP 9 doesn't allow com.android.application in a KMP module, so the
 // code (including MainActivity) and resources stay in :apps and this module only packages it.
 plugins {
-    alias(libs.plugins.androidApp)
+    alias(libs.plugins.android.app)
 }
 
 group = "com.lightningkite.lskiteuistarter.app"

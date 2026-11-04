@@ -1,11 +1,11 @@
 
 plugins {
-    alias(libs.plugins.kotlinJvm) apply false
-    alias(libs.plugins.kotlinMultiplatform) apply false
-    alias(libs.plugins.androidApp) apply false
-    alias(libs.plugins.androidKmpLibrary) apply false
-    alias(libs.plugins.graalVmNative) apply false
-    alias(libs.plugins.kotlinCocoapods) apply false
+    alias(libs.plugins.android.app) apply false
+    alias(libs.plugins.android.kmp.library) apply false
+    alias(libs.plugins.graalvm.native) apply false
+    alias(libs.plugins.kotlin.cocoapods) apply false
+    alias(libs.plugins.kotlin.jvm) apply false
+    alias(libs.plugins.kotlin.multiplatform) apply false
 }
 
 buildscript {

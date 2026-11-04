@@ -1,26 +1,25 @@
 import com.lightningkite.kiteui.KiteUiPluginExtension
 import org.jetbrains.kotlin.gradle.plugin.cocoapods.CocoapodsExtension
-import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
 import java.nio.file.Files
 import java.util.*
 import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnLockMismatchReport
 import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnRootExtension
-import kotlin.collections.set
 
 // KMP currently doesn't disable iOS target and dependency resolution correctly when not on a mac.
 // So we work around it on non mac machines with this check
 val iosEnabled: Boolean by rootProject.extra
 
 plugins {
-    alias(libs.plugins.androidKmpLibrary)
-    alias(libs.plugins.kotlinMultiplatform)
-    alias(libs.plugins.serialization)
-    if (System.getProperty("os.name").contains("Mac", ignoreCase = true)) {
-        alias(libs.plugins.kotlinCocoapods)
-    }
-    alias(libs.plugins.kiteui)
-    alias(libs.plugins.kjsplain)
+    alias(libs.plugins.android.kmp.library)
     alias(libs.plugins.kfc)
+    alias(libs.plugins.kiteui)
+    alias(libs.plugins.kotlin.js.plain.objects)
+    alias(libs.plugins.kotlin.multiplatform)
+    alias(libs.plugins.kotlin.serialization)
+
+    if (System.getProperty("os.name").contains("Mac", ignoreCase = true)) {
+        alias(libs.plugins.kotlin.cocoapods)
+    }
 }
 
 group = "com.lightningkite.lskiteuistarter.app"
@@ -60,7 +59,7 @@ kotlin {
         val commonMain = getByName("commonMain") {
             dependencies {
                 api(libs.kiteui)
-                api(libs.csvDurable)
+                api(libs.csv.durable)
                 api(libs.lightningServer.core.shared)
                 api(libs.lightningServer.typed.shared)
                 api(libs.lightningServer.sessions.shared)

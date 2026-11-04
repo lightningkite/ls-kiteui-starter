@@ -8,6 +8,7 @@ kfc = "19.16.0"
 kiteui = "8.3.0-101-d1ee94eed-1-local"
 kotlin = "2.4.21"
 kotlinerCli = "1.0.5"
+kotlinxCoroutinesTest = "1.11.0"
 kotlinxSerializationCsvDurable = "0.2.21-1"
 ksp = "2.3.12"
 lightningServer = "5.4.0-prerelease-114-973de947d"
@@ -15,12 +16,13 @@ lightningServerKiteui = "9.4.0-prerelease-35-2980650"
 serviceAbstractions = "1.4.0-prerelease-110-b2e031c8"
 
 [libraries]
-csvDurable = { module = "com.lightningkite:kotlinx-serialization-csv-durable", version = { ref = "kotlinxSerializationCsvDurable" } }
+csv-durable = { module = "com.lightningkite:kotlinx-serialization-csv-durable", version = { ref = "kotlinxSerializationCsvDurable" } }
 desugarJdkLibs = { module = "com.android.tools:desugar_jdk_libs", version = { ref = "desugar_jdk_libsVersion" } }
 firebase-messaging-ktx = { module = "com.google.firebase:firebase-messaging-ktx", version = { ref = "firebaseMessagingKtx" } }
 kiteui = { module = "com.lightningkite.kiteui:library", version = { ref = "kiteui" } }
 kiteui-test = { module = "com.lightningkite.kiteui:test-utilities", version = { ref = "kiteui" } }
 kotliner-cli = { module = "com.lightningkite:kotliner-cli", version = { ref = "kotlinerCli" } }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutinesTest" }
 lightningServer-client = { module = "com.lightningkite.lightningserver:client", version = { ref = "lightningServerKiteui" } }
 lightningServer-client-serverUtils = { module = "com.lightningkite.lightningserver:server-client-utils", version = { ref = "lightningServerKiteui" } }
 lightningServer-core = { module = "com.lightningkite.lightningserver:core", version = { ref = "lightningServer" } }
@@ -53,14 +55,14 @@ services-files-s3 = { module = "com.lightningkite.services:files-s3", version = 
 services-notifications-firebase = { module = "com.lightningkite.services:notifications-fcm", version = { ref = "serviceAbstractions" } }
 
 [plugins]
-androidApp = { id = "com.android.application", version = { ref = "agp" } }
-androidKmpLibrary = { id = "com.android.kotlin.multiplatform.library", version = { ref = "agp" } }
-graalVmNative = { id = "org.graalvm.buildtools.native", version = { ref = "graalVmNative" } }
+android-app = { id = "com.android.application", version = { ref = "agp" } }
+android-kmp-library = { id = "com.android.kotlin.multiplatform.library", version = { ref = "agp" } }
+graalvm-native = { id = "org.graalvm.buildtools.native", version = { ref = "graalVmNative" } }
 kfc = { id = "io.github.turansky.kfc.application", version = { ref = "kfc" } }
 kiteui = { id = "com.lightningkite.kiteui", version = { ref = "kiteui" } }
-kjsplain = { id = "org.jetbrains.kotlin.plugin.js-plain-objects", version = { ref = "jsPlainObjects" } }
-kotlinCocoapods = { id = "org.jetbrains.kotlin.native.cocoapods", version = { ref = "kotlin" } }
-kotlinJvm = { id = "org.jetbrains.kotlin.jvm", version = { ref = "kotlin" } }
-kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version = { ref = "kotlin" } }
+kotlin-cocoapods = { id = "org.jetbrains.kotlin.native.cocoapods", version = { ref = "kotlin" } }
+kotlin-js-plain-objects = { id = "org.jetbrains.kotlin.plugin.js-plain-objects", version = { ref = "jsPlainObjects" } }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version = { ref = "kotlin" } }
+kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version = { ref = "kotlin" } }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version = { ref = "kotlin" } }
 ksp = { id = "com.google.devtools.ksp", version = { ref = "ksp" } }
-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version = { ref = "kotlin" } }
