@@ -1,6 +1,7 @@
 package com.lightningkite.lskiteuistarter.api
 
 import com.lightningkite.lightningserver.auth.*
+import com.lightningkite.lightningserver.compression.GzipInterceptor
 import com.lightningkite.lightningserver.cors.CorsInterceptor
 import com.lightningkite.lightningserver.cors.CorsSettings
 import com.lightningkite.lightningserver.definition.Runtime
@@ -37,11 +38,9 @@ import com.lightningkite.services.otel.OtelTelemetryBackend
 import kotlin.time.Duration.Companion.seconds
 
 object Server : ServerBuilder() {
-    override val annotationValidators: Runtime<AnnotationValidators> = Runtime.Cached {
-        AnnotationValidators.StandardWithExternalModule() + AnnotationValidators.Files()
-    }
 
-    // Settings
+    // ---- Settings ----
+
     val cache = setting("cache", Cache.Settings())
     val cors = setting("cors", CorsSettings())
     val database = setting("database", Database.Settings())
@@ -51,25 +50,20 @@ object Server : ServerBuilder() {
     val rateLimiter = setting<RateLimitSettings?>("rateLimiting", null, optional = true)
     val webUrl = setting("webUrl", "http://localhost:8941")
 
+
     init {
-        // There isn't a good way at this time to automatically register each handler for services and settings
-        // The run block is solely for the suppression
-        @Suppress("UnusedExpression")
-        run {
-            MongoDatabase
-            JsonFileDatabase
-            FcmNotificationClient
-            JavaSmtpEmailService
-            S3ExternalFileSystem
-            DynamoDbCache
-            LoggingTelemetryBackend
-            OtelTelemetryBackend
-        }
+        // ---- Setup ----
 
         registerBasicMediaTypeCoders()
+
+        // ---- Interceptors ----
+
+        // Security, Cors, and Gzip are connection and always run first.
         install(SecurityHeadersInterceptor())
-        install(AccessLogInterceptor())
         install(CorsInterceptor(cors))
+        install(GzipInterceptor())
+
+        // Then it's logic ones, and rate limiter should be before anything else
         install(RateLimitInterceptor(rateLimiter, cache) {
             if ((it.path.pathInContext.pathSpec.segments.firstOrNull() as? PathSpec.Segment.Constant)?.value == "files")
                 return@RateLimitInterceptor null
@@ -91,8 +85,33 @@ object Server : ServerBuilder() {
                     leeway = 30.seconds
                 )
         })
+        install(AccessLogInterceptor())
 
+        // ---- Built in auth helpers ----
         AuthRequirement.isSuperUser = UserAuth.require { it.userRole() >= UserRole.Root }
+
+
+        // ---- Instantiating Service items ----
+
+        // There isn't a good way at this time to automatically register each handler for services and settings
+        // The run block is solely for the suppression
+        @Suppress("UnusedExpression")
+        run {
+            MongoDatabase
+            JsonFileDatabase
+            FcmNotificationClient
+            JavaSmtpEmailService
+            S3ExternalFileSystem
+            DynamoDbCache
+            LoggingTelemetryBackend
+            OtelTelemetryBackend
+        }
+    }
+
+    // ---- Other Overrides ----
+
+    override val annotationValidators: Runtime<AnnotationValidators> = Runtime.Cached {
+        AnnotationValidators.StandardWithExternalModule() + AnnotationValidators.Files()
     }
 
     // ----- Endpoints, tasks, and schedules -----

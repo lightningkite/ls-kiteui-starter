@@ -35,7 +35,7 @@ kotlin {
     android {
         // Must match the KiteUI packageName below: the generated Resources.android.kt uses an unqualified R.
         namespace = "com.lightningkite.lskiteuistarter.app"
-        compileSdk = 36
+        compileSdk = 37
         minSdk = 26
         enableCoreLibraryDesugaring = true
         androidResources { enable = true }
