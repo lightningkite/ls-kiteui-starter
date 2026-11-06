@@ -47,6 +47,15 @@ object LkEnv : TerraformAwsServerlessDomainBuilder<Server>(Server) {
 
     override val region = Region.US_WEST_2!!
     override val applicationVpc: AwsVpc = AwsVpc.None
+//    override val applicationVpc: AwsVpc.VpcInfo = terraformManagedVPC(
+//        ipPrefix = "10.0",
+//        availabilityZones = listOf(
+//            "${org.usbealtitude.api.deployments.Production.region.id()}a",
+//            "${org.usbealtitude.api.deployments.Production.region.id()}b",
+//            "${org.usbealtitude.api.deployments.Production.region.id()}c"
+//        ),
+//        natGateway = AwsVpc.NatGateway.Single
+//    )
 
     override val secretsSource: SecretSource =
         AwsSecretSource(projectPrefix, idPrefix = displayName.snakeCase(), region)
@@ -115,22 +124,39 @@ object LkEnv : TerraformAwsServerlessDomainBuilder<Server>(Server) {
             )
         )
     }
-}
 
-object LkEnvDeploy {
-    @JvmStatic
-    fun main(vararg args: String) {
-        ProcessBuilder("./gradlew", "server:lambda").inheritIO().start().waitFor()
-        LkEnv.deploy()
+    object LkEnvDeploy {
+        @JvmStatic
+        fun main(vararg args: String) {
+            ProcessBuilder("./gradlew", "server:lambda").inheritIO().start().waitFor()
+            deploy()
+        }
     }
-}
 
-object LkEnvEdit {
-    @JvmStatic
-    fun main(vararg args: String) = LkEnv.editVars()
-}
+    object LkEnvEdit {
+        @JvmStatic
+        fun main(vararg args: String) = editVars()
+    }
 
-object LkEnvPrepare {
-    @JvmStatic
-    fun main(vararg args: String): Unit = LkEnv.prepareTerraform().let(::println)
+    object LkEnvPrepare {
+        @JvmStatic
+        fun main(vararg args: String): Unit = prepareTerraform().let(::println)
+    }
+
+    object LkEnvShell {
+        @JvmStatic
+        fun main(vararg args: String) {
+            write()
+            println()
+            println()
+            println("Entering Terraform Shell")
+            while (true) {
+                val next = readlnOrNull()?.also { if (it.isBlank()) continue } ?: break
+                try {
+                    terraform(*next.split(' ').toTypedArray())
+                } catch (_: Throwable) {
+                }
+            }
+        }
+    }
 }
