@@ -1,14 +1,16 @@
 #!/usr/bin/env sh
 # Create a new Lightning Server + KiteUI project from lskiteuistarter.
 #
-#   curl -fsSL https://<your-host>/init.sh | sh -s -- my-app com.mycompany.myapp
+#   curl -fsSL https://<your-host>/init.sh | sh -s -- [-b branch] my-app com.mycompany.myapp
 #
 # The result is a fresh directory with its own git history and nothing
 # linking it back to the template. The template's package name and project
 # name are rewritten to yours.
 #
+# Options:
+#   -b <branch>     branch or tag of the starter to use (default: master)
+#
 # Environment overrides:
-#   LSKITE_REF      branch or tag of the starter to use (default: main)
 #   LSKITE_TARBALL  path to a local .tar.gz instead of downloading (testing)
 set -eu
 
@@ -20,15 +22,23 @@ TEMPLATE_NAME="lskiteuistarter"
 TEMPLATE_ONLY_FILES="init.sh"
 # -----------------------------------------------------------------------------
 
-REF="${LSKITE_REF:-main}"
-
 die() { printf 'error: %s\n' "$1" >&2; exit 1; }
 need() { command -v "$1" >/dev/null 2>&1 || die "'$1' is required but not installed"; }
-
-[ $# -ge 1 ] || {
-  echo "usage: init.sh <project-name> [package]   e.g. init.sh my-app com.acme.myapp" >&2
+usage() {
+  echo "usage: init.sh [-b branch] <project-name> [package]   e.g. init.sh -b x.4-versions my-app com.acme.myapp" >&2
   exit 1
 }
+
+REF="master"
+while getopts b: opt; do
+  case "$opt" in
+    b) REF="$OPTARG" ;;
+    *) usage ;;
+  esac
+done
+shift $((OPTIND - 1))
+
+[ $# -ge 1 ] || usage
 
 NAME="$1"
 case "$NAME" in
@@ -59,6 +69,10 @@ fi
 cd "$NAME"
 
 for f in $TEMPLATE_ONLY_FILES; do rm -f "$f"; done
+
+# Claude: an already-renamed branch would otherwise be copied through untouched.
+find . -type d -path "*/$(printf '%s' "$TEMPLATE_PACKAGE" | tr . /)" | grep -q . \
+  || { cd ..; rm -rf "$NAME"; die "$REPO@$REF does not use package $TEMPLATE_PACKAGE; nothing to rename"; }
 
 # 1. Rewrite package and project name inside text files only.
 OLD_PKG_RE=$(printf '%s' "$TEMPLATE_PACKAGE" | sed 's/\./\\./g')
