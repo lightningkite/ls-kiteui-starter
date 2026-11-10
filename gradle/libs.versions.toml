@@ -3,17 +3,17 @@ agp = "8.13.2"
 desugar_jdk_libsVersion = "2.1.5"
 firebaseMessagingKtx = "24.1.2"
 graalVmNative = "0.11.4"
-jsPlainObjects = "2.3.0"
-kfc = "19.13.0"
-kotlin = "2.4.10"
+
+kfc = "19.16.0"
+kotlin = "2.4.21"
 kiteui = "8.3.0-101-d1ee94eed-1-local"
 kotlinerCli = "1.0.5"
 kotlinxSerializationCsvDurable = "0.2.21-1"
-ksp = "2.3.10"
+ksp = "2.3.13"
 lightningServer = "5.4.0-prerelease-114-973de947d"
 lightningServerKiteui = "9.4.0-prerelease-35-2980650"
 serviceAbstractions = "1.4.0-prerelease-110-b2e031c8"
-coroutines = "1.10.2"
+coroutines = "1.11.0"
 shadow = "8.1.1"
 
 [libraries]
@@ -67,4 +67,4 @@ ksp = { id = "com.google.devtools.ksp", version = { ref = "ksp" } }
 serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version = { ref = "kotlin" } }
 shadow = { id = "com.github.johnrengelman.shadow", version = { ref = "shadow" } }
 kfc = { id = "io.github.turansky.kfc.application", version = { ref = "kfc" } }
-kjsplain = { id = "org.jetbrains.kotlin.plugin.js-plain-objects", version = { ref = "jsPlainObjects" } }
+kjsplain = { id = "org.jetbrains.kotlin.plugin.js-plain-objects", version = { ref = "kotlin" } }
