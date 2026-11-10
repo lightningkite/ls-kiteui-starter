@@ -16,7 +16,7 @@ platform :android do
   lane :internal do
     upload_to_play_store(
       track:                   "internal",
-      aab:                     "apps/build/outputs/bundle/release/apps-release.aab",
+      aab:                     "androidApp/build/outputs/bundle/release/androidApp-release.aab",
       json_key:                ENV["PLAY_STORE_JSON_KEY_PATH"],
       skip_upload_apk:         true,
       skip_upload_images:      true,

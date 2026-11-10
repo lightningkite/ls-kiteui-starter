@@ -57,7 +57,7 @@ cp settings.suggested.json settings.json
 ./gradlew build
 
 # Build Android APK
-./gradlew :apps:installDebug
+./gradlew :androidApp:installDebug
 
 # Build iOS framework (macOS only)
 ./gradlew :apps:podInstall

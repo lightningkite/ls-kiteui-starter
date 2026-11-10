@@ -92,7 +92,7 @@ fun updateKotlinFiles(config: Config) {
 }
 
 fun updateAndroidManifest(config: Config) {
-    val manifestFile = File("apps/src/androidMain/AndroidManifest.xml")
+    val manifestFile = File("androidApp/src/main/AndroidManifest.xml")
     if (!manifestFile.exists()) {
         println("  ⚠ AndroidManifest.xml not found, skipping")
         return

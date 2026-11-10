@@ -1,8 +1,9 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.serialization)
-    alias(libs.plugins.androidLibrary)
+    alias(libs.plugins.androidKmpLibrary)
     alias(libs.plugins.ksp)
 }
 
@@ -11,7 +12,15 @@ version = "1.0-SNAPSHOT"
 
 kotlin {
     applyDefaultHierarchyTemplate()
-    androidTarget()
+    android {
+        namespace = "com.lightningkite.lskiteuistarter.shared"
+        compileSdk = 36
+        minSdk = 26
+        enableCoreLibraryDesugaring = true
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_17)
+        }
+    }
     jvm()
     js {
         browser()
@@ -49,25 +58,9 @@ dependencies {
     configurations.filter { it.name.startsWith("ksp") && it.name != "ksp" }.forEach {
         add(it.name, libs.services.database.processor)
     }
+    coreLibraryDesugaring(libs.desugarJdkLibs)
 }
 
-
-android {
-    namespace = "com.lightningkite.lskiteuistarter.shared"
-    compileSdk = 36
-
-    defaultConfig {
-        minSdk = 26
-    }
-    compileOptions {
-        isCoreLibraryDesugaringEnabled = true
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
-    dependencies {
-        coreLibraryDesugaring(libs.desugarJdkLibs)
-    }
-}
 // commonMain compiles the database processor's shared output (written by kspCommonMainKotlinMetadata alone) as plain
 // source, so every other KSP run and compile must wait for it.
 tasks.matching { (it.name.startsWith("ksp") || it.name.startsWith("compile")) && it.name != "kspCommonMainKotlinMetadata" }

@@ -1,5 +1,5 @@
 [versions]
-agp = "8.13.2"
+agp = "9.1.1"
 desugar_jdk_libsVersion = "2.1.5"
 firebaseMessagingKtx = "24.1.2"
 graalVmNative = "0.11.4"
@@ -57,7 +57,7 @@ kotliner-cli = { module = "com.lightningkite:kotliner-cli", version = { ref = "k
 
 [plugins]
 androidApp = { id = "com.android.application", version = { ref = "agp" } }
-androidLibrary = { id = "com.android.library", version = { ref = "agp" } }
+androidKmpLibrary = { id = "com.android.kotlin.multiplatform.library", version = { ref = "agp" } }
 kiteui = { id = "com.lightningkite.kiteui", version = { ref = "kiteui" } }
 graalVmNative = { id = "org.graalvm.buildtools.native", version = { ref = "graalVmNative" } }
 kotlinCocoapods = { id = "org.jetbrains.kotlin.native.cocoapods", version = { ref = "kotlin" } }
