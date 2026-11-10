@@ -23,7 +23,8 @@ val currentSession: Reactive<UserSession?> = rememberSuspending {
     val token = sessionToken() ?: return@rememberSuspending null
     val api = apiOverride() ?: selectedApi().api
 
-    val authApi = api.withHeaderCalculator(api.userAuth.accessToken(token))
+    val accessToken = api.userAuth.accessToken(token)
+    val authApi = api.withMetadata { set("Authorization", accessToken()) }
     try {
         val self = authApi.userAuth.getSelf()
 

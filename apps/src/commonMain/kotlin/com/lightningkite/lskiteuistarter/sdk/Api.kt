@@ -1,9 +1,12 @@
 package com.lightningkite.lskiteuistarter.sdk
 
-
+import com.lightningkite.lightningserver.typed.RequestMetadata
 
 interface Api {
-	fun withHeaderCalculator(calculator: suspend () -> List<Pair<String, String>>): Api
+	fun withMetadata(block: suspend RequestMetadata.() -> Unit): Api
+	@Deprecated("Use withMetadata, which can also keep or remove existing metadata", ReplaceWith("withMetadata { clear(); for ((name, value) in calculator()) append(name, value) }"))
+	fun withHeaderCalculator(calculator: suspend () -> List<Pair<String, String>>): Api =
+		withMetadata { clear(); for ((name, value) in calculator()) append(name, value) }
 
 	val uploadEarlyEndpoint: com.lightningkite.lightningserver.files.ClientUploadEarlyEndpoints
 
@@ -25,17 +28,17 @@ interface Api {
 		}
 		val email: EmailApi
 
-		interface TimeBasedOTPProof : com.lightningkite.lightningserver.sessions.proofs.ProofClientEndpoints.TimeBasedOTP, com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lightningserver.sessions.TotpSecret, kotlin.uuid.Uuid> {
+		interface TimeBasedOTPProof : com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lightningserver.sessions.TotpSecret, kotlin.uuid.Uuid>, com.lightningkite.lightningserver.sessions.proofs.ProofClientEndpoints.TimeBasedOTP {
 		}
 		val totp: TimeBasedOTPProof
 
-		interface PasswordProof : com.lightningkite.lightningserver.sessions.proofs.ProofClientEndpoints.Password, com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lightningserver.sessions.PasswordSecret, kotlin.uuid.Uuid> {
+		interface PasswordProof : com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lightningserver.sessions.PasswordSecret, kotlin.uuid.Uuid>, com.lightningkite.lightningserver.sessions.proofs.ProofClientEndpoints.Password {
 		}
 		val password: PasswordProof
 
 		val backupCode: com.lightningkite.lightningserver.sessions.proofs.ProofClientEndpoints.BackupCode
 
-		interface WebAuthNProof : com.lightningkite.lightningserver.sessions.proofs.ProofClientEndpoints.WebAuthN, com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lightningserver.sessions.proofs.WebAuthNCredential, kotlin.String> {
+		interface WebAuthNProof : com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lightningserver.sessions.proofs.WebAuthNCredential, kotlin.String>, com.lightningkite.lightningserver.sessions.proofs.ProofClientEndpoints.WebAuthN {
 		}
 		val webAuthN: WebAuthNProof
 	}

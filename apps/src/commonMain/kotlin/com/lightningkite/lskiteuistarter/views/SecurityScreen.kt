@@ -43,7 +43,8 @@ class SecurityPage : Page {
                 ),
                 subjectId = session.userId.toString(),
                 elevate = { token ->
-                    val auth = api.withHeaderCalculator(api.userAuth.accessToken(token)).userAuth
+                    val accessToken = api.userAuth.accessToken(token)
+                    val auth = api.withMetadata { set("Authorization", accessToken()) }.userAuth
                     SecurityComponent.Elevated(
                         password = auth.password,
                         totp = SecurityComponent.TotpEndpoints(auth.totp),

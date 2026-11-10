@@ -18,6 +18,7 @@ import com.lightningkite.lightningserver.runtime.Execution
 import com.lightningkite.lightningserver.runtime.handleRoot
 import com.lightningkite.lightningserver.typed.ClientWebSocket
 import com.lightningkite.lightningserver.typed.Fetcher
+import com.lightningkite.lightningserver.typed.RequestMetadata
 import com.lightningkite.services.data.TypedData
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -40,14 +41,13 @@ import kotlinx.serialization.json.JsonObject
  */
 class TestRunnerFetcher(
     private val engine: Engine,
-    private val headerCalculator: (suspend () -> List<Pair<String, String>>)? = null,
+    private val metadata: suspend RequestMetadata.() -> Unit = {},
 ) : Fetcher {
 
     private val json: Json get() = engine.externalSerialization.json
 
-    override fun withHeaderCalculator(
-        calculator: suspend () -> List<Pair<String, String>>
-    ): Fetcher = TestRunnerFetcher(engine, calculator)
+    override fun withMetadata(block: suspend RequestMetadata.() -> Unit): Fetcher =
+        TestRunnerFetcher(engine) { metadata(); block() }
 
     override suspend fun <I, O> invoke(
         url: String,
@@ -60,8 +60,8 @@ class TestRunnerFetcher(
         val bodyData = if (inSerializer.descriptor == Unit.serializer().descriptor) null
         else TypedData.text(json.encodeToString(inSerializer, body), MediaType.Application.Json)
 
-        // 2. Build headers (include auth headers from calculator)
-        val extraHeaders = headerCalculator?.invoke() ?: emptyList()
+        // 2. Build headers (include auth headers from metadata)
+        val extraHeaders = RequestMetadata().apply { metadata() }.toList()
         val headers = HttpHeaders(
             extraHeaders + listOf(
                 "Accept" to "application/json",

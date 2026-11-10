@@ -2,10 +2,8 @@ package com.lightningkite.lskiteuistarter
 
 import android.os.Bundle
 import com.lightningkite.kiteui.KiteUiActivity
-import com.lightningkite.kiteui.Throwable_report
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.navigation.PageNavigator
-import com.lightningkite.kiteui.printStackTrace2
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
@@ -34,11 +32,6 @@ class MainActivity : KiteUiActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         codeCacheDir.setReadOnly()
-
-        Throwable_report = { ex, ctx ->
-            ex.printStackTrace2()
-//            Sentry.captureException(ex)
-        }
 
         viewWriter.app(main)
     }
