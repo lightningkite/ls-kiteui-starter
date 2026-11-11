@@ -1,9 +1,9 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
-    alias(libs.plugins.kotlinMultiplatform)
-    alias(libs.plugins.serialization)
-    alias(libs.plugins.androidKmpLibrary)
+    alias(libs.plugins.android.kmp.library)
+    alias(libs.plugins.kotlin.multiplatform)
+    alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
 }
 
@@ -29,7 +29,7 @@ kotlin {
     iosSimulatorArm64()
 
     sourceSets {
-        val commonMain by getting {
+        val commonMain = getByName("commonMain") {
             dependencies {
                 api(project.dependencies.platform(lk.stack.bom))
                 api(lk.lightningserver.core.shared)
@@ -42,7 +42,7 @@ kotlin {
                 srcDir(file("build/generated/ksp/common/commonMain/kotlin"))
             }
         }
-        val commonTest by getting {
+        val commonTest = getByName("commonTest") {
             dependencies {
                 implementation(kotlin("test"))
             }
@@ -56,10 +56,10 @@ kotlin {
 }
 
 dependencies {
+    coreLibraryDesugaring(libs.desugarJdkLibs)
     configurations.filter { it.name.startsWith("ksp") && it.name != "ksp" }.forEach {
         add(it.name, lk.services.database.processor)
     }
-    coreLibraryDesugaring(libs.desugarJdkLibs)
 }
 
 // commonMain compiles the database processor's shared output (written by kspCommonMainKotlinMetadata alone) as plain

@@ -1,6 +1,10 @@
 // Test helpers for integration tests: real Lightning Server (RAM DB) + KiteUI frontend, no HTTP.
 package com.lightningkite.lskiteuistarter
 
+import com.lightningkite.lskiteuistarter.api.*
+import com.lightningkite.lskiteuistarter.app.*
+import com.lightningkite.lskiteuistarter.app.views.*
+
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.navigation.PageNavigator
 import com.lightningkite.kiteui.navigation.pageNavigator
@@ -14,11 +18,11 @@ import com.lightningkite.lightningserver.runtime.ServerRuntime
 import com.lightningkite.lightningserver.runtime.test.TestRunner
 import com.lightningkite.lightningserver.runtime.test.test
 import com.lightningkite.lightningserver.settings.set
-import com.lightningkite.lskiteuistarter.data.UserEndpoints.info
-import com.lightningkite.lskiteuistarter.sdk.LiveApi
-import com.lightningkite.lskiteuistarter.sdk.apiOverride
-import com.lightningkite.lskiteuistarter.sdk.currentSession
-import com.lightningkite.lskiteuistarter.sdk.sessionToken
+import com.lightningkite.lskiteuistarter.api.data.UserEndpoints.info
+import com.lightningkite.lskiteuistarter.app.sdk.LiveApi
+import com.lightningkite.lskiteuistarter.app.sdk.apiOverride
+import com.lightningkite.lskiteuistarter.app.sdk.currentSession
+import com.lightningkite.lskiteuistarter.app.sdk.sessionToken
 import com.lightningkite.reactive.context.await
 import com.lightningkite.reactive.core.AppJob
 import com.lightningkite.services.data.toEmailAddress

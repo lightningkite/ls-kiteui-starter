@@ -17,13 +17,13 @@ dependencyResolutionManagement {
     }
     versionCatalogs {
         create("lk") {
-            from("com.lightningkite:stack-catalog:2026.11.11.1007")
+            from("com.lightningkite:stack-catalog:1000.0.0")
         }
     }
 }
 
 include(":apps")
-include(":androidApp")
+include(":apps-android")
 include(":server")
 include(":shared")
 include(":integration-tests")

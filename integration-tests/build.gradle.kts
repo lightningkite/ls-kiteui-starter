@@ -1,8 +1,8 @@
 // JVM-only module for end-to-end integration tests:
 // real Lightning Server (RAM database) + KiteUI frontend driven in-process via TestRunnerFetcher.
 plugins {
-    alias(libs.plugins.kotlinJvm)
-    alias(libs.plugins.serialization)
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 group = "com.lightningkite.lskiteuistarter"
@@ -28,7 +28,7 @@ dependencies {
     // KiteUI library + test utilities (uiTest, UiTestScope, UiSnapshot).
     implementation(lk.kiteui.library.asProvider())
     implementation(lk.kiteui.test.utilities)
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.11.0")
+    implementation(libs.kotlinx.coroutines.test)
 
     testImplementation(kotlin("test"))
 }

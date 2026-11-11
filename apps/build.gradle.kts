@@ -1,30 +1,29 @@
 import com.lightningkite.kiteui.KiteUiPluginExtension
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.plugin.cocoapods.CocoapodsExtension
-import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
 import java.nio.file.Files
 import java.util.*
 import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnLockMismatchReport
 import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnRootExtension
-import kotlin.collections.set
 
 // KMP currently doesn't disable iOS target and dependency resolution correctly when not on a mac.
 // So we work around it on non mac machines with this check
-val onMac = System.getProperty("os.name").contains("Mac", ignoreCase = true)
+val iosEnabled: Boolean by rootProject.extra
 
 plugins {
-    alias(libs.plugins.kotlinMultiplatform)
-    alias(libs.plugins.androidKmpLibrary)
-    alias(libs.plugins.serialization)
-    if (System.getProperty("os.name").contains("Mac", ignoreCase = true)) {
-        alias(libs.plugins.kotlinCocoapods)
-    }
-    alias(lk.plugins.kiteui)
-    alias(libs.plugins.kjsplain)
+    alias(libs.plugins.android.kmp.library)
     alias(libs.plugins.kfc)
+    alias(lk.plugins.kiteui)
+    alias(libs.plugins.kotlin.js.plain.objects)
+    alias(libs.plugins.kotlin.multiplatform)
+    alias(libs.plugins.kotlin.serialization)
+
+    if (System.getProperty("os.name").contains("Mac", ignoreCase = true)) {
+        alias(libs.plugins.kotlin.cocoapods)
+    }
 }
 
-group = "com.lightningkite.lskiteuistarter"
+group = "com.lightningkite.lskiteuistarter.app"
 version = "1.0-SNAPSHOT"
 
 repositories {
@@ -34,10 +33,9 @@ repositories {
 kotlin {
     applyDefaultHierarchyTemplate()
     jvm("jvmSsr")
-    // The installable Android app lives in :androidApp - AGP 9 doesn't allow com.android.application in a KMP module.
     android {
         // Must match the KiteUI packageName below: the generated Resources.android.kt uses an unqualified R.
-        namespace = "com.lightningkite.lskiteuistarter"
+        namespace = "com.lightningkite.lskiteuistarter.app"
         compileSdk = 37
         minSdk = 26
         enableCoreLibraryDesugaring = true
@@ -46,7 +44,7 @@ kotlin {
             jvmTarget.set(JvmTarget.JVM_17)
         }
     }
-    if (onMac) {
+    if (iosEnabled) {
         iosArm64()
         iosSimulatorArm64()
     }
@@ -62,10 +60,10 @@ kotlin {
     }
 
     sourceSets {
-        val commonMain by getting {
+        val commonMain = getByName("commonMain") {
             dependencies {
                 api(lk.kiteui.library.asProvider())
-                api(libs.csvDurable)
+                api(libs.csv.durable)
                 api(lk.lightningserver.core.shared)
                 api(lk.lightningserver.typed.shared)
                 api(lk.lightningserver.sessions.shared)
@@ -73,32 +71,32 @@ kotlin {
                 api(project(":shared"))
             }
         }
-        val androidMain by getting {
+        val androidMain = getByName("androidMain") {
             dependencies {
                 api(libs.firebase.messaging.ktx)
             }
         }
-        if (onMac) {
-            val iosMain by getting {
+        if (iosEnabled) {
+            val iosMain = getByName("iosMain") {
                 dependencies {
                 }
             }
         }
-        val jsMain by getting {
+        val jsMain = getByName("jsMain") {
             dependencies {
                 implementation(npm("firebase", "10.7.1"))
             }
         }
 
 
-        val commonTest by getting {
+        val commonTest = getByName("commonTest") {
             dependencies {
                 implementation(kotlin("test"))
             }
         }
     }
 
-    if (onMac) {
+    if (iosEnabled) {
         // We have to manually call this because the shortcut isn't available when plugin is not applied and gradle will
         // fail even behind the if check
         (this as ExtensionAware).extensions.configure<CocoapodsExtension>("cocoapods", {
@@ -108,7 +106,7 @@ kotlin {
             // TEMPLATE TODO: Replace these placeholder strings with your app's real description and homepage URL.
             summary = "Some description for a Kotlin/Native module"
             homepage = "Link to a Kotlin/Native module homepage"
-            ios.deploymentTarget = "14.0"
+            ios.deploymentTarget = "15.0"
 
             // Optional properties
             // Configure the Pod name here instead of changing the Gradle project name
@@ -136,15 +134,15 @@ dependencies {
 }
 
 rootProject.plugins.withType<org.jetbrains.kotlin.gradle.targets.js.yarn.YarnPlugin> {
-    rootProject.the<YarnRootExtension>().yarnLockMismatchReport =
+    rootProject.the<YarnRootExtension>().yarnLockMismatchReportProperty =
         YarnLockMismatchReport.WARNING
-    rootProject.the<YarnRootExtension>().reportNewYarnLock = true
-    rootProject.the<YarnRootExtension>().yarnLockAutoReplace = true
+    rootProject.the<YarnRootExtension>().reportNewYarnLockProperty = true
+    rootProject.the<YarnRootExtension>().yarnLockAutoReplaceProperty = true
 }
 
 configure<KiteUiPluginExtension> {
-    this.packageName = "com.lightningkite.lskiteuistarter"
-    this.iosProjectRoot = project.file("./ios/app")
+    this.packageName = "com.lightningkite.lskiteuistarter.app"
+    this.iosProjectRoot = project.file("../apps-ios/app")
 }
 
 // Create symlink for Kotlin/JS source maps to resolve correctly
@@ -178,8 +176,9 @@ tasks.matching { it.name == "jsViteDev" || it.name == "jsBrowserDevelopmentRun" 
 }
 
 fun env(name: String, profile: String) {
-    tasks.create("deployWeb${name}Init", Exec::class.java) {
+    tasks.register("deployWeb${name}Init", Exec::class.java) {
         group = "deploy"
+        description = "Run 'terraform init' in the $name directory"
         this.dependsOn("jsBundleProduction")
         this.environment("AWS_PROFILE", profile)
         val props = Properties()
@@ -188,8 +187,9 @@ fun env(name: String, profile: String) {
         this.args("init")
         this.workingDir = file("terraform/$name")
     }
-    tasks.create("deployWeb${name}", Exec::class.java) {
+    tasks.register("deployWeb${name}", Exec::class.java) {
         group = "deploy"
+        description = "Run 'terraform apply' in the $name directory"
         this.dependsOn("deployWeb${name}Init")
         this.environment("AWS_PROFILE", profile)
         val props = Properties()
@@ -218,8 +218,8 @@ env("default", "default")
 //   ios.matchPassword      – AES-256 passphrase match uses to encrypt files in S3
 //
 // Usage:
-//   ./gradlew :apps:publishAndroid          – build AAB + upload to Play internal track
-//   ./gradlew :apps:promoteAndroid          – promote Play internal → production
+//   ./gradlew :apps-android:publishAndroid       – build AAB + upload to Play internal track
+//   ./gradlew :apps-android:promoteAndroid       – promote Play internal → production
 //   ./gradlew :apps:setupMatch              – one-time: generate iOS cert + profile → S3
 //   ./gradlew :apps:publishIos              – match certs + build + upload to TestFlight
 //   ./gradlew :apps:submitIos               – submit latest TestFlight build for review
@@ -235,23 +235,6 @@ fun ascKeyContent(): String {
     val path = localProperties?.getProperty("ios.ascKeyPath") ?: return ""
     val file = rootProject.file(path)
     return if (file.exists()) Base64.getEncoder().encodeToString(file.readBytes()) else ""
-}
-
-tasks.register<Exec>("publishAndroid") {
-    group = "deploy"
-    description = "Build signed AAB then upload to Play Store internal track via Fastlane"
-    dependsOn(":androidApp:bundleRelease")  // Gradle builds + signs; Fastlane only uploads
-    workingDir = rootProject.projectDir
-    environment("PLAY_STORE_JSON_KEY_PATH", localProperties?.getProperty("playStoreJsonKeyPath") ?: "")
-    commandLine("bundle", "exec", "fastlane", "android", "internal")
-}
-
-tasks.register<Exec>("promoteAndroid") {
-    group = "deploy"
-    description = "Promote the current Play Store internal track build to production via Fastlane"
-    workingDir = rootProject.projectDir
-    environment("PLAY_STORE_JSON_KEY_PATH", localProperties?.getProperty("playStoreJsonKeyPath") ?: "")
-    commandLine("bundle", "exec", "fastlane", "android", "promote_to_production")
 }
 
 // Shared AWS + match env vars for all iOS tasks - by Claude

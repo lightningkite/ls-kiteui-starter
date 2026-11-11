@@ -1,9 +1,13 @@
 // Smoke tests validating the integration harness: real server (RAM DB) + KiteUI frontend in-process.
 package com.lightningkite.lskiteuistarter
 
-import com.lightningkite.lskiteuistarter.sdk.sessionToken
-import com.lightningkite.lskiteuistarter.views.HomePage
-import com.lightningkite.lskiteuistarter.views.LoginPage
+import com.lightningkite.lskiteuistarter.api.*
+import com.lightningkite.lskiteuistarter.app.*
+import com.lightningkite.lskiteuistarter.app.views.*
+
+import com.lightningkite.lskiteuistarter.app.sdk.sessionToken
+import com.lightningkite.lskiteuistarter.app.views.HomePage
+import com.lightningkite.lskiteuistarter.app.views.LoginPage
 import kotlin.test.Test
 
 class SmokeTest {

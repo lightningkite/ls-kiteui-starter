@@ -25,4 +25,4 @@ testing/.frontend.log
 testing/.admin-token
 testing/.scripts-source
 testing/.scripts-version
-
+vite.config.mjs

@@ -1,8 +1,12 @@
 package com.lightningkite.lskiteuistarter
 
+import com.lightningkite.lskiteuistarter.api.*
+import com.lightningkite.lskiteuistarter.app.*
+import com.lightningkite.lskiteuistarter.app.views.*
+
 import com.lightningkite.lightningserver.runtime.test.execute
 import com.lightningkite.lightningserver.sessions.EstablishPassword
-import com.lightningkite.lskiteuistarter.views.SecurityPage
+import com.lightningkite.lskiteuistarter.app.views.SecurityPage
 import com.lightningkite.services.database.Condition
 import com.lightningkite.services.email.TestEmailService
 import kotlinx.coroutines.flow.toList

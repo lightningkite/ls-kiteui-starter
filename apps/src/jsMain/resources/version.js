@@ -1,2 +1,2 @@
-window.version = "0.0.1";
+window.version = "1.0-SNAPSHOT";
 window.debug = false;

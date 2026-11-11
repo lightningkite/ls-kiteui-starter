@@ -1,7 +1,11 @@
 package com.lightningkite.lskiteuistarter
 
-import com.lightningkite.lskiteuistarter.data.MembershipEndpoints
-import com.lightningkite.lskiteuistarter.data.OrganizationEndpoints
+import com.lightningkite.lskiteuistarter.api.*
+import com.lightningkite.lskiteuistarter.app.*
+import com.lightningkite.lskiteuistarter.app.views.*
+
+import com.lightningkite.lskiteuistarter.api.data.MembershipEndpoints
+import com.lightningkite.lskiteuistarter.api.data.OrganizationEndpoints
 import com.lightningkite.services.database.insertOne
 import kotlin.test.Test
 

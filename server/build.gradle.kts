@@ -1,28 +1,27 @@
 
 plugins {
-    alias(libs.plugins.kotlinJvm)
-    alias(libs.plugins.serialization)
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
     application
 }
 
-
 group = "com.lightningkite.lskiteuistarter"
 version = "1.0-SNAPSHOT"
 
-
 application {
-    mainClass.set("com.lightningkite.lskiteuistarter.MainKt")
+    mainClass.set("com.lightningkite.lskiteuistarter.api.MainKt")
 }
 
 dependencies {
 
     implementation(project(":shared"))
-    implementation(libs.csvDurable)
+    implementation(libs.csv.durable)
     implementation(lk.lightningserver.core.asProvider())
     implementation(lk.lightningserver.typed.asProvider())
     implementation(lk.lightningserver.files.asProvider())
     implementation(lk.lightningserver.media.asProvider())
+    implementation(lk.lightningserver.ratelimit)
     implementation(lk.lightningserver.sessions.asProvider())
     implementation(lk.lightningserver.sessions.email)
     implementation(lk.lightningserver.sessions.sms)
@@ -65,29 +64,32 @@ tasks.named<JavaExec>("run") {
 tasks.getByName<Zip>("distZip"){
     archiveFileName.set("server.zip")
 }
-tasks.create("generateSdk", JavaExec::class.java) {
+tasks.register("generateSdk", JavaExec::class.java) {
     group = "deploy"
+    description = "Generate app sdk from server"
     classpath(sourceSets.main.get().runtimeClasspath)
-    mainClass.set("com.lightningkite.lskiteuistarter.MainKt")
+    mainClass.set("com.lightningkite.lskiteuistarter.api.MainKt")
     args("sdk")
     workingDir(project.rootDir)
 }
-tasks.create("serve", JavaExec::class.java) {
+tasks.register("serve", JavaExec::class.java) {
     group = "application"
+    description = "Run serve on server application"
     classpath(sourceSets.main.get().runtimeClasspath)
-    mainClass.set("com.lightningkite.lskiteuistarter.MainKt")
+    mainClass.set("com.lightningkite.lskiteuistarter.api.MainKt")
     args("serve")
     workingDir(project.rootDir)
 }
 tasks.register("dev", JavaExec::class.java) {
     group = "application"
     classpath(sourceSets.main.get().runtimeClasspath)
-    mainClass.set("com.lightningkite.lskiteuistarter.MainKt")
+    mainClass.set("com.lightningkite.lskiteuistarter.api.MainKt")
     args("dev")
     workingDir(project.rootDir)
 }
-tasks.create("lambda", Copy::class.java) {
+tasks.register("lambda", Copy::class.java) {
     group = "deploy"
+    description = "Build and prep for an AWS lambda deployment"
     this.destinationDir = project.buildDir.resolve("dist/lambda")
     val jarTask = tasks.getByName("jar")
     dependsOn(jarTask)

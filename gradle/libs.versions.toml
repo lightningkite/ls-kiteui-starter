@@ -3,32 +3,29 @@ agp = "9.1.1"
 desugar_jdk_libsVersion = "2.1.5"
 firebaseMessagingKtx = "24.1.2"
 graalVmNative = "0.11.4"
-
+jsPlainObjects = "2.4.21"
 kfc = "19.16.0"
 kotlin = "2.4.21"
 kotlinerCli = "1.0.5"
+kotlinxCoroutinesTest = "1.11.0"
 kotlinxSerializationCsvDurable = "0.2.21-1"
 ksp = "2.3.13"
-coroutines = "1.11.0"
-shadow = "8.1.1"
 
 [libraries]
-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = { ref = "coroutines" } }
-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version = { ref = "coroutines" } }
-csvDurable = { module = "com.lightningkite:kotlinx-serialization-csv-durable", version = { ref = "kotlinxSerializationCsvDurable" } }
+csv-durable = { module = "com.lightningkite:kotlinx-serialization-csv-durable", version = { ref = "kotlinxSerializationCsvDurable" } }
 desugarJdkLibs = { module = "com.android.tools:desugar_jdk_libs", version = { ref = "desugar_jdk_libsVersion" } }
 firebase-messaging-ktx = { module = "com.google.firebase:firebase-messaging-ktx", version = { ref = "firebaseMessagingKtx" } }
 kotliner-cli = { module = "com.lightningkite:kotliner-cli", version = { ref = "kotlinerCli" } }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutinesTest" }
 
 [plugins]
-androidApp = { id = "com.android.application", version = { ref = "agp" } }
-androidKmpLibrary = { id = "com.android.kotlin.multiplatform.library", version = { ref = "agp" } }
-graalVmNative = { id = "org.graalvm.buildtools.native", version = { ref = "graalVmNative" } }
-kotlinCocoapods = { id = "org.jetbrains.kotlin.native.cocoapods", version = { ref = "kotlin" } }
-kotlinJvm = { id = "org.jetbrains.kotlin.jvm", version = { ref = "kotlin" } }
-kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version = { ref = "kotlin" } }
-ksp = { id = "com.google.devtools.ksp", version = { ref = "ksp" } }
-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version = { ref = "kotlin" } }
-shadow = { id = "com.github.johnrengelman.shadow", version = { ref = "shadow" } }
+android-app = { id = "com.android.application", version = { ref = "agp" } }
+android-kmp-library = { id = "com.android.kotlin.multiplatform.library", version = { ref = "agp" } }
+graalvm-native = { id = "org.graalvm.buildtools.native", version = { ref = "graalVmNative" } }
 kfc = { id = "io.github.turansky.kfc.application", version = { ref = "kfc" } }
-kjsplain = { id = "org.jetbrains.kotlin.plugin.js-plain-objects", version = { ref = "kotlin" } }
+kotlin-cocoapods = { id = "org.jetbrains.kotlin.native.cocoapods", version = { ref = "kotlin" } }
+kotlin-js-plain-objects = { id = "org.jetbrains.kotlin.plugin.js-plain-objects", version = { ref = "jsPlainObjects" } }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version = { ref = "kotlin" } }
+kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version = { ref = "kotlin" } }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version = { ref = "kotlin" } }
+ksp = { id = "com.google.devtools.ksp", version = { ref = "ksp" } }
