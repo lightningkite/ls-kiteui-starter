@@ -32,15 +32,19 @@ provider "aws" {
 }
 
 module "web" {
-  source = "github.com/lightningkite/terraform-static-site.git?ref=1.2.0"
+  source = "github.com/lightningkite/terraform-static-site.git?ref=1.2.4"
   providers = {
     aws = aws
     aws.acm = aws.acm
   }
-  deployment_name  = "lskiteuistarter"
+
   dist_folder = "../../build/vite/dist"
+
+  deployment_name  = "lskiteuistarter"
   domain_name      = "app.lskiteuistarter.cs.lightningkite.com"
   domain_name_zone = "cs.lightningkite.com"
+
+  enable_www_redirect = false
   react_mode = true
 }
 

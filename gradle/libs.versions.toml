@@ -2,7 +2,7 @@
 agp = "9.1.1"
 desugar_jdk_libsVersion = "2.1.5"
 firebaseMessagingKtx = "24.1.2"
-graalVmNative = "1.1.14"
+graalVmNative = "1.1.16"
 jsPlainObjects = "2.4.21"
 kfc = "19.16.0"
 kiteui = "8.4.0-prerelease-275-8a34eb9a4"

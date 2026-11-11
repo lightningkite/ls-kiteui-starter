@@ -19,6 +19,7 @@ import kotlinx.coroutines.launch
 
 val sessionToken = PersistentProperty<String?>("sessionToken", null)
 
+private val tokenLog = Log.tag("currentSession.token")
 val currentSession: Reactive<UserSession?> = rememberSuspending {
     val token = sessionToken() ?: return@rememberSuspending null
     val api = apiOverride() ?: selectedApi().api
@@ -53,7 +54,6 @@ val currentSession: Reactive<UserSession?> = rememberSuspending {
         }
     }
 }
-private val tokenLog = Log.tag("currentSession.token")
 
 val currentSessionFailed = BasicListenable()
 val currentSessionNotNull = remember {
