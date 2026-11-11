@@ -19,7 +19,7 @@ plugins {
     if (System.getProperty("os.name").contains("Mac", ignoreCase = true)) {
         alias(libs.plugins.kotlinCocoapods)
     }
-    alias(libs.plugins.kiteui)
+    alias(lk.plugins.kiteui)
     alias(libs.plugins.kjsplain)
     alias(libs.plugins.kfc)
 }
@@ -38,7 +38,7 @@ kotlin {
     android {
         // Must match the KiteUI packageName below: the generated Resources.android.kt uses an unqualified R.
         namespace = "com.lightningkite.lskiteuistarter"
-        compileSdk = 36
+        compileSdk = 37
         minSdk = 26
         enableCoreLibraryDesugaring = true
         androidResources { enable = true }
@@ -64,12 +64,12 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                api(libs.kiteui)
+                api(lk.kiteui.library.asProvider())
                 api(libs.csvDurable)
-                api(libs.lightningServer.core.shared)
-                api(libs.lightningServer.typed.shared)
-                api(libs.lightningServer.sessions.shared)
-                api(libs.lightningServer.client)
+                api(lk.lightningserver.core.shared)
+                api(lk.lightningserver.typed.shared)
+                api(lk.lightningserver.sessions.shared)
+                api(lk.lightningserver.client)
                 api(project(":shared"))
             }
         }
@@ -117,8 +117,8 @@ kotlin {
             framework {
                 baseName = "apps"
                 export(project(":shared"))
-                export(libs.kiteui)
-                export(libs.lightningServer.client)
+                export(lk.kiteui.library.asProvider())
+                export(lk.lightningserver.client)
 //            podfile = project.file("../example-app-ios/Podfile")
             }
         })

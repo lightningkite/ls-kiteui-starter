@@ -14,7 +14,7 @@ kotlin {
     applyDefaultHierarchyTemplate()
     android {
         namespace = "com.lightningkite.lskiteuistarter.shared"
-        compileSdk = 36
+        compileSdk = 37
         minSdk = 26
         enableCoreLibraryDesugaring = true
         compilerOptions {
@@ -31,11 +31,12 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                api(libs.lightningServer.core.shared)
-                api(libs.lightningServer.typed.shared)
-                api(libs.lightningServer.sessions.shared)
-                api(libs.lightningServer.files.shared)
-                api(libs.lightningServer.media.shared)
+                api(project.dependencies.platform(lk.stack.bom))
+                api(lk.lightningserver.core.shared)
+                api(lk.lightningserver.typed.shared)
+                api(lk.lightningserver.sessions.shared)
+                api(lk.lightningserver.files.shared)
+                api(lk.lightningserver.media.shared)
             }
             kotlin {
                 srcDir(file("build/generated/ksp/common/commonMain/kotlin"))
@@ -56,7 +57,7 @@ kotlin {
 
 dependencies {
     configurations.filter { it.name.startsWith("ksp") && it.name != "ksp" }.forEach {
-        add(it.name, libs.services.database.processor)
+        add(it.name, lk.services.database.processor)
     }
     coreLibraryDesugaring(libs.desugarJdkLibs)
 }

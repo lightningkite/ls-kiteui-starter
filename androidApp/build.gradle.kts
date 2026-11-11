@@ -17,7 +17,7 @@ repositories {
 android {
     // Must differ from :apps' namespace; applicationId is what identifies the installed app.
     namespace = "com.lightningkite.lskiteuistarter.android"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.lightningkite.lskiteuistarter"

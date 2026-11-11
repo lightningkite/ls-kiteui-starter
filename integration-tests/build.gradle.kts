@@ -13,12 +13,12 @@ dependencies {
     // :server uses `implementation` scope for its deps, so we depend on the Lightning Server
     // libraries directly too (TestRunner, ServerRuntime, Database.Settings, session creation).
     implementation(project(":server"))
-    implementation(libs.lightningServer.core)
-    implementation(libs.lightningServer.typed)
-    implementation(libs.lightningServer.sessions)
-    implementation(libs.lightningServer.client.serverUtils)
-    implementation(libs.services.database)
-    implementation(libs.services.email)
+    implementation(lk.lightningserver.core.asProvider())
+    implementation(lk.lightningserver.typed.asProvider())
+    implementation(lk.lightningserver.sessions.asProvider())
+    implementation(lk.lightningserver.server.client.utils)
+    implementation(lk.services.database.asProvider())
+    implementation(lk.services.email.asProvider())
 
     // Frontend app code (Pages, App, generated SDK, apiOverride) — the headless jvmSsr compilation.
     implementation(project(":apps")) {
@@ -26,8 +26,8 @@ dependencies {
     }
 
     // KiteUI library + test utilities (uiTest, UiTestScope, UiSnapshot).
-    implementation(libs.kiteui)
-    implementation(libs.kiteui.test)
+    implementation(lk.kiteui.library.asProvider())
+    implementation(lk.kiteui.test.utilities)
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.11.0")
 
     testImplementation(kotlin("test"))
