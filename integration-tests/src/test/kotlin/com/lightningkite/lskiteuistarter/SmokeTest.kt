@@ -20,11 +20,9 @@ class SmokeTest {
     @Test
     fun authedUserSeesHome() = integrationTest(
         initialPage = HomePage(),
-        setup = { runtime ->
-            with(runtime) {
-                val user = createUser()
-                loginAs(user)
-            }
+        setup = {
+            val user = createUser()
+            loginAs(user)
         },
     ) { _ ->
         waitForText("Welcome to your home page")
@@ -52,11 +50,9 @@ class SmokeTest {
     @Test
     fun sessionLossWhileOnHomeRedirectsToLogin() = integrationTest(
         initialPage = HomePage(),
-        setup = { runtime ->
-            with(runtime) {
-                val user = createUser()
-                loginAs(user)
-            }
+        setup = {
+            val user = createUser()
+            loginAs(user)
         },
     ) { _ ->
         waitForText("Welcome to your home page")

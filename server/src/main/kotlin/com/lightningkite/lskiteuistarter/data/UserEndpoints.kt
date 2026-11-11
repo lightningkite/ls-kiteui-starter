@@ -23,7 +23,6 @@ import com.lightningkite.services.data.toEmailAddress
 import com.lightningkite.services.database.Condition
 import com.lightningkite.services.database.ModelPermissions
 import com.lightningkite.services.database.Table
-import com.lightningkite.services.database.condition
 import com.lightningkite.services.database.eq
 import com.lightningkite.services.database.findOne
 import com.lightningkite.services.database.insertOne
@@ -40,10 +39,10 @@ object UserEndpoints : ServerBuilder() {
             val allowedRoles = UserRole.entries.filter { it <= auth.userRole() }
 
             val admin: Condition<User> =
-                if (auth.userRole() >= UserRole.Admin) condition { it.role inside allowedRoles }
+                if (auth.userRole() >= UserRole.Admin) User.role inside allowedRoles
                 else Condition.Never
 
-            val self = condition<User> { it._id eq auth.id }
+            val self = User._id eq auth.id
 
             ModelPermissions(
                 create = admin,
@@ -59,11 +58,11 @@ object UserEndpoints : ServerBuilder() {
 
     val User.Companion.info get() = this@UserEndpoints.info
 
-    val rest = path.path("rest") include ModelRestEndpoints(info) + ModelRestUpdatesWebSocket(info, User_email)
+    val rest = path.path("rest") include ModelRestEndpoints(info) + ModelRestUpdatesWebSocket(info, User.email)
 
 
     private suspend fun Table<User>.init(user: User): User =
-        findOne(condition { it.email.eq(user.email) }) ?: insertOne(user)
+        findOne(User.email eq user.email) ?: insertOne(user)
 
     private val appStoreTesterId = User.ID(Uuid.parse("f00ffbaa-abf9-497d-a75a-442f1c77c1e9"))
     val User.ID.Companion.AppStoreTester get() = appStoreTesterId
@@ -78,7 +77,7 @@ object UserEndpoints : ServerBuilder() {
             )
         )
         UserAuth.password.modelInfo.table().run {
-            findOne(condition { it.subjectId eq user._id.toString() }) ?: insertOne(
+            findOne(PasswordSecret.subjectId eq user._id.toString()) ?: insertOne(
                 PasswordSecret(
                     subjectId = user._id.toString(),
                     subjectType = "User",

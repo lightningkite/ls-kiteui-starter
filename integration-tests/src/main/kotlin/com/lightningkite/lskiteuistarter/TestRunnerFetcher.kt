@@ -1,9 +1,10 @@
-// A Fetcher implementation that routes requests through a Lightning Server ServerRuntime instead
+// A Fetcher implementation that routes requests through a Lightning Server Engine instead
 // of real HTTP. Lets the generated LiveApi(fetcher) run against a real in-memory server, enabling
 // true end-to-end integration tests without network I/O. Intentionally has no project-specific imports.
 package com.lightningkite.lskiteuistarter
 
 import com.lightningkite.services.data.MediaType
+import com.lightningkite.lightningserver.EngineApi
 import com.lightningkite.lightningserver.HttpMethod
 import com.lightningkite.lightningserver.LSError
 import com.lightningkite.lightningserver.LsErrorException
@@ -12,8 +13,9 @@ import com.lightningkite.lightningserver.http.HttpRequest
 import com.lightningkite.lightningserver.http.QueryParameters
 import com.lightningkite.lightningserver.pathing.PathSpec
 import com.lightningkite.lightningserver.pathing.RawHttpEndpoint
-import com.lightningkite.lightningserver.runtime.ServerRuntime
-import com.lightningkite.lightningserver.runtime.handle
+import com.lightningkite.lightningserver.runtime.Engine
+import com.lightningkite.lightningserver.runtime.Execution
+import com.lightningkite.lightningserver.runtime.handleRoot
 import com.lightningkite.lightningserver.typed.ClientWebSocket
 import com.lightningkite.lightningserver.typed.Fetcher
 import com.lightningkite.lightningserver.typed.RequestMetadata
@@ -26,26 +28,26 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 
 /**
- * A [Fetcher] that dispatches requests through a [ServerRuntime] instead of real HTTP.
+ * A [Fetcher] that dispatches requests through an [Engine] instead of real HTTP.
  *
  * Usage:
  * ```kotlin
  * Server.test(settings = { database set Database.Settings("ram") }) {
- *     val fetcher = TestRunnerFetcher(this@test)
+ *     val fetcher = TestRunnerFetcher(contextOf<TestRunner<*>>())
  *     val api = LiveApi(fetcher)
  *     // api calls now go through the real server
  * }
  * ```
  */
 class TestRunnerFetcher(
-    private val runtime: ServerRuntime,
+    private val engine: Engine,
     private val metadata: suspend RequestMetadata.() -> Unit = {},
 ) : Fetcher {
 
-    private val json: Json get() = runtime.externalSerialization.json
+    private val json: Json get() = engine.externalSerialization.json
 
     override fun withMetadata(block: suspend RequestMetadata.() -> Unit): Fetcher =
-        TestRunnerFetcher(runtime) { metadata(); block() }
+        TestRunnerFetcher(engine) { metadata(); block() }
 
     override suspend fun <I, O> invoke(
         url: String,
@@ -69,7 +71,7 @@ class TestRunnerFetcher(
         // 3. Parse URL into path and query parameters
         val (path, queryParams) = parseUrl(url)
 
-        // 4. Create request with RawHttpEndpoint (lazy match triggers inside ServerRuntime.handle)
+        // 4. Create request with RawHttpEndpoint (lazy match triggers inside Engine.handleRoot)
         val request = HttpRequest<PathSpec>(
             path = RawHttpEndpoint(path, method),
             queryParameters = queryParams,
@@ -80,8 +82,9 @@ class TestRunnerFetcher(
             body = bodyData,
         )
 
-        // 5. Dispatch through server routing (handles interceptors, auth, error handling)
-        val response = with(runtime) { runtime.handle(request) }
+        // 5. Dispatch through server routing as a real engine would (interceptors, auth, error handling)
+        @OptIn(EngineApi::class)
+        val response = with(engine) { handleRoot(request, Execution.ID.generate()) }
 
         // 6. Handle errors — mirror how ConnectivityFetcher/BulkFetcher parse errors
         if (response.status.code >= 400) {
@@ -117,14 +120,14 @@ class TestRunnerFetcher(
      * flips immediately, the wait returns, and data is then fetched via plain HTTP through [invoke].
      * It carries no live data (empty updates/remove), so HTTP remains the single source of truth.
      */
-    override fun <I, O> websocket(
+    override fun <I, O> webSocket(
         url: String,
         inSerializer: KSerializer<I>,
         outSerializer: KSerializer<O>,
     ): ClientWebSocket<I, O> = LoopbackClientWebSocket(json, inSerializer, outSerializer)
 
     override fun <T> url(value: T, serializer: KSerializer<T>): String {
-        return runtime.externalSerialization.stringArrayFormat.encodeToString(serializer, value)
+        return engine.externalSerialization.stringArrayFormat.encodeToString(serializer, value)
     }
 
     /** Split "some/path?key=val&k2=v2" into path string and QueryParameters. */
@@ -145,7 +148,7 @@ class TestRunnerFetcher(
 /**
  * A ClientWebSocket that reports connected and echoes each sent value straight back as an
  * acknowledgement, so a `SharedCollectionUpdatesSocket`'s `wait()` completes immediately instead of
- * stalling on a socket that never connects. See [TestRunnerFetcher.websocket] for why this matters.
+ * stalling on a socket that never connects. See [TestRunnerFetcher.webSocket] for why this matters.
  *
  * The send type is a `Condition<T>` and the receive type is a `CollectionUpdates<T, ID>` (whose only
  * required-for-ack field is `condition`, all others defaulted). Because this generic socket can't

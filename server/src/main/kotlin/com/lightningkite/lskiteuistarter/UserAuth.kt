@@ -41,7 +41,7 @@ object UserAuth : PrincipalType<User, User.ID>, ServerBuilder() {
     context(server: ServerRuntime)
     override suspend fun fetchByProperty(property: String, value: String): User? = when (property) {
         "email" -> User.info.table().run {
-            findOne(condition { it.email eq value.toEmailAddress() })
+            findOne(User.email eq value.toEmailAddress())
                 // This is optional. If you want signing in and signing up to be the same thing this is how you do it
                 ?: insertOne(User(email = value.toEmailAddress(), name = ""))
         }
@@ -90,7 +90,7 @@ object UserAuth : PrincipalType<User, User.ID>, ServerBuilder() {
         context(_: ServerRuntime)
         override suspend fun calculate(input: Authentication<User>): Set<SimplifiedMembership> {
             return MembershipEndpoints.info.table()
-                .find(condition { (it.user eq input.id) and (it.deactivatedAt eq null) })
+                .find((Membership.user eq input.id) and (Membership.deactivatedAt eq null))
                 .toList()
                 .map { SimplifiedMembership(it._id, it.organization, it.role) }
                 .toSet()
@@ -131,7 +131,7 @@ object UserAuth : PrincipalType<User, User.ID>, ServerBuilder() {
             pin = pins,
             email = Server.email,
             emailTemplate = { to, pin ->
-                val name = User.info.table().findOne(condition { it.email eq to })?.name
+                val name = User.info.table().findOne(User.email eq to)?.name
                 Email(
                     subject = "Log In Code",
                     to = listOf(EmailAddressWithName(to)),
@@ -157,7 +157,7 @@ object UserAuth : PrincipalType<User, User.ID>, ServerBuilder() {
                 // If you want to separate out signing in and signing up this is how you would do it.
                 // If you want to do any other kind of screening, such as the domain you can do it here.
                 // ScreeningResult.Reject is what you use when you want to return an explicit denial message and 400.
-                /*if(User.info.table().findOne(condition { it.email eq email }) == null)
+                /*if(User.info.table().findOne(User.email eq email) == null)
                     PinBasedProofEndpoints.ScreeningResult.Suppress
                 else
                     PinBasedProofEndpoints.ScreeningResult.Allow*/

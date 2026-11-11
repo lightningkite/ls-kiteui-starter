@@ -1,4 +1,4 @@
-// Shared data models. All models need @Serializable and @GenerateDataClassPaths. — by Claude
+// Shared data models. All models need @Queryable. — by Claude
 package com.lightningkite.lskiteuistarter
 
 import com.lightningkite.lightningserver.media.ServerFileWithMetadata
@@ -12,8 +12,7 @@ import kotlin.time.Clock
 import kotlin.time.Instant
 import kotlin.uuid.Uuid
 
-@GenerateDataClassPaths
-@Serializable
+@Queryable
 data class AppRelease(
     override val _id: ID = ID(Uuid.random()),
     val version: String,
@@ -29,8 +28,7 @@ data class AppRelease(
     }
 }
 
-@Serializable
-@GenerateDataClassPaths
+@Queryable
 data class User(
     override val _id: ID = ID(Uuid.random()),
     @Index(IndexUniqueness.Unique) val email: EmailAddress,
@@ -55,8 +53,7 @@ enum class UserRole {
     Root
 }
 
-@Serializable
-@GenerateDataClassPaths
+@Queryable
 data class FcmToken(
     @MaxLength(160, average = 142) override val _id: ID,
     @Index val user: User.ID,
@@ -81,8 +78,7 @@ enum class MemberRole {
     Owner,
 }
 
-@Serializable
-@GenerateDataClassPaths
+@Queryable
 data class Organization(
     override val _id: ID = ID(Uuid.random()),
     val name: String,
@@ -97,8 +93,7 @@ data class Organization(
     }
 }
 
-@Serializable
-@GenerateDataClassPaths
+@Queryable
 data class Membership(
     override val _id: ID = ID(Uuid.random()),
     @Index val organization: Organization.ID,

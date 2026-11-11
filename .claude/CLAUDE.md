@@ -31,7 +31,7 @@ ls-kiteui-starter/
 
 **shared/** - Multiplatform module defining core data models:
 - `User`, `UserRole`, `FcmToken` models with database annotations
-- Uses KSP processor to generate database paths (`@GenerateDataClassPaths`)
+- Uses KSP processor to generate field optics (`@Queryable`), e.g. `User.email`
 - Compiled for Android, JVM, JS, and iOS targets
 
 **server/** - JVM application with Lightning Server:
@@ -135,10 +135,10 @@ ls-kiteui-starter/
 4. Role-based permissions enforce access control in `ModelPermissions`
 
 **Database Abstraction:**
-- Models use `@GenerateDataClassPaths` for type-safe queries
+- Models use `@Queryable` (replaces `@Serializable` + `@GenerateDataClassPaths`) for type-safe queries
 - Supports MongoDB (`MongoDatabase`) and JSON files (`JsonFileDatabase`)
 - Connection string configured in `settings.json` under `"database"`
-- Database operations use `condition { }` DSL for queries
+- Queries are built directly on generated fields: `table.find(User.role eq UserRole.Admin)`, `Modification<User> { it.name assign "x" }`
 
 ### Client-Side Architecture
 
@@ -237,7 +237,7 @@ After running `prepare-browser-test.sh`, use Claude's Chrome MCP tools:
 Follow this sequence to add a complete new feature (e.g., a "Project" model):
 
 1. **Add model** to `shared/src/commonMain/kotlin/.../models.kt`
-   - Annotate with `@Serializable` and `@GenerateDataClassPaths`
+   - Annotate with `@Queryable`
    - Use `Uuid.random()` for IDs, implement `HasId<Uuid>`
    - Add any enums for status/role in the same file
 
@@ -245,6 +245,7 @@ Follow this sequence to add a complete new feature (e.g., a "Project" model):
    - Follow the existing `OrganizationEndpoints` pattern: `modelInfo` + `ModelRestEndpoints`
    - Define `ModelPermissions` with appropriate `create`/`read`/`update`/`delete` conditions
    - Use `updateRestrictions` to lock down immutable fields
+   - If the model has a file field, give it its own upload module next to the REST endpoints, with that feature's folder and permission check, rather than a global upload endpoint: see `OrganizationEndpoints.logoUpload` (`UploadEndpoints(Server.uploads, folder, auth)`)
 
 3. **Wire into Server.kt**
    - Add `val projects = path.path("projects") module ProjectEndpoints` to `Server.kt`

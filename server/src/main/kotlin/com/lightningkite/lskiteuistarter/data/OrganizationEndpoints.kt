@@ -2,6 +2,9 @@ package com.lightningkite.lskiteuistarter.data
 
 import com.lightningkite.lightningserver.auth.require
 import com.lightningkite.lightningserver.definition.builder.ServerBuilder
+import com.lightningkite.lightningserver.files.UploadEndpoints
+import com.lightningkite.lightningserver.typed.sdk.SdkModule.Companion.withSdkInfo
+import com.lightningkite.lightningserver.typed.sdk.module
 import com.lightningkite.lightningserver.typed.ModelRestEndpoints
 import com.lightningkite.lightningserver.typed.auth
 import com.lightningkite.lightningserver.typed.modelInfo
@@ -21,9 +24,9 @@ object OrganizationEndpoints : ServerBuilder() {
             val myOrgIds = myMemberships.map { it.organization }.toSet()
             val adminOrgIds = myMemberships.filter { it.role >= MemberRole.Admin }.map { it.organization }.toSet()
 
-            val systemAdmin = condition<Organization>(isSystemAdmin)
-            val isMember = condition<Organization> { it._id inside myOrgIds }
-            val isOrgAdmin = condition<Organization> { it._id inside adminOrgIds }
+            val systemAdmin: Condition<Organization> = Condition(isSystemAdmin)
+            val isMember = Organization._id inside myOrgIds
+            val isOrgAdmin = Organization._id inside adminOrgIds
 
             ModelPermissions(
                 create = systemAdmin,
@@ -35,4 +38,10 @@ object OrganizationEndpoints : ServerBuilder() {
     )
 
     val rest = path include ModelRestEndpoints(info)
+
+    val logoUpload = path.path("logo-upload") module UploadEndpoints(
+        basis = Server.uploads,
+        folder = "organizations/logos",
+        auth = UserAuth.require { it.userRole() >= UserRole.Admin || it.memberships().any { m -> m.role >= MemberRole.Admin } },
+    ).withSdkInfo(valueName = "logoUpload")
 }

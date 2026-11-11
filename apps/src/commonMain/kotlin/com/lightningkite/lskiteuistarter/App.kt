@@ -30,7 +30,6 @@ import com.lightningkite.reactive.context.reactiveSuspending
 import com.lightningkite.reactive.core.AppScope
 import com.lightningkite.reactive.core.Signal
 import com.lightningkite.services.database.Query
-import com.lightningkite.services.database.condition
 import com.lightningkite.services.database.eq
 import kotlinx.coroutines.launch
 

@@ -3,7 +3,6 @@ package com.lightningkite.lskiteuistarter
 
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.navigation.PageNavigator
-import com.lightningkite.kiteui.navigation.mainPageNavigator
 import com.lightningkite.kiteui.navigation.pageNavigator
 import com.lightningkite.kiteui.OverrideOnly
 import com.lightningkite.kiteui.testing.UiTestScope
@@ -13,6 +12,7 @@ import com.lightningkite.kiteui.views.l2.navigatorView
 import com.lightningkite.lightningserver.auth.GrantedScope
 import com.lightningkite.lightningserver.runtime.ServerRuntime
 import com.lightningkite.lightningserver.runtime.test.TestRunner
+import com.lightningkite.lightningserver.runtime.test.execute
 import com.lightningkite.lightningserver.runtime.test.test
 import com.lightningkite.lightningserver.settings.set
 import com.lightningkite.lskiteuistarter.data.UserEndpoints.info
@@ -27,10 +27,6 @@ import com.lightningkite.services.database.Database
 import com.lightningkite.services.database.insertOne
 import kotlinx.coroutines.runBlocking
 
-/** Captures the [TestRunner] (a [ServerRuntime]) from context parameters. */
-context(runner: TestRunner<*>)
-private fun getRuntime(): ServerRuntime = runner
-
 /**
  * Runs a KiteUI [uiTest] backed by a real Lightning Server with a RAM database.
  * The frontend talks to the server via [TestRunnerFetcher] — no HTTP involved.
@@ -42,16 +38,17 @@ private fun getRuntime(): ServerRuntime = runner
  *
  * @param initialPage The page to render initially.
  * @param setup Seeds data / logs in. Runs with [ServerRuntime] context before the page renders.
- * @param block The test body, with UI-driver helpers plus the [ServerRuntime].
+ * @param block The test body, with UI-driver helpers plus the [TestRunner] (use its `execute { }`
+ *   for direct server work).
  */
 fun integrationTest(
     initialPage: Page,
-    setup: (suspend (ServerRuntime) -> Unit)? = null,
-    block: suspend UiTestScope.(runtime: ServerRuntime) -> Unit,
+    setup: (suspend context(ServerRuntime) () -> Unit)? = null,
+    block: suspend UiTestScope.(runner: TestRunner<*>) -> Unit,
 ) {
     Server.test(settings = { database set Database.Settings("ram") }) {
-        val runtime: ServerRuntime = getRuntime()
-        val api = LiveApi(TestRunnerFetcher(runtime))
+        val runner = contextOf<TestRunner<*>>()
+        val api = LiveApi(TestRunnerFetcher(runner))
         val navigator = PageNavigator { AutoRoutes }
 
         // The root view whose element `job` tree owns every reactive process / live-query
@@ -67,7 +64,7 @@ fun integrationTest(
             content = {
                 // Clean stale global state from previous tests. The sdk `currentSession` reactive and
                 // AppScope coroutines outlive individual tests and hold references to old server
-                // runtimes.
+                // engines.
                 sessionToken.value = null
                 apiOverride.value = null
                 AppJob.children.forEach { it.cancel() }
@@ -80,10 +77,7 @@ fun integrationTest(
                 // The content receiver is the root Frame element; keep a handle for teardown.
                 rootView = this as Element
                 apiOverride.value = api
-                // Mirror appBase(): pages read both of these context navigators (e.g. Links use
-                // mainPageNavigator). Point them all at the one test navigator.
                 context.pageNavigator = navigator
-                context.mainPageNavigator = navigator
 
                 // Keep `currentSession` ACTIVE for the whole test. Established BEFORE login so the
                 // single reactive activation spans the sessionToken change loginAs() makes.
@@ -96,14 +90,14 @@ fun integrationTest(
                 sessionKeepAlive = currentSession.beginUse()
 
                 // Seed data / log in BEFORE the page renders so the session resolves first.
-                if (setup != null) runBlocking { setup(runtime) }
+                if (setup != null) runBlocking { execute { setup() } }
 
                 navigatorView(navigator)
                 navigator.navigate(initialPage)
             },
         ) {
             try {
-                block(runtime)
+                block(runner)
             } finally {
                 // Shut the root view down FIRST. The jvmSsr uiTest harness never tears the view
                 // down, so every reactive process / KiteUI watch() live-query coroutine launched by

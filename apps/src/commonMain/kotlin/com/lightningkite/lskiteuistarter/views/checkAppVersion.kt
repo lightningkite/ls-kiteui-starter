@@ -9,13 +9,13 @@ import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.dialog
+import com.lightningkite.lskiteuistarter.AppRelease
 import com.lightningkite.lskiteuistarter.extensions.toAppPlatform
 import com.lightningkite.lskiteuistarter.platform
 import com.lightningkite.lskiteuistarter.sdk.selectedApi
 import com.lightningkite.reactive.context.await
 import com.lightningkite.reactive.core.AppScope
 import com.lightningkite.services.database.Query
-import com.lightningkite.services.database.condition
 import com.lightningkite.services.database.eq
 import kotlinx.coroutines.launch
 
@@ -29,9 +29,7 @@ fun ElementWriter.checkAppVersion() {
         val currentBuild = Build.version
         val releases = try {
             selectedApi.await().api.appRelease.query(
-                Query(
-                    condition { it.platform.eq(Platform.current.toAppPlatform()) }
-                )
+                Query(AppRelease.platform eq Platform.current.toAppPlatform())
             )
         } catch (_: Exception) {
             return@launch
