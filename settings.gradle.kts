@@ -17,7 +17,7 @@ dependencyResolutionManagement {
     }
     versionCatalogs {
         create("lk") {
-            from("com.lightningkite:stack-catalog:unreleased")
+            from("com.lightningkite:stack-catalog:2026.11.11.1007")
         }
     }
 }
