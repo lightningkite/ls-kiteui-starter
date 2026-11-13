@@ -1,9 +1,10 @@
-// A Fetcher implementation that routes requests through a Lightning Server engine instead
+// A Fetcher implementation that routes requests through a Lightning Server Engine instead
 // of real HTTP. Lets the generated LiveApi(fetcher) run against a real in-memory server, enabling
 // true end-to-end integration tests without network I/O. Intentionally has no project-specific imports.
 package com.lightningkite.lskiteuistarter
 
 import com.lightningkite.services.data.MediaType
+import com.lightningkite.lightningserver.EngineApi
 import com.lightningkite.lightningserver.HttpMethod
 import com.lightningkite.lightningserver.LSError
 import com.lightningkite.lightningserver.LsErrorException
@@ -12,7 +13,6 @@ import com.lightningkite.lightningserver.http.HttpRequest
 import com.lightningkite.lightningserver.http.QueryParameters
 import com.lightningkite.lightningserver.pathing.PathSpec
 import com.lightningkite.lightningserver.pathing.RawHttpEndpoint
-import com.lightningkite.lightningserver.EngineApi
 import com.lightningkite.lightningserver.runtime.Engine
 import com.lightningkite.lightningserver.runtime.Execution
 import com.lightningkite.lightningserver.runtime.handleRoot
@@ -28,12 +28,12 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 
 /**
- * A [Fetcher] that dispatches requests through an [Engine] (such as a test runner) instead of real HTTP.
+ * A [Fetcher] that dispatches requests through an [Engine] instead of real HTTP.
  *
  * Usage:
  * ```kotlin
  * Server.test(settings = { database set Database.Settings("ram") }) {
- *     val fetcher = TestRunnerFetcher(contextOf<TestRunner<Server>>())
+ *     val fetcher = TestRunnerFetcher(contextOf<TestRunner<*>>())
  *     val api = LiveApi(fetcher)
  *     // api calls now go through the real server
  * }
@@ -61,9 +61,8 @@ class TestRunnerFetcher(
         else TypedData.text(json.encodeToString(inSerializer, body), MediaType.Application.Json)
 
         // 2. Build headers (include auth headers from metadata)
-        val extraHeaders = RequestMetadata().apply { metadata() }.toList()
         val headers = HttpHeaders(
-            extraHeaders + listOf(
+            RequestMetadata().apply { metadata() }.toList() + listOf(
                 "Accept" to "application/json",
                 "Content-Type" to "application/json",
             )
@@ -72,7 +71,7 @@ class TestRunnerFetcher(
         // 3. Parse URL into path and query parameters
         val (path, queryParams) = parseUrl(url)
 
-        // 4. Create request with RawHttpEndpoint (lazy match triggers inside handleRoot)
+        // 4. Create request with RawHttpEndpoint (lazy match triggers inside Engine.handleRoot)
         val request = HttpRequest<PathSpec>(
             path = RawHttpEndpoint(path, method),
             queryParameters = queryParams,
@@ -83,9 +82,9 @@ class TestRunnerFetcher(
             body = bodyData,
         )
 
-        // 5. Dispatch as a real engine would (interceptors, auth, error handling)
+        // 5. Dispatch through server routing as a real engine would (interceptors, auth, error handling)
         @OptIn(EngineApi::class)
-        val response = with(engine) { engine.handleRoot(request, Execution.ID.generate()) }
+        val response = with(engine) { handleRoot(request, Execution.ID.generate()) }
 
         // 6. Handle errors — mirror how ConnectivityFetcher/BulkFetcher parse errors
         if (response.status.code >= 400) {

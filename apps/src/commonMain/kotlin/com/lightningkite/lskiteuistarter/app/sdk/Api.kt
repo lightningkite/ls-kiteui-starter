@@ -1,4 +1,4 @@
-package com.lightningkite.lskiteuistarter.app.sdk
+package com.lightningkite.lskiteuistarter.sdk
 
 import com.lightningkite.lightningserver.typed.RequestMetadata
 
@@ -7,8 +7,6 @@ interface Api {
 	@Deprecated("Use withMetadata, which can also keep or remove existing metadata", ReplaceWith("withMetadata { clear(); for ((name, value) in calculator()) append(name, value) }"))
 	fun withHeaderCalculator(calculator: suspend () -> List<Pair<String, String>>): Api =
 		withMetadata { clear(); for ((name, value) in calculator()) append(name, value) }
-
-	val uploadEarlyEndpoint: com.lightningkite.lightningserver.files.ClientUploadEarlyEndpoints
 
 	val appRelease: com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lskiteuistarter.AppRelease, com.lightningkite.lskiteuistarter.AppRelease.ID>
 
@@ -32,15 +30,11 @@ interface Api {
 		}
 		val totp: TimeBasedOTPProof
 
-		interface PasswordProof : com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lightningserver.sessions.PasswordSecret, kotlin.uuid.Uuid>, com.lightningkite.lightningserver.sessions.proofs.ProofClientEndpoints.Password {
+		interface PasswordProof : com.lightningkite.lightningserver.sessions.proofs.ProofClientEndpoints.Password, com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lightningserver.sessions.PasswordSecret, kotlin.uuid.Uuid> {
 		}
 		val password: PasswordProof
 
 		val backupCode: com.lightningkite.lightningserver.sessions.proofs.ProofClientEndpoints.BackupCode
-
-		interface WebAuthNProof : com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lightningserver.sessions.proofs.WebAuthNCredential, kotlin.String>, com.lightningkite.lightningserver.sessions.proofs.ProofClientEndpoints.WebAuthN {
-		}
-		val webAuthN: WebAuthNProof
 	}
 	val userAuth: UserAuthApi
 
@@ -48,11 +42,13 @@ interface Api {
 		/**
 		 * Register Token
 		 * 
+		 * 
 		 * **Auth Requirements:** User with root access
 		 * */
 		suspend fun registerToken(input: com.lightningkite.lskiteuistarter.FcmToken.ID): com.lightningkite.services.database.EntryChange<com.lightningkite.lskiteuistarter.FcmToken>
 		/**
 		 * Test In-App Notifications
+		 * 
 		 * 
 		 * **Auth Requirements:** User with root access
 		 * */
@@ -60,13 +56,18 @@ interface Api {
 		/**
 		 * Clear Token
 		 * 
+		 * 
 		 * **Auth Requirements:** No Requirements
 		 * */
 		suspend fun clearToken(id: com.lightningkite.lskiteuistarter.FcmToken.ID): kotlin.Boolean
 	}
 	val fcmToken: FcmTokenApi
 
-	val organization: com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lskiteuistarter.Organization, com.lightningkite.lskiteuistarter.Organization.ID>
+	interface OrganizationApi : com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lskiteuistarter.Organization, com.lightningkite.lskiteuistarter.Organization.ID> {
+
+		val logoUpload: com.lightningkite.lightningserver.files.ClientFileUploadEndpoints
+	}
+	val organization: OrganizationApi
 
 	val membership: com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lskiteuistarter.Membership, com.lightningkite.lskiteuistarter.Membership.ID>
 

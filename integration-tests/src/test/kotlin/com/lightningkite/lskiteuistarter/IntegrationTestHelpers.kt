@@ -1,10 +1,6 @@
 // Test helpers for integration tests: real Lightning Server (RAM DB) + KiteUI frontend, no HTTP.
 package com.lightningkite.lskiteuistarter
 
-import com.lightningkite.lskiteuistarter.api.*
-import com.lightningkite.lskiteuistarter.app.*
-import com.lightningkite.lskiteuistarter.app.views.*
-
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.navigation.PageNavigator
 import com.lightningkite.kiteui.navigation.pageNavigator
@@ -16,19 +12,19 @@ import com.lightningkite.kiteui.views.l2.navigatorView
 import com.lightningkite.lightningserver.auth.GrantedScope
 import com.lightningkite.lightningserver.runtime.ServerRuntime
 import com.lightningkite.lightningserver.runtime.test.TestRunner
+import com.lightningkite.lightningserver.runtime.test.execute
 import com.lightningkite.lightningserver.runtime.test.test
 import com.lightningkite.lightningserver.settings.set
-import com.lightningkite.lskiteuistarter.api.data.UserEndpoints.info
-import com.lightningkite.lskiteuistarter.app.sdk.LiveApi
-import com.lightningkite.lskiteuistarter.app.sdk.apiOverride
-import com.lightningkite.lskiteuistarter.app.sdk.currentSession
-import com.lightningkite.lskiteuistarter.app.sdk.sessionToken
+import com.lightningkite.lskiteuistarter.data.UserEndpoints.info
+import com.lightningkite.lskiteuistarter.sdk.LiveApi
+import com.lightningkite.lskiteuistarter.sdk.apiOverride
+import com.lightningkite.lskiteuistarter.sdk.currentSession
+import com.lightningkite.lskiteuistarter.sdk.sessionToken
 import com.lightningkite.reactive.context.await
 import com.lightningkite.reactive.core.AppJob
 import com.lightningkite.services.data.toEmailAddress
 import com.lightningkite.services.database.Database
 import com.lightningkite.services.database.insertOne
-import com.lightningkite.services.email.EmailService
 import kotlinx.coroutines.runBlocking
 
 /**
@@ -42,18 +38,16 @@ import kotlinx.coroutines.runBlocking
  *
  * @param initialPage The page to render initially.
  * @param setup Seeds data / logs in. Runs with [ServerRuntime] context before the page renders.
- * @param block The test body, with UI-driver helpers.  Its argument is the server, for `server.execute { ... }` checks.
+ * @param block The test body, with UI-driver helpers plus the [TestRunner] (use its `execute { }`
+ *   for direct server work).
  */
 fun integrationTest(
     initialPage: Page,
     setup: (suspend context(ServerRuntime) () -> Unit)? = null,
-    block: suspend UiTestScope.(server: TestRunner<Server>) -> Unit,
+    block: suspend UiTestScope.(runner: TestRunner<*>) -> Unit,
 ) {
-    Server.test(settings = {
-        database set Database.Settings("ram")
-        email set EmailService.Settings("test")
-    }) {
-        val runner = contextOf<TestRunner<Server>>()
+    Server.test(settings = { database set Database.Settings("ram") }) {
+        val runner = contextOf<TestRunner<*>>()
         val api = LiveApi(TestRunnerFetcher(runner))
         val navigator = PageNavigator { AutoRoutes }
 
@@ -70,7 +64,7 @@ fun integrationTest(
             content = {
                 // Clean stale global state from previous tests. The sdk `currentSession` reactive and
                 // AppScope coroutines outlive individual tests and hold references to old server
-                // runtimes.
+                // engines.
                 sessionToken.value = null
                 apiOverride.value = null
                 AppJob.children.forEach { it.cancel() }
@@ -96,7 +90,7 @@ fun integrationTest(
                 sessionKeepAlive = currentSession.beginUse()
 
                 // Seed data / log in BEFORE the page renders so the session resolves first.
-                if (setup != null) runBlocking { runner.execute { setup() } }
+                if (setup != null) runBlocking { execute { setup() } }
 
                 navigatorView(navigator)
                 navigator.navigate(initialPage)

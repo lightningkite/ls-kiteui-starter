@@ -1,4 +1,4 @@
-package com.lightningkite.lskiteuistarter.api.data
+package com.lightningkite.lskiteuistarter.data
 
 import com.lightningkite.lightningserver.ForbiddenException
 import com.lightningkite.lightningserver.auth.id
@@ -9,8 +9,7 @@ import com.lightningkite.lightningserver.http.post
 import com.lightningkite.lightningserver.pathing.arg1
 import com.lightningkite.lightningserver.typed.*
 import com.lightningkite.lskiteuistarter.*
-import com.lightningkite.lskiteuistarter.api.*
-import com.lightningkite.lskiteuistarter.api.UserAuth.RoleCache.userRole
+import com.lightningkite.lskiteuistarter.UserAuth.RoleCache.userRole
 import com.lightningkite.services.database.*
 import com.lightningkite.services.notifications.Notification
 import com.lightningkite.services.notifications.NotificationData
@@ -21,7 +20,7 @@ object FcmTokenEndpoints : ServerBuilder() {
         tableName = "FcmToken",
         permissions = {
             val admin: Condition<FcmToken> = Condition(auth.userRole() >= UserRole.Admin)
-            val mine = Condition<FcmToken> { it.user eq auth.id }
+            val mine = FcmToken.user eq auth.id
             ModelPermissions(
                 create = admin or mine,
                 read = admin or mine,
@@ -37,7 +36,7 @@ object FcmTokenEndpoints : ServerBuilder() {
         auth = UserAuth.require(),
         implementation = { id: FcmToken.ID ->
             info.table().upsertOne(
-                Condition { it._id eq id },
+                FcmToken._id eq id,
                 Modification { it.user assign auth.id },
                 FcmToken(id, auth.id, userAgent = request.headers["User-Agent"]?.root ?: "?")
             )

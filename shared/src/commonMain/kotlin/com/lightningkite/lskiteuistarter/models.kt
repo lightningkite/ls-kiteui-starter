@@ -1,4 +1,4 @@
-// Shared data models. Database models need @Queryable (which implies @Serializable).
+// Shared data models. All models need @Queryable. — by Claude
 package com.lightningkite.lskiteuistarter
 
 import com.lightningkite.lightningserver.media.ServerFileWithMetadata
@@ -29,7 +29,6 @@ data class AppRelease(
 }
 
 @Queryable
-@TextIndex(["name", "email"])
 data class User(
     override val _id: ID = ID(Uuid.random()),
     @Index(IndexUniqueness.Unique) val email: EmailAddress,

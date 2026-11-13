@@ -31,22 +31,20 @@ ls-kiteui-starter/
 
 **shared/** - Multiplatform module defining core data models:
 - `User`, `UserRole`, `FcmToken` models with database annotations
-- Uses KSP processor to generate typed fields for `@Queryable` models (`User.email`)
+- Uses KSP processor to generate field optics (`@Queryable`), e.g. `User.email`
 - Compiled for Android, JVM, JS, and iOS targets
 
 **server/** - JVM application with Lightning Server:
 - `Server.kt` - Main server definition with endpoints, settings, and middleware
-- `Main.kt` - Entry point with CLI commands (`serve`, `dev`, `sdk`, `seed`)
-- `Seed.kt` - Sample data as Lightning Server fixtures (`FixtureRegistry`); `seed` deletes the previous seed rows and reseeds
+- `Main.kt` - Entry point with CLI commands (`serve`, `sdk`)
 - `UserEndpoints.kt` - REST endpoints for User CRUD with role-based permissions
-- `UserAuth.kt` (UserAuth) - Authentication with email/password/TOTP/passkeys/backup codes
+- `UserAuth.kt` (UserAuth) - Authentication with email/password/TOTP/backup codes
 - `FcmTokenEndpoints.kt` - Firebase Cloud Messaging token management
 - `Emails.kt` - Email template utilities
 
 **apps/** - Multiplatform KiteUI application:
 - `App.kt` - Main application entry point with navigation and theming
-- `LandingScreen.kt`, `HomeScreen.kt`, `LoginScreen.kt`, `MembersScreen.kt` - Screen implementations
-- `SecurityScreen.kt` - Users manage their own password, authenticator app, passkeys, and backup codes (LSK `SecurityComponent`)
+- `LandingScreen.kt`, `HomeScreen.kt`, `LoginScreen.kt` - Screen implementations
 - `sdk/` - Auto-generated API client from server (via `generateSdk` task)
 - Platform-specific implementations in `androidMain/`, `iosMain/`, `jsMain/`
 
@@ -56,7 +54,7 @@ ls-kiteui-starter/
 
 ```bash
 # Start the development server (localhost:8080)
-./gradlew :server:dev    # prepares the database (pre-deploy tasks), then serves
+./gradlew :server:serve
 
 # Run the server (alternative)
 ./gradlew :server:run
@@ -69,9 +67,6 @@ ls-kiteui-starter/
 
 # Run server tests
 ./gradlew :server:test
-
-# Reset and reseed sample data (requires general.debug); prints an admin token
-./gradlew :server:run --args="--settings $PWD/testing/settings.testing.json seed"
 
 # Create Lambda deployment package
 ./gradlew :server:lambda
@@ -94,9 +89,6 @@ ls-kiteui-starter/
 
 # Build iOS framework (requires macOS)
 ./gradlew :apps:podInstall
-
-# Start the KiteUI AI driver relay; development builds connect to it automatically (App.kt)
-./gradlew :apps:aiDriverStart
 ```
 
 ### Testing
@@ -110,9 +102,6 @@ ls-kiteui-starter/
 
 # Run server tests specifically
 ./gradlew :server:test
-
-# End-to-end: real server (RAM DB, test email) + KiteUI pages in-process, driven by UiTestScope
-./gradlew :integration-tests:test
 
 # Run JS tests in browser
 ./gradlew :apps:jsBrowserTest
@@ -141,17 +130,15 @@ ls-kiteui-starter/
 
 **Authentication Flow:**
 1. User proves identity via email/password/TOTP (`UserAuth` object)
-2. Proof methods are pluggable (email PIN, password, TOTP, passkeys/WebAuthN, backup codes).  Once a user has more than one method (email counts), login requires two.
-   Passkeys are scoped to the `webUrl` setting's domain; native apps need extra `allowedOrigins` (see SETUP.md)
+2. Proof methods are pluggable (email PIN, password, TOTP, backup codes)
 3. Sessions are cached with role information for performance (`RoleCache`)
 4. Role-based permissions enforce access control in `ModelPermissions`
 
 **Database Abstraction:**
-- Models use `@Queryable` (implies `@Serializable`) for type-safe queries
+- Models use `@Queryable` (replaces `@Serializable` + `@GenerateDataClassPaths`) for type-safe queries
 - Supports MongoDB (`MongoDatabase`) and JSON files (`JsonFileDatabase`)
 - Connection string configured in `settings.json` under `"database"`
-- Database operations use the `Condition { }` and `Modification { }` builders, or fields directly (`User.email eq x`)
-- `@TextIndex(["field", ...])` on a model enables `ModelRestEndpoints`' `text-query` endpoint (`api.user.textQuery(TextIndexQuery("words"))`), filtered by read permissions
+- Queries are built directly on generated fields: `table.find(User.role eq UserRole.Admin)`, `Modification<User> { it.name assign "x" }`
 
 ### Client-Side Architecture
 
@@ -180,7 +167,7 @@ ls-kiteui-starter/
 2. **Create endpoints** in `server/src/main/kotlin/.../*Endpoints.kt`
 3. **Regenerate SDK** with `./gradlew :server:generateSdk`
 4. **Implement UI** in `apps/src/commonMain/kotlin/.../`
-5. **Test locally** with `./gradlew :server:dev` + `./gradlew :apps:jsBrowserDevelopmentRun`
+5. **Test locally** with `./gradlew :server:serve` + `./gradlew :apps:jsBrowserDevelopmentRun`
 
 ## Configuration
 
@@ -190,7 +177,6 @@ The server runtime configuration includes:
 - `database` - Database connection string (e.g., `"json-files://local/database"` or `"mongodb://..."`)
 - `files` - File storage settings (local filesystem or S3)
 - `email` - Email service config (`"console"` for development, SMTP URL for production)
-- `webUrl` - The web app's URL (not the API's).  Used for links and as the passkey domain/origin; locally the Vite frontend, `http://localhost:8941`
 - `notifications` - FCM credentials JSON for push notifications
 - `cors` - CORS configuration for web clients
 - `ktorRunConfig` - Server host/port (default: `0.0.0.0:8080`)
@@ -210,7 +196,7 @@ The project uses Firebase Cloud Messaging:
 
 ## Manual/Browser Testing
 
-The `testing/` directory contains scripts for AI-assisted browser testing. These use ports 8081 (backend) and 8941 (frontend) to avoid conflicts with other projects.
+The `testing/` directory contains scripts for AI-assisted browser testing. These use ports 8081 (backend) and 8951 (frontend) to avoid conflicts with other projects.
 
 ### Quick Start
 
@@ -224,7 +210,7 @@ The `testing/` directory contains scripts for AI-assisted browser testing. These
 ```bash
 ./testing/start-all.sh        # Start backend + frontend
 ./testing/start-backend.sh    # Start backend on :8081
-./testing/start-frontend.sh   # Start frontend on :8941
+./testing/start-frontend.sh   # Start frontend on :8951
 ./testing/stop-all.sh         # Stop all servers
 ./testing/api.sh GET /path    # Make API calls
 ```
@@ -234,7 +220,7 @@ The `testing/` directory contains scripts for AI-assisted browser testing. These
 After running `prepare-browser-test.sh`, use Claude's Chrome MCP tools:
 
 1. `mcp__claude-in-chrome__tabs_context_mcp(createIfEmpty=true)`
-2. `mcp__claude-in-chrome__navigate(tabId=..., url='http://localhost:8941')`
+2. `mcp__claude-in-chrome__navigate(tabId=..., url='http://localhost:8951')`
 3. Inject session token if available (see `testing/.admin-token`)
 4. `mcp__claude-in-chrome__computer(action='screenshot')` for visual verification
 
@@ -259,6 +245,7 @@ Follow this sequence to add a complete new feature (e.g., a "Project" model):
    - Follow the existing `OrganizationEndpoints` pattern: `modelInfo` + `ModelRestEndpoints`
    - Define `ModelPermissions` with appropriate `create`/`read`/`update`/`delete` conditions
    - Use `updateRestrictions` to lock down immutable fields
+   - If the model has a file field, give it its own upload module next to the REST endpoints, with that feature's folder and permission check, rather than a global upload endpoint: see `OrganizationEndpoints.logoUpload` (`UploadEndpoints(Server.uploads, folder, auth)`)
 
 3. **Wire into Server.kt**
    - Add `val projects = path.path("projects") module ProjectEndpoints` to `Server.kt`

@@ -1,4 +1,4 @@
-package com.lightningkite.lskiteuistarter.api
+package com.lightningkite.lskiteuistarter
 
 import com.lightningkite.lightningserver.NotFoundException
 import com.lightningkite.lightningserver.auth.*
@@ -6,16 +6,13 @@ import com.lightningkite.lightningserver.definition.builder.ServerBuilder
 import com.lightningkite.lightningserver.http.post
 import com.lightningkite.lightningserver.runtime.ServerRuntime
 import com.lightningkite.lightningserver.sessions.AuthEndpoints
-import com.lightningkite.lightningserver.sessions.RefreshToken
-import com.lightningkite.lightningserver.sessions.Session
 import com.lightningkite.lightningserver.sessions.proofs.*
 import com.lightningkite.lightningserver.sessions.proofs.extensions.constrainAttemptRate
 import com.lightningkite.lightningserver.typed.*
 import com.lightningkite.lightningserver.typed.sdk.module
-import com.lightningkite.lskiteuistarter.api.data.MembershipEndpoints
-import com.lightningkite.lskiteuistarter.api.data.UserEndpoints.AppStoreTester
-import com.lightningkite.lskiteuistarter.api.data.UserEndpoints.info
-import com.lightningkite.lskiteuistarter.*
+import com.lightningkite.lskiteuistarter.data.MembershipEndpoints
+import com.lightningkite.lskiteuistarter.data.UserEndpoints.AppStoreTester
+import com.lightningkite.lskiteuistarter.data.UserEndpoints.info
 import com.lightningkite.services.data.EmailAddress
 import com.lightningkite.services.data.toEmailAddress
 import com.lightningkite.services.database.*
@@ -29,8 +26,6 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Instant
-import java.net.URI
-import kotlin.uuid.Uuid
 
 
 object UserAuth : PrincipalType<User, User.ID>, ServerBuilder() {
@@ -46,7 +41,7 @@ object UserAuth : PrincipalType<User, User.ID>, ServerBuilder() {
     context(server: ServerRuntime)
     override suspend fun fetchByProperty(property: String, value: String): User? = when (property) {
         "email" -> User.info.table().run {
-            findOne(Condition { it.email eq value.toEmailAddress() })
+            findOne(User.email eq value.toEmailAddress())
                 // This is optional. If you want signing in and signing up to be the same thing this is how you do it
                 ?: insertOne(User(email = value.toEmailAddress(), name = ""))
         }
@@ -95,7 +90,7 @@ object UserAuth : PrincipalType<User, User.ID>, ServerBuilder() {
         context(_: ServerRuntime)
         override suspend fun calculate(input: Authentication<User>): Set<SimplifiedMembership> {
             return MembershipEndpoints.info.table()
-                .find(Condition { (it.user eq input.id) and (it.deactivatedAt eq null) })
+                .find((Membership.user eq input.id) and (Membership.deactivatedAt eq null))
                 .toList()
                 .map { SimplifiedMembership(it._id, it.organization, it.role) }
                 .toSet()
@@ -130,31 +125,13 @@ object UserAuth : PrincipalType<User, User.ID>, ServerBuilder() {
         Server.cache,
         proofExpiration = 10.minutes
     )
-    // Passkeys are scoped to the web app's domain.  Native apps need their own entries in allowedOrigins; see SETUP.md.
-    val webAuthN = proofs.path("webauthn") module WebAuthNProofEndpoints(
-        database = Server.database,
-        cache = Server.cache,
-        rpId = { URI(Server.webUrl()).host },
-        allowedOrigins = { setOf(URI(Server.webUrl()).let { "${it.scheme}://${it.authority}" }) },
-        registrationForUser = { subject, residentKey ->
-            val user = subject as User
-            WebAuthN.Registration.RegistrationOptions(
-                authenticatorSelection = WebAuthN.AuthenticatorSelectionOptions(residentKey = residentKey),
-                user = WebAuthN.PublicKeyCredentialUserEntity(
-                    id = user._id.toString(),
-                    name = user.email.raw,
-                    displayName = user.name.ifBlank { user.email.raw },
-                ),
-            )
-        },
-    )
 
     class EmailEndpoints(val pins: PinHandler) : ServerBuilder() {
         val proof = path include EmailProofEndpoints(
             pin = pins,
             email = Server.email,
             emailTemplate = { to, pin ->
-                val name = User.info.table().findOne(Condition { it.email eq to })?.name
+                val name = User.info.table().findOne(User.email eq to)?.name
                 Email(
                     subject = "Log In Code",
                     to = listOf(EmailAddressWithName(to)),
@@ -180,7 +157,7 @@ object UserAuth : PrincipalType<User, User.ID>, ServerBuilder() {
                 // If you want to separate out signing in and signing up this is how you would do it.
                 // If you want to do any other kind of screening, such as the domain you can do it here.
                 // ScreeningResult.Reject is what you use when you want to return an explicit denial message and 400.
-                /*if(User.info.table().findOne(condition { it.email eq email }) == null)
+                /*if(User.info.table().findOne(User.email eq email) == null)
                     PinBasedProofEndpoints.ScreeningResult.Suppress
                 else
                     PinBasedProofEndpoints.ScreeningResult.Allow*/
@@ -253,26 +230,5 @@ object UserAuth : PrincipalType<User, User.ID>, ServerBuilder() {
             return super.permitAuthentication(subject)
         }
 
-
-        context(_: ServerRuntime)
-        suspend fun createSession(
-            subjectId: User.ID,
-            label: String? = null,
-            expires: Instant? = null,
-            stale: Instant? = null,
-            scopes: Set<GrantedScope> = setOf(GrantedScope.root),
-            oauthClient: String? = null,
-            derivedFrom: Uuid? = null,
-        ): Pair<Session<User, User.ID>, RefreshToken> {
-            return newSession(
-                subjectId = subjectId,
-                label = label,
-                expires = expires,
-                stale = stale,
-                scopes = scopes,
-                oauthClient = oauthClient,
-                derivedFrom = derivedFrom,
-            )
-        }
     }
 }

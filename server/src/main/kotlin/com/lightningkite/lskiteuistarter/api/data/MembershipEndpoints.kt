@@ -1,4 +1,4 @@
-package com.lightningkite.lskiteuistarter.api.data
+package com.lightningkite.lskiteuistarter.data
 
 import com.lightningkite.lightningserver.auth.require
 import com.lightningkite.lightningserver.definition.builder.ServerBuilder
@@ -6,9 +6,8 @@ import com.lightningkite.lightningserver.typed.ModelRestEndpoints
 import com.lightningkite.lightningserver.typed.auth
 import com.lightningkite.lightningserver.typed.modelInfo
 import com.lightningkite.lskiteuistarter.*
-import com.lightningkite.lskiteuistarter.api.*
-import com.lightningkite.lskiteuistarter.api.UserAuth.MembershipsCache.memberships
-import com.lightningkite.lskiteuistarter.api.UserAuth.RoleCache.userRole
+import com.lightningkite.lskiteuistarter.UserAuth.MembershipsCache.memberships
+import com.lightningkite.lskiteuistarter.UserAuth.RoleCache.userRole
 import com.lightningkite.services.database.*
 
 object MembershipEndpoints : ServerBuilder() {
@@ -23,8 +22,8 @@ object MembershipEndpoints : ServerBuilder() {
             val adminOrgIds = myMemberships.filter { it.role >= MemberRole.Admin }.map { it.organization }.toSet()
 
             val systemAdmin: Condition<Membership> = Condition(isSystemAdmin)
-            val inMyOrg = Condition<Membership> { it.organization inside myOrgIds }
-            val inAdminOrg = Condition<Membership> { it.organization inside adminOrgIds }
+            val inMyOrg = Membership.organization inside myOrgIds
+            val inAdminOrg = Membership.organization inside adminOrgIds
 
             ModelPermissions(
                 create = systemAdmin or inAdminOrg,

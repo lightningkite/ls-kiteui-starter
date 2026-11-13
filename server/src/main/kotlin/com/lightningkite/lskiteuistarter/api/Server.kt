@@ -119,7 +119,7 @@ object Server : ServerBuilder() {
     val root = path.get bind HttpHandler {
         HttpResponse.plainText("Welcome to Lightning Server!")
     }
-    val uploadEarly = path.path("upload-early") module UploadEarlyEndpoint(
+    val uploads = path.path("uploads") include FileUploadBasis(
         files = files,
         database = database,
         fileScanner = Runtime.Constant(emptyList())

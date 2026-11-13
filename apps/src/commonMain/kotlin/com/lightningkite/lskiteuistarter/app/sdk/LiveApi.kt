@@ -1,4 +1,4 @@
-package com.lightningkite.lskiteuistarter.app.sdk
+package com.lightningkite.lskiteuistarter.sdk
 
 import com.lightningkite.lightningserver.HttpMethod
 import com.lightningkite.lightningserver.typed.Fetcher
@@ -11,8 +11,6 @@ import kotlinx.serialization.ExperimentalSerializationApi
 class LiveApi(val fetcher: Fetcher) : Api {
 	override fun withMetadata(block: suspend RequestMetadata.() -> Unit): LiveApi =
 		LiveApi(fetcher.withMetadata(block))
-
-	override val uploadEarlyEndpoint = com.lightningkite.lightningserver.files.LiveClientUploadEarlyEndpoints(fetcher, "upload-early", )
 
 	override val appRelease = com.lightningkite.lightningserver.typed.LiveClientModelRestEndpoints(fetcher, "app-releases", com.lightningkite.lskiteuistarter.AppRelease.serializer(), com.lightningkite.lskiteuistarter.AppRelease.ID.serializer())
 
@@ -30,15 +28,11 @@ class LiveApi(val fetcher: Fetcher) : Api {
 		}
 		override val totp = LiveTimeBasedOTPProof()
 
-		inner class LivePasswordProof : Api.UserAuthApi.PasswordProof, com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lightningserver.sessions.PasswordSecret, kotlin.uuid.Uuid> by com.lightningkite.lightningserver.typed.LiveClientModelRestEndpoints(fetcher, "auth/proof/password/secrets", com.lightningkite.lightningserver.sessions.PasswordSecret.serializer(), kotlin.uuid.Uuid.serializer()), com.lightningkite.lightningserver.sessions.proofs.ProofClientEndpoints.Password by com.lightningkite.lightningserver.sessions.proofs.LiveProofClientEndpoints.Password(fetcher, "auth/proof/password", ) {
+		inner class LivePasswordProof : Api.UserAuthApi.PasswordProof, com.lightningkite.lightningserver.sessions.proofs.ProofClientEndpoints.Password by com.lightningkite.lightningserver.sessions.proofs.LiveProofClientEndpoints.Password(fetcher, "auth/proof/password", ), com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lightningserver.sessions.PasswordSecret, kotlin.uuid.Uuid> by com.lightningkite.lightningserver.typed.LiveClientModelRestEndpoints(fetcher, "auth/proof/password/secrets", com.lightningkite.lightningserver.sessions.PasswordSecret.serializer(), kotlin.uuid.Uuid.serializer()) {
 		}
 		override val password = LivePasswordProof()
 
 		override val backupCode = com.lightningkite.lightningserver.sessions.proofs.LiveProofClientEndpoints.BackupCode(fetcher, "auth/proof/backup-codes", )
-
-		inner class LiveWebAuthNProof : Api.UserAuthApi.WebAuthNProof, com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lightningserver.sessions.proofs.WebAuthNCredential, kotlin.String> by com.lightningkite.lightningserver.typed.LiveClientModelRestEndpoints(fetcher, "auth/proof/webauthn/credentials", com.lightningkite.lightningserver.sessions.proofs.WebAuthNCredential.serializer(), kotlin.String.serializer()), com.lightningkite.lightningserver.sessions.proofs.ProofClientEndpoints.WebAuthN by com.lightningkite.lightningserver.sessions.proofs.LiveProofClientEndpoints.WebAuthNEndpoints(fetcher, "auth/proof/webauthn", ) {
-		}
-		override val webAuthN = LiveWebAuthNProof()
 	}
 	override val userAuth = LiveUserAuthApi()
 
@@ -52,7 +46,11 @@ class LiveApi(val fetcher: Fetcher) : Api {
 	}
 	override val fcmToken = LiveFcmTokenApi()
 
-	override val organization = com.lightningkite.lightningserver.typed.LiveClientModelRestEndpoints(fetcher, "organizations", com.lightningkite.lskiteuistarter.Organization.serializer(), com.lightningkite.lskiteuistarter.Organization.ID.serializer())
+	inner class LiveOrganizationApi : Api.OrganizationApi, com.lightningkite.lightningserver.typed.ClientModelRestEndpoints<com.lightningkite.lskiteuistarter.Organization, com.lightningkite.lskiteuistarter.Organization.ID> by com.lightningkite.lightningserver.typed.LiveClientModelRestEndpoints(fetcher, "organizations", com.lightningkite.lskiteuistarter.Organization.serializer(), com.lightningkite.lskiteuistarter.Organization.ID.serializer()) {
+
+		override val logoUpload = com.lightningkite.lightningserver.files.LiveClientFileUploadEndpoints(fetcher, "organizations/logo-upload", )
+	}
+	override val organization = LiveOrganizationApi()
 
 	override val membership = com.lightningkite.lightningserver.typed.LiveClientModelRestEndpoints(fetcher, "memberships", com.lightningkite.lskiteuistarter.Membership.serializer(), com.lightningkite.lskiteuistarter.Membership.ID.serializer())
 

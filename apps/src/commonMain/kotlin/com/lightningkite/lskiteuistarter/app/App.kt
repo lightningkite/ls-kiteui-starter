@@ -1,28 +1,37 @@
-package com.lightningkite.lskiteuistarter.app
+package com.lightningkite.lskiteuistarter
 
+import com.lightningkite.kiteui.Build
 import com.lightningkite.kiteui.Platform
+import com.lightningkite.kiteui.current
+import com.lightningkite.kiteui.exceptions.ExceptionHandler
 import com.lightningkite.kiteui.exceptions.installLsError
 import com.lightningkite.kiteui.exceptions.installSmartHandlers
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.PageNavigator
-import com.lightningkite.kiteui.isDevelopment
-import com.lightningkite.kiteui.views.AiDriver
 import com.lightningkite.kiteui.views.ViewWriter
-import com.lightningkite.kiteui.views.produceExactlyOneElement
-import com.lightningkite.lskiteuistarter.app.views.SecurityPage
+import com.lightningkite.kiteui.views.buttonTheme
+import com.lightningkite.kiteui.views.card
+import com.lightningkite.kiteui.views.centered
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.kiteui.views.exceptionMessage
 import com.lightningkite.kiteui.views.l2.appNav
-import com.lightningkite.lskiteuistarter.app.sdk.currentSession
-import com.lightningkite.lskiteuistarter.app.sdk.installLoggedOutErrors
-import com.lightningkite.lskiteuistarter.app.utils.fcmSetup
-import com.lightningkite.lskiteuistarter.app.utils.notificationPermissions
-import com.lightningkite.lskiteuistarter.app.utils.requestNotificationPermissions
-import com.lightningkite.lskiteuistarter.app.views.HomePage
-import com.lightningkite.lskiteuistarter.app.views.checkAppVersion
+import com.lightningkite.lskiteuistarter.extensions.toAppPlatform
+import com.lightningkite.lskiteuistarter.sdk.currentSession
+import com.lightningkite.lskiteuistarter.sdk.installLoggedOutErrors
+import com.lightningkite.lskiteuistarter.sdk.selectedApi
+import com.lightningkite.lskiteuistarter.utils.fcmSetup
+import com.lightningkite.lskiteuistarter.utils.notificationPermissions
+import com.lightningkite.lskiteuistarter.utils.requestNotificationPermissions
+import com.lightningkite.lskiteuistarter.views.HomePage
+import com.lightningkite.lskiteuistarter.views.checkAppVersion
+import com.lightningkite.reactive.context.await
 import com.lightningkite.reactive.context.invoke
 import com.lightningkite.reactive.context.reactiveSuspending
 import com.lightningkite.reactive.core.AppScope
 import com.lightningkite.reactive.core.Signal
+import com.lightningkite.services.database.Query
+import com.lightningkite.services.database.eq
+import kotlinx.coroutines.launch
 
 val defaultTheme = Theme.flat2("default", Angle(0.55f))// brandBasedExperimental("bsa", normalBack = Color.white)
 val appTheme = Signal(defaultTheme)
@@ -60,25 +69,18 @@ fun ViewWriter.app(navigator: PageNavigator) {
 
     checkAppVersion()
 
-    val rootView = produceExactlyOneElement {
-        appNav(navigator) {
-            appName = "LS KiteUI Starter"
-            ::navItems {
-                listOf(
-                    NavLink(title = "Home", icon = Icon.home) { HomePage() },
-                    NavLink(title = "Members", icon = Icon.group) { MembersPage() },
-                    NavLink(title = "Security", icon = Icon.person) { SecurityPage() },
-                )
-            }
+    return appNav(navigator) {
+        appName = "LS KiteUI Starter"
+        ::navItems {
+            listOf(
+                NavLink(title = "Home", icon = Icon.home) { HomePage() },
+            )
+        }
 
-            ::exists {
-                navigator.currentPage() !is FullscreenPage
-            }
+        ::exists {
+            navigator.currentPage() !is FullscreenPage
         }
     }
-
-    // Lets AI agents drive the running dev app; start the relay with `./gradlew :apps:aiDriverStart`.
-    if (Platform.isDevelopment) AiDriver.connect(appName = "ls-kiteui-starter", rootView = { rootView }, navigator = { navigator })
 }
 
 interface FullscreenPage
