@@ -12,12 +12,15 @@ import com.lightningkite.services.database.ModelPermissions
 
 object AppReleaseEndpoints : ServerBuilder() {
 
+    // ----- Model Info -----
+
     val info = Server.database.modelInfo(
         auth = UserAuth.require(),
         tableName = "AppRelease",
         permissions = { permissions(this) },
     )
-    val rest = path include ModelRestEndpoints(info)
+
+    val AppRelease.Companion.info get() = this@AppReleaseEndpoints.info
 
     context(server: ServerRuntime)
     suspend fun permissions(auth: AuthAccess<User>): ModelPermissions<AppRelease> {
@@ -27,4 +30,10 @@ object AppReleaseEndpoints : ServerBuilder() {
             ModelPermissions.allowAll()
         }
     }
+
+    // ----- EndPoints -----
+
+    val rest = path include ModelRestEndpoints(info)
+
+    // ----- Tasks and Schedules -----
 }

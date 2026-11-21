@@ -45,14 +45,6 @@ data class User(
     }
 }
 
-@Serializable
-enum class UserRole {
-    User,
-    Admin,
-    Developer,
-    Root
-}
-
 @Queryable
 data class FcmToken(
     @MaxLength(160, average = 142) override val _id: ID,
@@ -68,14 +60,6 @@ data class FcmToken(
     value class ID(override val raw: String) : TypedId<String, ID> {
         override fun toString(): String = raw
     }
-}
-
-@Serializable
-enum class MemberRole {
-    NoOne,
-    Member,
-    Admin,
-    Owner,
 }
 
 @Queryable

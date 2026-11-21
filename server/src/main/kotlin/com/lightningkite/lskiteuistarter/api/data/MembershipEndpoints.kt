@@ -1,4 +1,4 @@
-package com.lightningkite.lskiteuistarter.data
+package com.lightningkite.lskiteuistarter.api.data
 
 import com.lightningkite.lightningserver.auth.require
 import com.lightningkite.lightningserver.definition.builder.ServerBuilder
@@ -6,8 +6,10 @@ import com.lightningkite.lightningserver.typed.ModelRestEndpoints
 import com.lightningkite.lightningserver.typed.auth
 import com.lightningkite.lightningserver.typed.modelInfo
 import com.lightningkite.lskiteuistarter.*
-import com.lightningkite.lskiteuistarter.UserAuth.MembershipsCache.memberships
-import com.lightningkite.lskiteuistarter.UserAuth.RoleCache.userRole
+import com.lightningkite.lskiteuistarter.api.Server
+import com.lightningkite.lskiteuistarter.api.UserAuth
+import com.lightningkite.lskiteuistarter.api.UserAuth.RoleCache.userRole
+import com.lightningkite.lskiteuistarter.api.UserAuth.memberships
 import com.lightningkite.services.database.*
 
 object MembershipEndpoints : ServerBuilder() {

@@ -6,13 +6,9 @@ package com.lightningkite.lskiteuistarter.api
 import com.lightningkite.lightningserver.InternalLightningServerApi
 import com.lightningkite.lightningserver.definition.builder.ServerBuilder
 import com.lightningkite.lightningserver.fixtures.*
-import com.lightningkite.lightningserver.runtime.Execution
-import com.lightningkite.lightningserver.runtime.Invocation
-import com.lightningkite.lightningserver.runtime.execute
-import com.lightningkite.lskiteuistarter.api.data.MembershipEndpoints
-import com.lightningkite.lskiteuistarter.api.data.OrganizationEndpoints
-import com.lightningkite.lskiteuistarter.api.data.UserEndpoints
+import com.lightningkite.lightningserver.runtime.*
 import com.lightningkite.lskiteuistarter.*
+import com.lightningkite.lskiteuistarter.api.data.*
 import com.lightningkite.services.data.toEmailAddress
 import kotlinx.coroutines.runBlocking
 import kotlin.uuid.Uuid
@@ -38,14 +34,21 @@ object SeedData : ServerBuilder() {
 
     val organizations = fixtures.seed(OrganizationEndpoints.info) {
         List((config.scale * 3).toInt()) {
-            Organization(_id = Organization.ID(randomUuid()), name = randomStringName().replaceFirstChar { it.uppercase() } + " Corp")
+            Organization(
+                _id = Organization.ID(randomUuid()),
+                name = randomStringName().replaceFirstChar { it.uppercase() } + " Corp")
         }
     }
 
     val memberships = fixtures.seed(MembershipEndpoints.info) {
         val orgs = organizations()
         val ownerships = orgs.map {
-            Membership(_id = Membership.ID(randomUuid()), organization = it._id, user = admin._id, role = MemberRole.Owner)
+            Membership(
+                _id = Membership.ID(randomUuid()),
+                organization = it._id,
+                user = admin._id,
+                role = MemberRole.Owner
+            )
         }
         val members = users().filter { it != admin }.map {
             Membership(
@@ -62,15 +65,11 @@ object SeedData : ServerBuilder() {
 fun seed() = withEngine {
     // Execution.Direct is the framework's sanctioned (but internal) way to run a script outside any request or task.
     @OptIn(InternalLightningServerApi::class)
-    runBlocking { execute("seed", Invocation.Unrequested(Execution.Direct(Execution.ID.generate()))) {
-        // Fixtures insert fixed ids, so clear the previous run first.  Hand-made rows survive.
-        deleteSeedData()
-        SeedData.fixtures.execute(SeedConfig())
-
-        val (_, token) = UserAuth.session.createSession(SeedData.admin._id)
-        println()
-        println("=== Seed Complete ===")
-        println("Admin token: '$token'")
-        println("Use this token to authenticate API requests during development.")
-    } }
+    runBlocking {
+        execute("seed", Invocation.Unrequested(Execution.Direct(Execution.ID.generate()))) {
+            // Fixtures insert fixed ids, so clear the previous run first.  Hand-made rows survive.
+            deleteSeedData()
+            SeedData.fixtures.execute(SeedConfig())
+        }
+    }
 }

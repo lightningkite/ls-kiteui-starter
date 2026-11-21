@@ -1,4 +1,4 @@
-package com.lightningkite.lskiteuistarter.data
+package com.lightningkite.lskiteuistarter.api.data
 
 import com.lightningkite.lightningserver.auth.require
 import com.lightningkite.lightningserver.definition.builder.ServerBuilder
@@ -9,11 +9,15 @@ import com.lightningkite.lightningserver.typed.ModelRestEndpoints
 import com.lightningkite.lightningserver.typed.auth
 import com.lightningkite.lightningserver.typed.modelInfo
 import com.lightningkite.lskiteuistarter.*
-import com.lightningkite.lskiteuistarter.UserAuth.MembershipsCache.memberships
-import com.lightningkite.lskiteuistarter.UserAuth.RoleCache.userRole
+import com.lightningkite.lskiteuistarter.api.Server
+import com.lightningkite.lskiteuistarter.api.UserAuth
+import com.lightningkite.lskiteuistarter.api.UserAuth.RoleCache.userRole
+import com.lightningkite.lskiteuistarter.api.UserAuth.memberships
 import com.lightningkite.services.database.*
 
 object OrganizationEndpoints : ServerBuilder() {
+
+    // ----- Model Info -----
 
     val info = Server.database.modelInfo(
         auth = UserAuth.require(),
@@ -37,6 +41,8 @@ object OrganizationEndpoints : ServerBuilder() {
         }
     )
 
+    // ----- EndPoints -----
+
     val rest = path include ModelRestEndpoints(info)
 
     val logoUpload = path.path("logo-upload") module UploadEndpoints(
@@ -44,4 +50,6 @@ object OrganizationEndpoints : ServerBuilder() {
         folder = "organizations/logos",
         auth = UserAuth.require { it.userRole() >= UserRole.Admin || it.memberships().any { m -> m.role >= MemberRole.Admin } },
     ).withSdkInfo(valueName = "logoUpload")
+
+    // ----- Tasks and Schedules -----
 }

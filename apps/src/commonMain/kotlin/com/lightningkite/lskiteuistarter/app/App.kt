@@ -1,7 +1,8 @@
-package com.lightningkite.lskiteuistarter
+package com.lightningkite.lskiteuistarter.app
 
 import com.lightningkite.kiteui.Build
 import com.lightningkite.kiteui.Platform
+import com.lightningkite.kiteui.auth.security
 import com.lightningkite.kiteui.current
 import com.lightningkite.kiteui.exceptions.ExceptionHandler
 import com.lightningkite.kiteui.exceptions.installLsError
@@ -15,15 +16,16 @@ import com.lightningkite.kiteui.views.centered
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.exceptionMessage
 import com.lightningkite.kiteui.views.l2.appNav
-import com.lightningkite.lskiteuistarter.extensions.toAppPlatform
-import com.lightningkite.lskiteuistarter.sdk.currentSession
-import com.lightningkite.lskiteuistarter.sdk.installLoggedOutErrors
-import com.lightningkite.lskiteuistarter.sdk.selectedApi
-import com.lightningkite.lskiteuistarter.utils.fcmSetup
-import com.lightningkite.lskiteuistarter.utils.notificationPermissions
-import com.lightningkite.lskiteuistarter.utils.requestNotificationPermissions
-import com.lightningkite.lskiteuistarter.views.HomePage
-import com.lightningkite.lskiteuistarter.views.checkAppVersion
+import com.lightningkite.lskiteuistarter.app.extensions.toAppPlatform
+import com.lightningkite.lskiteuistarter.app.sdk.currentSession
+import com.lightningkite.lskiteuistarter.app.sdk.installLoggedOutErrors
+import com.lightningkite.lskiteuistarter.app.sdk.selectedApi
+import com.lightningkite.lskiteuistarter.app.utils.fcmSetup
+import com.lightningkite.lskiteuistarter.app.utils.notificationPermissions
+import com.lightningkite.lskiteuistarter.app.utils.requestNotificationPermissions
+import com.lightningkite.lskiteuistarter.app.views.HomePage
+import com.lightningkite.lskiteuistarter.app.views.SecurityPage
+import com.lightningkite.lskiteuistarter.app.views.checkAppVersion
 import com.lightningkite.reactive.context.await
 import com.lightningkite.reactive.context.invoke
 import com.lightningkite.reactive.context.reactiveSuspending
@@ -74,6 +76,7 @@ fun ViewWriter.app(navigator: PageNavigator) {
         ::navItems {
             listOf(
                 NavLink(title = "Home", icon = Icon.home) { HomePage() },
+                NavLink(title = "Security", icon = Icon.security) { SecurityPage() },
             )
         }
 

@@ -1,4 +1,4 @@
-package com.lightningkite.lskiteuistarter
+package com.lightningkite.lskiteuistarter.api
 
 import com.lightningkite.lightningserver.NotFoundException
 import com.lightningkite.lightningserver.auth.*
@@ -10,9 +10,10 @@ import com.lightningkite.lightningserver.sessions.proofs.*
 import com.lightningkite.lightningserver.sessions.proofs.extensions.constrainAttemptRate
 import com.lightningkite.lightningserver.typed.*
 import com.lightningkite.lightningserver.typed.sdk.module
-import com.lightningkite.lskiteuistarter.data.MembershipEndpoints
-import com.lightningkite.lskiteuistarter.data.UserEndpoints.AppStoreTester
-import com.lightningkite.lskiteuistarter.data.UserEndpoints.info
+import com.lightningkite.lskiteuistarter.*
+import com.lightningkite.lskiteuistarter.api.data.MembershipEndpoints
+import com.lightningkite.lskiteuistarter.api.data.UserEndpoints.AppStoreTester
+import com.lightningkite.lskiteuistarter.api.data.UserEndpoints.info
 import com.lightningkite.services.data.EmailAddress
 import com.lightningkite.services.data.toEmailAddress
 import com.lightningkite.services.database.*
@@ -22,9 +23,11 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.SetSerializer
+import java.net.URI
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
 
 
@@ -42,20 +45,20 @@ object UserAuth : PrincipalType<User, User.ID>, ServerBuilder() {
     override suspend fun fetchByProperty(property: String, value: String): User? = when (property) {
         "email" -> User.info.table().run {
             findOne(User.email eq value.toEmailAddress())
-                // This is optional. If you want signing in and signing up to be the same thing this is how you do it
+            // This is optional. If you want signing in and signing up to be the same thing this is how you do it
                 ?: insertOne(User(email = value.toEmailAddress(), name = ""))
         }
 
         else -> super.fetchByProperty(property, value)
     }
 
-    override val precache: List<AuthCacheKey<User, *>> = listOf(RoleCache, MembershipsCache)
-
     override fun normalizePropertyValue(property: String, value: String): String = when (property) {
         "email" -> email.proof.normalize(value)
 
         else -> super.normalizePropertyValue(property, value)
     }
+
+    override val precache: List<AuthCacheKey<User, *>> = listOf(RoleCache, MembershipsCache)
 
     // ----- Caching ------
 
@@ -64,7 +67,7 @@ object UserAuth : PrincipalType<User, User.ID>, ServerBuilder() {
         override val serializer: KSerializer<UserRole> = kotlinx.serialization.serializer()
         override val expireAfter: Duration = 5.minutes
 
-        context(_: ServerRuntime)
+        context(server: ServerRuntime)
         override suspend fun calculate(input: Authentication<User>): UserRole = input.fetch().role
 
         context(_: ServerRuntime)
@@ -87,7 +90,7 @@ object UserAuth : PrincipalType<User, User.ID>, ServerBuilder() {
             SetSerializer(SimplifiedMembership.serializer())
         override val expireAfter: Duration = 5.minutes
 
-        context(_: ServerRuntime)
+        context(server: ServerRuntime)
         override suspend fun calculate(input: Authentication<User>): Set<SimplifiedMembership> {
             return MembershipEndpoints.info.table()
                 .find((Membership.user eq input.id) and (Membership.deactivatedAt eq null))
@@ -95,13 +98,15 @@ object UserAuth : PrincipalType<User, User.ID>, ServerBuilder() {
                 .map { SimplifiedMembership(it._id, it.organization, it.role) }
                 .toSet()
         }
-
-        context(_: ServerRuntime)
-        suspend fun Authentication<User>.memberships() = get(MembershipsCache)
-
-        context(_: ServerRuntime)
-        suspend fun AuthAccess<User>.memberships() = auth.memberships()
     }
+
+    // ----- Auth helper extensions -----
+
+    context(_: ServerRuntime)
+    suspend fun Authentication<User>.memberships() = get(MembershipsCache)
+
+    context(_: ServerRuntime)
+    suspend fun AuthAccess<User>.memberships() = auth.memberships()
 
     // ----- Proofs -----
 
@@ -124,6 +129,34 @@ object UserAuth : PrincipalType<User, User.ID>, ServerBuilder() {
         Server.database,
         Server.cache,
         proofExpiration = 10.minutes
+    )
+
+    // Passkeys are scoped to the web app's domain.  Native apps need their own entries in allowedOrigins; see SETUP.md.
+    val webAuthN = proofs.path("webauthn") module WebAuthNProofEndpoints(
+        database = Server.database,
+        cache = Server.cache,
+        challengeExpiration = 30.seconds,
+        rpId = { URI(Server.webUrl()).host },
+        allowedOrigins = {
+            setOf(
+                URI(Server.webUrl()).let { "${it.scheme}://${it.authority}" },
+                //"android:apk-key-hash:<base64 of api-key-hash>" This will allow using passkeys on an android app
+            )
+        },
+        registrationForUser = { subject, residentKey ->
+            val user = subject as User
+            WebAuthN.Registration.RegistrationOptions(
+                authenticatorSelection = WebAuthN.AuthenticatorSelectionOptions(residentKey = residentKey),
+                user = WebAuthN.PublicKeyCredentialUserEntity(
+                    id = user._id.toString(),
+                    name = user.email.raw,
+                    displayName = user.name.ifBlank { user.email.raw },
+                ),
+            )
+        },
+        proveOptions = { userId ->
+            WebAuthN.Authentication.ProveOptions(userVerification = if (userId == null) WebAuthN.GeneralPreference.Preferred else WebAuthN.GeneralPreference.Discouraged)
+        }
     )
 
     class EmailEndpoints(val pins: PinHandler) : ServerBuilder() {

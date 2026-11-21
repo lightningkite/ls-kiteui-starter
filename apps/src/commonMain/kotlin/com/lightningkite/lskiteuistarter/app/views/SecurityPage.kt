@@ -10,7 +10,6 @@ import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.lightningserver.auth.AuthEndpoints
 import com.lightningkite.lightningserver.auth.accessToken
 import com.lightningkite.lskiteuistarter.app.sdk.currentSession
-import com.lightningkite.reactive.context.invoke
 import com.lightningkite.reactive.context.reactive
 import com.lightningkite.reactive.core.Constant
 import com.lightningkite.reactive.core.Reactive

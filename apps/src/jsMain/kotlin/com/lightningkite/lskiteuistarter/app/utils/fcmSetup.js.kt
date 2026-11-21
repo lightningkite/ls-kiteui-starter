@@ -1,12 +1,12 @@
-package com.lightningkite.lskiteuistarter.utils
+package com.lightningkite.lskiteuistarter.app.utils
 
 import com.lightningkite.kiteui.Log
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.lightningserver.*
 import com.lightningkite.lightningserver.sessions.*
-import com.lightningkite.lskiteuistarter.fcmToken
-import com.lightningkite.lskiteuistarter.utils.*
+import com.lightningkite.lskiteuistarter.app.fcmToken
+import com.lightningkite.lskiteuistarter.app.utils.*
 import com.lightningkite.services.data.*
 import com.lightningkite.services.database.*
 import com.lightningkite.services.files.*

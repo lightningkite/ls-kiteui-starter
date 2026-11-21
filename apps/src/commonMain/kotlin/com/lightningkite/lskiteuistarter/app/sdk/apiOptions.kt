@@ -2,6 +2,7 @@ package com.lightningkite.lskiteuistarter.app.sdk
 
 import com.lightningkite.kiteui.reactive.PersistentProperty
 import com.lightningkite.lightningserver.networking.BulkFetcher
+import com.lightningkite.lightningserver.networking.ConnectivityFetcher
 import com.lightningkite.reactive.core.Signal
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.serialization.Serializable
@@ -17,15 +18,15 @@ enum class ApiOption(val apiName: String, val http: String, val ws: String) {
     ;
 
     val baseFetcher
-        get() = /*if (!debug) */BulkFetcher(
+        get() = /*if (!debug) BulkFetcher(
             httpBulk = "$http/meta/bulk",
             wsMultiplex = "$ws?path=/multiplex",
             pingTime = 30.seconds,
-        ) /*else ConnectivityFetcher(
+        ) else */ConnectivityFetcher(
             http = http,
             ws = ws,
             pingTime = 30.seconds,
-        )*/
+        )
     val api get() = LiveApi(baseFetcher)
     fun next(): ApiOption = ApiOption.entries[(ordinal + 1) % ApiOption.entries.size]
 }

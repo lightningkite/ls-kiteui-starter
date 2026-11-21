@@ -12,13 +12,16 @@ import com.lightningkite.lskiteuistarter.app.sdk.currentSession
 import com.lightningkite.reactive.context.await
 import com.lightningkite.reactive.core.Constant
 import com.lightningkite.reactive.core.Reactive
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
 @Routable("/")
 class LandingPage : Page, FullscreenPage {
     override val title: Reactive<String> get() = Constant("Loading")
     override fun ElementWriter.CanAddTheme.render() {
         launch {
+            delay(100.milliseconds)
             if (currentSession.await() != null) {
                 context.pageNavigator.reset(HomePage())
             } else {

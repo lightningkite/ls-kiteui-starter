@@ -53,11 +53,11 @@ fun dev() = withEngine {
 }
 
 fun sdk() = withEngine {
-    val folder = KFile("apps/src/commonMain/kotlin/com/lightningkite/lskiteuistarter/sdk")
+    val folder = KFile("apps/src/commonMain/kotlin/com/lightningkite/lskiteuistarter/app/sdk")
     logger.info { "Generating FetcherSdk" }
-    FetcherSdk("com.lightningkite.lskiteuistarter.sdk").writeUsingDefaultSettings(Server, folder)
+    FetcherSdk("com.lightningkite.lskiteuistarter.app.sdk").writeUsingDefaultSettings(Server, folder)
     logger.info { "Generating CachingSdk" }
-    CachingSdk("com.lightningkite.lskiteuistarter.sdk").writeUsingDefaultSettings(Server, folder)
+    CachingSdk("com.lightningkite.lskiteuistarter.app.sdk").writeUsingDefaultSettings(Server, folder)
     logger.info { "Done" }
 }
 

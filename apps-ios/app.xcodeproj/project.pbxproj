@@ -15,6 +15,7 @@
 		18B169BD2B926C4600D89B98 /* rock_templateUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18B169BC2B926C4600D89B98 /* rock_templateUITestsLaunchTests.swift */; };
 		2816F2B2C389BD3F97225124 /* Pods_app_appUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 44DD9CDF94C2409B1E2ECD23 /* Pods_app_appUITests.framework */; };
 		33DBD6437F2A809AC4C8CB0E /* Pods_appTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E4D78ED94F1209123C080F89 /* Pods_appTests.framework */; };
+		B7B0439130B10F7200EBADB7 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7B0438E30B10F7200EBADB7 /* SceneDelegate.swift */; };
 		EB8BAFC9E91B90DE2B63C457 /* Pods_app.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AD191614955042450B6EE6B6 /* Pods_app.framework */; };
 /* End PBXBuildFile section */
 
@@ -61,6 +62,7 @@
 		73E5BB782BFEB59000214C91 /* app.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = app.entitlements; sourceTree = "<group>"; };
 		AD191614955042450B6EE6B6 /* Pods_app.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_app.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		B57207BC1C2B539DCA4C353B /* Pods-app.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-app.release.xcconfig"; path = "Target Support Files/Pods-app/Pods-app.release.xcconfig"; sourceTree = "<group>"; };
+		B7B0438E30B10F7200EBADB7 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		D4CB2BA92B46BAB4E21AB792 /* Pods-app.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-app.debug.xcconfig"; path = "Target Support Files/Pods-app/Pods-app.debug.xcconfig"; sourceTree = "<group>"; };
 		DE8FDC26574ED397B04B86DA /* Pods-appTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-appTests.release.xcconfig"; path = "Target Support Files/Pods-appTests/Pods-appTests.release.xcconfig"; sourceTree = "<group>"; };
 		E4D78ED94F1209123C080F89 /* Pods_appTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_appTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -119,6 +121,7 @@
 		18B169982B926C4400D89B98 /* app */ = {
 			isa = PBXGroup;
 			children = (
+				B7B0438E30B10F7200EBADB7 /* SceneDelegate.swift */,
 				73E5BB782BFEB59000214C91 /* app.entitlements */,
 				18B169992B926C4400D89B98 /* AppDelegate.swift */,
 				180E7CEE2D8DF24900E6C79B /* test.h */,
@@ -332,9 +335,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-app-appUITests/Pods-app-appUITests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-app-appUITests/Pods-app-appUITests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -371,9 +378,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-app/Pods-app-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-app/Pods-app-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -432,6 +443,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				18B1699A2B926C4400D89B98 /* AppDelegate.swift in Sources */,
+				B7B0439130B10F7200EBADB7 /* SceneDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -613,6 +625,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = app/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "ls-kiteui-starter";
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_NSCalendarsUsageDescription = "ls-kiteui-starter doesn't use your calendar, but uses a library that can provide calendar access.";
 				INFOPLIST_KEY_NSCameraUsageDescription = "This app requires camera access in order for you to add photos, and videos to a image collection.";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "ls-kiteui-starter uses your Camera Roll to upload, share, download, and save the photos that you select.";
@@ -657,6 +670,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = app/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "ls-kiteui-starter";
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_NSCalendarsUsageDescription = "ls-kiteui-starter doesn't use your calendar, but uses a library that can provide calendar access.";
 				INFOPLIST_KEY_NSCameraUsageDescription = "This app requires camera access in order for you to add photos, and videos to a image collection.";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "ls-kiteui-starter uses your Camera Roll to upload, share, download, and save the photos that you select.";

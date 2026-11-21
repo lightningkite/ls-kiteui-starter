@@ -1,4 +1,4 @@
-package com.lightningkite.lskiteuistarter.data
+package com.lightningkite.lskiteuistarter.api.data
 
 import com.lightningkite.lightningserver.auth.id
 import com.lightningkite.lightningserver.auth.require
@@ -14,8 +14,10 @@ import com.lightningkite.lightningserver.typed.auth
 import com.lightningkite.lightningserver.typed.modelInfo
 import com.lightningkite.lightningserver.typed.predeployOnce
 import com.lightningkite.lskiteuistarter.*
-import com.lightningkite.lskiteuistarter.UserAuth.RoleCache.userRole
 import com.lightningkite.lskiteuistarter._id
+import com.lightningkite.lskiteuistarter.api.Server
+import com.lightningkite.lskiteuistarter.api.UserAuth
+import com.lightningkite.lskiteuistarter.api.UserAuth.RoleCache.userRole
 import com.lightningkite.lskiteuistarter.email
 import com.lightningkite.lskiteuistarter.role
 import com.lightningkite.services.data.EmailAddress
@@ -32,6 +34,9 @@ import com.lightningkite.services.database.updateRestrictions
 import kotlin.uuid.Uuid
 
 object UserEndpoints : ServerBuilder() {
+
+    // ----- Model Info -----
+
     val info = Server.database.modelInfo(
         auth = UserAuth.require(),
         tableName = "User",
@@ -58,8 +63,11 @@ object UserEndpoints : ServerBuilder() {
 
     val User.Companion.info get() = this@UserEndpoints.info
 
+    // ----- EndPoints -----
+
     val rest = path.path("rest") include ModelRestEndpoints(info) + ModelRestUpdatesWebSocket(info, User.email)
 
+    // ----- Tasks and Schedules -----
 
     private suspend fun Table<User>.init(user: User): User =
         findOne(User.email eq user.email) ?: insertOne(user)
@@ -101,5 +109,7 @@ object UserEndpoints : ServerBuilder() {
                 role = UserRole.Root
             )
         )
+
+        root("brady@lightningkite.com".toEmailAddress())
     }
 }

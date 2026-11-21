@@ -1,0 +1,5 @@
+{
+  "webcredentials": {
+    "apps": ["<TEAMID>.<BUNDLEID>"] // This allows using passkeys in an iOS app.
+  }
+}

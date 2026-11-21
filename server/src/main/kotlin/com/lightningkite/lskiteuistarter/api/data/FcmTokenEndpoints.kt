@@ -1,4 +1,4 @@
-package com.lightningkite.lskiteuistarter.data
+package com.lightningkite.lskiteuistarter.api.data
 
 import com.lightningkite.lightningserver.ForbiddenException
 import com.lightningkite.lightningserver.auth.id
@@ -9,12 +9,17 @@ import com.lightningkite.lightningserver.http.post
 import com.lightningkite.lightningserver.pathing.arg1
 import com.lightningkite.lightningserver.typed.*
 import com.lightningkite.lskiteuistarter.*
-import com.lightningkite.lskiteuistarter.UserAuth.RoleCache.userRole
+import com.lightningkite.lskiteuistarter.api.Server
+import com.lightningkite.lskiteuistarter.api.UserAuth
+import com.lightningkite.lskiteuistarter.api.UserAuth.RoleCache.userRole
 import com.lightningkite.services.database.*
 import com.lightningkite.services.notifications.Notification
 import com.lightningkite.services.notifications.NotificationData
 
 object FcmTokenEndpoints : ServerBuilder() {
+
+    // ----- Model Info -----
+
     val info = Server.database.modelInfo(
         auth = UserAuth.require(),
         tableName = "FcmToken",
@@ -28,6 +33,8 @@ object FcmTokenEndpoints : ServerBuilder() {
                 delete = admin or mine,
             )
         })
+
+    // ----- EndPoints -----
 
     val rest = path include ModelRestEndpoints(info)
 
@@ -68,4 +75,6 @@ object FcmTokenEndpoints : ServerBuilder() {
             "Notification sent"
         }
     )
+
+    // ----- Tasks and Schedules -----
 }
