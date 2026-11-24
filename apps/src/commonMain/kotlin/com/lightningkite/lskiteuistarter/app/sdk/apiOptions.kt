@@ -26,6 +26,7 @@ enum class ApiOption(val apiName: String, val http: String, val ws: String) {
             http = http,
             ws = ws,
             pingTime = 30.seconds,
+            webIncludeCredentials = true,
         )
     val api get() = LiveApi(baseFetcher)
     fun next(): ApiOption = ApiOption.entries[(ordinal + 1) % ApiOption.entries.size]

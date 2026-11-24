@@ -1,5 +1,7 @@
 // by Claude — CRUD and permission-boundary tests for all endpoints
-package com.lightningkite.lskiteuistarter
+package com.lightningkite.lskiteuistarter.api
+
+import com.lightningkite.lskiteuistarter.*
 
 import com.lightningkite.lightningserver.ForbiddenException
 import com.lightningkite.lightningserver.NotFoundException
@@ -8,9 +10,9 @@ import com.lightningkite.lightningserver.runtime.test.execute
 import com.lightningkite.lightningserver.runtime.test.testBlocking
 import com.lightningkite.lightningserver.settings.set
 import com.lightningkite.lightningserver.typed.test
-import com.lightningkite.lskiteuistarter.data.MembershipEndpoints
-import com.lightningkite.lskiteuistarter.data.OrganizationEndpoints
-import com.lightningkite.lskiteuistarter.data.UserEndpoints
+import com.lightningkite.lskiteuistarter.api.data.MembershipEndpoints
+import com.lightningkite.lskiteuistarter.api.data.OrganizationEndpoints
+import com.lightningkite.lskiteuistarter.api.data.UserEndpoints
 import com.lightningkite.services.database.Database
 import com.lightningkite.services.database.Modification
 import com.lightningkite.services.database.Query

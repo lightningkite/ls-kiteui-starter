@@ -30,7 +30,9 @@ mcp__claude-in-chrome__tabs_context_mcp(createIfEmpty=true)
 # 2. Navigate to the app
 mcp__claude-in-chrome__navigate(tabId=..., url='http://localhost:8941')
 
-# 3. Inject session token (IMPORTANT: use SameServer, not Local!)
+# 3. Inject a refresh token (IMPORTANT: use SameServer, not Local!)
+#    `sessionToken` is where old app versions kept it; on load the app moves it into the
+#    HttpOnly RefreshToken cookie and clears it.  See "Sessions" below.
 mcp__claude-in-chrome__javascript_tool(tabId=..., text='''
   localStorage.setItem('apiOption', '"SameServer"');
   localStorage.setItem('sessionToken', '"<token-from-.admin-token>"');
@@ -43,6 +45,26 @@ mcp__claude-in-chrome__find(tabId=..., query='login button')
 ```
 
 **CRITICAL:** Use `"SameServer"` API option, NOT `"Local"`. SameServer routes requests through Vite's proxy to the backend on port 8081. Local goes directly to port 8080 (wrong server).
+
+## Sessions
+
+The refresh token lives only in an HttpOnly `RefreshToken` cookie, never in localStorage.  After login the app sends
+it to `POST auth/session/token/set-cookie`, then gets access tokens from `POST auth/session/token/cookie`; logout
+(`POST auth/session/terminate`) deletes the cookie.  For this to work in testing:
+
+- `general.publicUrl` is `http://localhost:8941/api`, the URL the browser uses through the Vite proxy, because the
+  server scopes the cookie's `Path` to `<publicUrl path>/auth/session/token/cookie`.
+- `refreshTokenCookieSecure` is `false`: Chrome accepts `Secure` cookies from http://localhost, Safari and native
+  emulators don't.  Never turn it off in production.
+- CORS lists the frontend origin with `allowCredentials: true`.  Never combine `allowCredentials` with `"*"`: the
+  server reflects any origin, so every site could use the user's cookie.
+
+Refresh tokens are no longer accepted as bearer credentials.  To call the API by hand, exchange one first:
+
+```bash
+ACCESS=$(curl -s -X POST http://localhost:8081/auth/session/token/simple -H 'Content-Type: application/json' -d "\"$(cat testing/.admin-token)\"" | tr -d '"')
+curl -H "Authorization: $ACCESS" http://localhost:8081/auth/session/self
+```
 
 ## Scripts
 
@@ -91,7 +113,8 @@ cat testing/.frontend.log  # Check error logs
 ```
 
 ### Token not working
-The token format in localStorage must include inner quotes:
+The injected `sessionToken` is moved into the cookie on the next load, then removed; a token the server rejects is
+just removed (you stay logged out).  The token format in localStorage must include inner quotes:
 ```javascript
 // CORRECT
 localStorage.setItem('sessionToken', '"refresh/User/uuid:token"');

@@ -8,7 +8,7 @@ import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.lskiteuistarter.FcmToken
 import com.lightningkite.lskiteuistarter.app.fcmToken
 import com.lightningkite.lskiteuistarter.app.sdk.currentSession
-import com.lightningkite.lskiteuistarter.app.sdk.sessionToken
+import com.lightningkite.lskiteuistarter.app.sdk.sessionCookieChanged
 import com.lightningkite.reactive.context.invoke
 import com.lightningkite.reactive.context.reactive
 import com.lightningkite.reactive.core.Constant
@@ -51,14 +51,9 @@ class HomePage : Page {
             important.buttonTheme.button {
                 centered.text("Logout")
                 onClick {
-                    try {
-                        currentSession()?.api?.userAuth?.terminateSession()
-                    } catch (_: Exception) {
-
-                    } finally {
-                        sessionToken set null
-                        context.pageNavigator.reset(LoginPage())
-                    }
+                    currentSession()?.api?.userAuth?.terminateSession()
+                    sessionCookieChanged.value++
+                    context.pageNavigator.reset(LoginPage())
                 }
             }
         }

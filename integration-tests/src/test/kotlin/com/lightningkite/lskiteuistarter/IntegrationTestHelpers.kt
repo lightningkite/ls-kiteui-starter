@@ -15,23 +15,26 @@ import com.lightningkite.lightningserver.runtime.test.TestRunner
 import com.lightningkite.lightningserver.runtime.test.execute
 import com.lightningkite.lightningserver.runtime.test.test
 import com.lightningkite.lightningserver.settings.set
-import com.lightningkite.lskiteuistarter.data.UserEndpoints.info
-import com.lightningkite.lskiteuistarter.sdk.LiveApi
-import com.lightningkite.lskiteuistarter.sdk.apiOverride
-import com.lightningkite.lskiteuistarter.sdk.currentSession
-import com.lightningkite.lskiteuistarter.sdk.sessionToken
+import com.lightningkite.lskiteuistarter.api.Server
+import com.lightningkite.lskiteuistarter.api.UserAuth
+import com.lightningkite.lskiteuistarter.api.data.UserEndpoints.info
+import com.lightningkite.lskiteuistarter.app.AutoRoutes
+import com.lightningkite.lskiteuistarter.app.sdk.LiveApi
+import com.lightningkite.lskiteuistarter.app.sdk.apiOverride
+import com.lightningkite.lskiteuistarter.app.sdk.currentSession
+import com.lightningkite.lskiteuistarter.app.sdk.sessionCookieChanged
 import com.lightningkite.reactive.context.await
 import com.lightningkite.reactive.core.AppJob
 import com.lightningkite.services.data.toEmailAddress
 import com.lightningkite.services.database.Database
+import com.lightningkite.services.email.EmailService
 import com.lightningkite.services.database.insertOne
-import kotlinx.coroutines.runBlocking
 
 /**
  * Runs a KiteUI [uiTest] backed by a real Lightning Server with a RAM database.
  * The frontend talks to the server via [TestRunnerFetcher] — no HTTP involved.
  *
- * The [setup] block runs inside the uiTest content block (before the page renders). Use it to seed
+ * The [setup] block runs on the UI thread before the initial page is navigated to. Use it to seed
  * data and call [loginAs] so the session is established before any page guard checks the session.
  * Because the jvmSsr harness uses real (Unconfined) scheduling, wait for async results in [block]
  * with the built-in [UiTestScope.waitForText] / [UiTestScope.waitFor].
@@ -46,7 +49,10 @@ fun integrationTest(
     setup: (suspend context(ServerRuntime) () -> Unit)? = null,
     block: suspend UiTestScope.(runner: TestRunner<*>) -> Unit,
 ) {
-    Server.test(settings = { database set Database.Settings("ram") }) {
+    Server.test(settings = {
+        database set Database.Settings("ram")
+        email set EmailService.Settings("test")
+    }) {
         val runner = contextOf<TestRunner<*>>()
         val api = LiveApi(TestRunnerFetcher(runner))
         val navigator = PageNavigator { AutoRoutes }
@@ -65,7 +71,6 @@ fun integrationTest(
                 // Clean stale global state from previous tests. The sdk `currentSession` reactive and
                 // AppScope coroutines outlive individual tests and hold references to old server
                 // engines.
-                sessionToken.value = null
                 apiOverride.value = null
                 AppJob.children.forEach { it.cancel() }
 
@@ -80,7 +85,7 @@ fun integrationTest(
                 context.pageNavigator = navigator
 
                 // Keep `currentSession` ACTIVE for the whole test. Established BEFORE login so the
-                // single reactive activation spans the sessionToken change loginAs() makes.
+                // single reactive activation spans the session change loginAs() makes.
                 // Without this, loginAs()'s await() adds a listener, reads the value, then removes
                 // it — deactivating the reactive. When a rendered page later reads currentSession it
                 // re-activates it, and that fresh startCalculation cancels the in-flight token
@@ -89,14 +94,14 @@ fun integrationTest(
                 // keeps the session cached and ready so page reads just attach without re-computing.
                 sessionKeepAlive = currentSession.beginUse()
 
-                // Seed data / log in BEFORE the page renders so the session resolves first.
-                if (setup != null) runBlocking { execute { setup() } }
-
                 navigatorView(navigator)
-                navigator.navigate(initialPage)
             },
         ) {
             try {
+                // Seed data / log in BEFORE the page renders so the session resolves first.  Not in `content`:
+                // blocking the UI thread there deadlocks the token fetch, which resumes on that thread.
+                if (setup != null) execute { setup() }
+                navigator.navigate(initialPage)
                 block(runner)
             } finally {
                 // Shut the root view down FIRST. The jvmSsr uiTest harness never tears the view
@@ -109,7 +114,6 @@ fun integrationTest(
                 rootView?.onShutdown()
                 sessionKeepAlive?.invoke()
                 apiOverride.value = null
-                sessionToken.value = null
                 AppJob.children.forEach { it.cancel() }
             }
         }
@@ -139,8 +143,9 @@ suspend fun createAdmin(
 ): User = createUser(email, name, UserRole.Root)
 
 /**
- * Create a real session for [user] and set the frontend's session token. Goes through the server's
- * real session system, so the frontend's `currentSession()` resolves to a real UserSession.
+ * Create a real session for [user] and hand its refresh token to the frontend the way LoginPage does:
+ * into the refresh token cookie (kept by [TestRunnerFetcher]'s cookie jar), so `currentSession()` resolves
+ * to a real UserSession.
  */
 context(_: ServerRuntime)
 suspend fun loginAs(user: User) {
@@ -148,7 +153,9 @@ suspend fun loginAs(user: User) {
         subjectId = user._id,
         scopes = setOf(GrantedScope.root),
     )
-    sessionToken.value = refreshToken.string
+    val api = checkNotNull(apiOverride.value) { "loginAs only works inside integrationTest, which sets apiOverride" }
+    api.userAuth.setRefreshTokenCookie(refreshToken.string)
+    sessionCookieChanged.value++
     // Wait for the frontend session to actually resolve (getSelf) BEFORE the page renders. Otherwise
     // a permission-gated / owner-scoped page can render against the still-anonymous session, cache the
     // empty/403 result, and never show the authenticated data within the test window (ModelCache only

@@ -7,7 +7,7 @@ import com.lightningkite.kiteui.suppressConnectivityIssues
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.lightningserver.LsErrorException
-import com.lightningkite.lightningserver.auth.accessToken
+import com.lightningkite.lightningserver.auth.accessTokenFromCookie
 import com.lightningkite.lskiteuistarter.FcmToken
 import com.lightningkite.lskiteuistarter.app.fcmToken
 import com.lightningkite.reactive.context.invoke
@@ -17,26 +17,42 @@ import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.launch
 
 
-val sessionToken = PersistentProperty<String?>("sessionToken", null)
+/**
+ * The refresh token lives in an HttpOnly cookie the app can't read, so nothing here can notice it change.
+ * Bump this after logging in or out to make [currentSession] ask the server again.
+ */
+val sessionCookieChanged = Signal(0)
+
+// Older versions of the app kept the refresh token here; [currentSession] moves it into the cookie once.
+private val legacySessionToken = PersistentProperty<String?>("sessionToken", null)
 
 private val tokenLog = Log.tag("currentSession.token")
 val currentSession: Reactive<UserSession?> = rememberSuspending {
-    val token = sessionToken() ?: return@rememberSuspending null
+    sessionCookieChanged()
     val api = apiOverride() ?: selectedApi().api
 
-    val accessToken = api.userAuth.accessToken(token)
-    val authApi = api.withMetadata { set("Authorization", accessToken()) }
-    try {
-        val self = authApi.userAuth.getSelf()
-
-        UserSession(
-            api = authApi,
-            userId = self._id,
-        )
-    } catch (e: Exception) {
-        tokenLog.warn("Session fetch failed", e)
-        null
+    legacySessionToken.value?.let { token ->
+        try {
+            api.userAuth.setRefreshTokenCookie(token)
+        } catch (e: LsErrorException) {
+            if (e.error.http != 400 && e.error.http != 401) throw e
+            tokenLog.info("Discarding a stored refresh token the server no longer accepts")
+        }
+        legacySessionToken.value = null
     }
+
+    val accessToken = api.userAuth.accessTokenFromCookie()
+    val authApi = api.withMetadata { set("Authorization", accessToken()) }
+    val self = try {
+        authApi.userAuth.getSelf()
+    } catch (e: LsErrorException) {
+        if (e.error.http == 401) return@rememberSuspending null
+        throw e
+    }
+    UserSession(
+        api = authApi,
+        userId = self._id,
+    )
 }.also { currentSession ->
     AppScope.reactiveSuspending {
         val s = currentSession() ?: run {

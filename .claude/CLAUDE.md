@@ -143,7 +143,7 @@ ls-kiteui-starter/
 ### Client-Side Architecture
 
 **KiteUI** uses reactive programming with `Signal<T>`:
-- `currentSession()` - Reactive access to authentication state
+- `currentSession()` - Reactive access to authentication state.  The refresh token is never stored by the app: after login it goes to `setRefreshTokenCookie` (an HttpOnly cookie) and access tokens come from `accessTokenFromCookie()`.  Bump `sessionCookieChanged` after logging in or out; a 401 means logged out.  Cookie calls must go through `ConnectivityFetcher(webIncludeCredentials = true)`, never `BulkFetcher`.
 - Navigation handled by `PageNavigator` with serializable pages
 - Theming via `Theme` and `appTheme` signal
 - FCM token registration integrated with authentication flow
@@ -221,7 +221,7 @@ After running `prepare-browser-test.sh`, use Claude's Chrome MCP tools:
 
 1. `mcp__claude-in-chrome__tabs_context_mcp(createIfEmpty=true)`
 2. `mcp__claude-in-chrome__navigate(tabId=..., url='http://localhost:8951')`
-3. Inject session token if available (see `testing/.admin-token`)
+3. Inject a refresh token as localStorage `sessionToken` if available (see `testing/.admin-token`); the app moves it into its HttpOnly cookie on load.  See "Sessions" in `testing/README.md`
 4. `mcp__claude-in-chrome__computer(action='screenshot')` for visual verification
 
 ### Configuration

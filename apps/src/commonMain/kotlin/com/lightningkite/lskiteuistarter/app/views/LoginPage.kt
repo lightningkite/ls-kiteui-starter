@@ -15,7 +15,7 @@ import com.lightningkite.lightningserver.auth.AuthEndpoints
 import com.lightningkite.lskiteuistarter.app.FullscreenPage
 import com.lightningkite.lskiteuistarter.app.sdk.ApiOption
 import com.lightningkite.lskiteuistarter.app.sdk.selectedApi
-import com.lightningkite.lskiteuistarter.app.sdk.sessionToken
+import com.lightningkite.lskiteuistarter.app.sdk.sessionCookieChanged
 import com.lightningkite.reactive.context.reactive
 import com.lightningkite.reactive.core.Constant
 import com.lightningkite.reactive.core.Reactive
@@ -45,7 +45,8 @@ class LoginPage : Page, FullscreenPage {
                 ),
                 subject = api.userAuth
             ) { token ->
-                sessionToken set token
+                api.userAuth.setRefreshTokenCookie(token)
+                sessionCookieChanged.value++
                 context.pageNavigator.reset(HomePage())
             }
             anon

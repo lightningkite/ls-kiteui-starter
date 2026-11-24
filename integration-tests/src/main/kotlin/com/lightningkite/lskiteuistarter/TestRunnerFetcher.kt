@@ -8,6 +8,7 @@ import com.lightningkite.lightningserver.EngineApi
 import com.lightningkite.lightningserver.HttpMethod
 import com.lightningkite.lightningserver.LSError
 import com.lightningkite.lightningserver.LsErrorException
+import com.lightningkite.lightningserver.http.HttpHeader
 import com.lightningkite.lightningserver.http.HttpHeaders
 import com.lightningkite.lightningserver.http.HttpRequest
 import com.lightningkite.lightningserver.http.QueryParameters
@@ -20,6 +21,11 @@ import com.lightningkite.lightningserver.typed.ClientWebSocket
 import com.lightningkite.lightningserver.typed.Fetcher
 import com.lightningkite.lightningserver.typed.RequestMetadata
 import com.lightningkite.services.data.TypedData
+import io.ktor.client.plugins.cookies.AcceptAllCookiesStorage
+import io.ktor.client.plugins.cookies.CookiesStorage
+import io.ktor.http.Url
+import io.ktor.http.parseServerSetCookieHeader
+import io.ktor.http.renderCookieHeader
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.serialization.KSerializer
@@ -41,13 +47,15 @@ import kotlinx.serialization.json.JsonObject
  */
 class TestRunnerFetcher(
     private val engine: Engine,
+    // Shared by every fetcher derived through withMetadata, like a browser's cookie jar.
+    private val cookies: CookiesStorage = AcceptAllCookiesStorage(),
     private val metadata: suspend RequestMetadata.() -> Unit = {},
 ) : Fetcher {
 
     private val json: Json get() = engine.externalSerialization.json
 
     override fun withMetadata(block: suspend RequestMetadata.() -> Unit): Fetcher =
-        TestRunnerFetcher(engine) { metadata(); block() }
+        TestRunnerFetcher(engine, cookies) { metadata(); block() }
 
     override suspend fun <I, O> invoke(
         url: String,
@@ -60,16 +68,22 @@ class TestRunnerFetcher(
         val bodyData = if (inSerializer.descriptor == Unit.serializer().descriptor) null
         else TypedData.text(json.encodeToString(inSerializer, body), MediaType.Application.Json)
 
-        // 2. Build headers (include auth headers from metadata)
+        // 2. Parse URL into path and query parameters
+        val (path, queryParams) = parseUrl(url)
+        // https, so the jar sends the server's Secure cookies back.
+        val cookieUrl = Url("https://localhost/" + path.removePrefix("/"))
+        val cookiesToSend = cookies.get(cookieUrl)
+
+        // 3. Build headers (include auth headers from metadata)
         val headers = HttpHeaders(
             RequestMetadata().apply { metadata() }.toList() + listOf(
                 "Accept" to "application/json",
                 "Content-Type" to "application/json",
+            ) + listOfNotNull(
+                cookiesToSend.takeIf { it.isNotEmpty() }
+                    ?.let { "Cookie" to it.joinToString("; ") { cookie -> renderCookieHeader(cookie) } }
             )
         )
-
-        // 3. Parse URL into path and query parameters
-        val (path, queryParams) = parseUrl(url)
 
         // 4. Create request with RawHttpEndpoint (lazy match triggers inside Engine.handleRoot)
         val request = HttpRequest<PathSpec>(
@@ -77,7 +91,7 @@ class TestRunnerFetcher(
             queryParameters = queryParams,
             headers = headers,
             domain = "localhost",
-            protocol = "http",
+            protocol = "https",
             sourceIp = "127.0.0.1",
             body = bodyData,
         )
@@ -85,6 +99,8 @@ class TestRunnerFetcher(
         // 5. Dispatch through server routing as a real engine would (interceptors, auth, error handling)
         @OptIn(EngineApi::class)
         val response = with(engine) { handleRoot(request, Execution.ID.generate()) }
+        for (setCookie in response.headers.getMany(HttpHeader.SetCookie))
+            cookies.addCookie(cookieUrl, parseServerSetCookieHeader(setCookie.toHttpString()))
 
         // 6. Handle errors — mirror how ConnectivityFetcher/BulkFetcher parse errors
         if (response.status.code >= 400) {

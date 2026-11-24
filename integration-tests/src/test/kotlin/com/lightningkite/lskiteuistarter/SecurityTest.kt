@@ -24,7 +24,7 @@ class SecurityTest {
         },
     ) { server ->
         // With a password set, UserAuth requires two proofs: password and an emailed code.
-        waitForText("Confirm it's you")
+        waitFor(description = "re-auth options") { findClickable("Enter Password").isNotEmpty() }
         click(findClickable("Enter Password").single().path)
         waitForId("passwordInput")
         setValue("passwordInput", "correct horse battery")

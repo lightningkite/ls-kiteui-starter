@@ -5,10 +5,13 @@ import com.lightningkite.lskiteuistarter.api.*
 import com.lightningkite.lskiteuistarter.app.*
 import com.lightningkite.lskiteuistarter.app.views.*
 
-import com.lightningkite.lskiteuistarter.app.sdk.sessionToken
+import com.lightningkite.lskiteuistarter.app.sdk.currentSession
+import com.lightningkite.lskiteuistarter.app.sdk.sessionCookieChanged
+import com.lightningkite.reactive.context.await
 import com.lightningkite.lskiteuistarter.app.views.HomePage
 import com.lightningkite.lskiteuistarter.app.views.LoginPage
 import kotlin.test.Test
+import kotlin.test.assertNull
 
 class SmokeTest {
 
@@ -47,9 +50,8 @@ class SmokeTest {
     }
 
     /**
-     * Session loss while already sitting on a guarded page (e.g. the token gets cleared by another
-     * tab, or expires) must also redirect to LoginPage, not just the arrives-already-logged-out case
-     * above. Exercises the guard's continuous (not just initial) reactivity.
+     * Session loss while already sitting on a guarded page (e.g. logged out in another tab) must also
+     * redirect to LoginPage, not just the arrives-already-logged-out case above. Exercises the guard's continuous (not just initial) reactivity.
      */
     @Test
     fun sessionLossWhileOnHomeRedirectsToLogin() = integrationTest(
@@ -60,7 +62,24 @@ class SmokeTest {
         },
     ) {
         waitForText("Welcome to your home page")
-        sessionToken.value = null
+        currentSession.await()!!.api.userAuth.terminateSession()
+        sessionCookieChanged.value++
         waitForText("Sign in to get started")
+    }
+
+    @Test
+    fun logoutEndsTheSession() = integrationTest(
+        initialPage = HomePage(),
+        setup = {
+            val user = createUser()
+            loginAs(user)
+        },
+    ) {
+        waitForText("Welcome to your home page")
+        click(findClickable("Logout").single().path)
+        waitForText("Sign in to get started")
+        // Asking again goes back to the server, which must no longer accept the cookie.
+        sessionCookieChanged.value++
+        assertNull(currentSession.await())
     }
 }

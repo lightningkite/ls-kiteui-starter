@@ -238,6 +238,7 @@ object UserAuth : PrincipalType<User, User.ID>, ServerBuilder() {
         principal = UserAuth,
         database = Server.database,
         cache = Server.cache,
+        refreshTokenCookieSecure = Server.refreshTokenCookieSecure,
     ) {
         context(server: ServerRuntime)
         override suspend fun requiredProofStrengthFor(subject: User): Int {

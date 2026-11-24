@@ -49,6 +49,12 @@ object Server : ServerBuilder() {
     val notifications = setting("notifications", default = NotificationService.Settings("console"))
     val rateLimiter = setting<RateLimitSettings?>("rateLimiting", null, optional = true)
     val webUrl = setting("webUrl", "http://localhost:8941")
+    val refreshTokenCookieSecure = setting(
+        "refreshTokenCookieSecure",
+        true,
+        instructions = "Turn off only for local development over plain http: Safari and native emulators drop Secure cookies from http://localhost.",
+        optional = true,
+    )
 
 
     init {
