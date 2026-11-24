@@ -175,7 +175,7 @@ tasks.matching { it.name == "jsViteDev" || it.name == "jsBrowserDevelopmentRun" 
     dependsOn("setupSourceMapSymlink")
 }
 
-fun env(name: String, profile: String) {
+fun env(name: String, profile: String, autoApprove: Boolean) {
     tasks.register("deployWeb${name}Init", Exec::class.java) {
         group = "deploy"
         description = "Run 'terraform init' in the $name directory"
@@ -195,12 +195,15 @@ fun env(name: String, profile: String) {
         val props = Properties()
         props.entries.forEach { environment(it.key.toString().trim('"', ' '), it.value.toString().trim('"', ' ')) }
         this.executable = "terraform"
-        this.args("apply", "-auto-approve")
+        if(autoApprove)
+            this.args("apply", "-auto-approve")
+        else
+            this.args("apply")
         this.workingDir = file("terraform/$name")
     }
 }
 
-env("default", "default")
+env("default", "default", autoApprove = true)
 
 // by Claude — Fastlane deploy tasks
 //
