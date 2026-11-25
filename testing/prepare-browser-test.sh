@@ -120,7 +120,7 @@ cat "$INJECT_FILE" | sed 's/^/  /'
 echo ""
 else
 echo "  NOTE: No admin token found. You'll need to log in manually."
-echo "  Add debug token feature to server - see testing/README.md"
+echo "  start-backend.sh writes it from the seed command's output; see testing/.seed.log"
 echo ""
 fi
 echo "============================================"

@@ -15,9 +15,12 @@ Scripts for manual and browser testing of the application.
 
 This script:
 1. Stops any existing servers
-2. Starts backend on port 8081 (captures admin token)
+2. Seeds sample data (`seed` command, debug servers only), saves the seeded admin's refresh token to `.admin-token`, and starts the backend on port 8081
 3. Starts frontend on port 8941 (Vite with proxy to backend)
 4. Outputs Chrome integration instructions
+
+Seeding resets the seed rows each time (rows you made by hand survive).  The scripts pass `GRADLE_ARGS` to every
+Gradle call, e.g. `GRADLE_ARGS=--offline ./testing/prepare-browser-test.sh` where dependencies can't be downloaded.
 
 ## Chrome Integration (Claude Code)
 
@@ -71,7 +74,7 @@ curl -H "Authorization: $ACCESS" http://localhost:8081/auth/session/self
 | Script | Purpose |
 |--------|---------|
 | `prepare-browser-test.sh` | All-in-one: stops servers, starts fresh, outputs instructions |
-| `start-backend.sh` | Start backend on :8081, save admin token |
+| `start-backend.sh` | Seed sample data, save the seeded admin's refresh token, start backend on :8081 |
 | `start-frontend.sh` | Start Vite frontend on :8941 |
 | `start-all.sh` | Start backend + frontend |
 | `stop-all.sh` | Stop all test servers |
@@ -83,7 +86,8 @@ curl -H "Authorization: $ACCESS" http://localhost:8081/auth/session/self
 
 ## Generated Files (gitignored)
 
-- `.admin-token` - Admin refresh token for bypassing login
+- `.admin-token` - Refresh token for the seeded admin (admin@example.com), printed by `seed`
+- `.seed.log` - Seed command output
 - `.backend.log` - Backend server output
 - `.frontend.log` - Vite server output
 - `.browser-inject.js` - JS snippet for manual session injection

@@ -1,4 +1,4 @@
-// Populates a local database with sample data for development.
+// Populates a local database with sample data for development, and prints a refresh token for the seeded admin.
 // Run via: ./gradlew :server:run --args="seed"
 // Only works when general.debug = true in settings.json.
 package com.lightningkite.lskiteuistarter.api
@@ -70,6 +70,9 @@ fun seed() = withEngine {
             // Fixtures insert fixed ids, so clear the previous run first.  Hand-made rows survive.
             deleteSeedData()
             SeedData.fixtures.execute(SeedConfig())
+            // Reaching here means general.debug is set: deleteSeedData refuses otherwise.  testing/start-backend.sh reads this line.
+            val (_, refreshToken) = UserAuth.session.newSession(SeedData.admin._id, label = "Seeded admin")
+            println("Admin token: '${refreshToken.string}'")
         }
     }
 }

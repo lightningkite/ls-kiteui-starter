@@ -32,7 +32,7 @@ fi
 echo "Starting Vite frontend dev server..."
 
 # Start Vite in background
-./gradlew :apps:jsViteDev > "$LOG_FILE" 2>&1 &
+./gradlew $GRADLE_ARGS :apps:jsViteDev > "$LOG_FILE" 2>&1 &
 VITE_PID=$!
 
 echo "Waiting for Vite to start (PID: $VITE_PID)..."

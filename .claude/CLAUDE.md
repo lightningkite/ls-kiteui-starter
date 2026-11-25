@@ -227,7 +227,7 @@ After running `prepare-browser-test.sh`, use Claude's Chrome MCP tools:
 ### Configuration
 
 - `testing/settings.testing.json` - Testing-specific settings (port 8081, debug mode)
-- `testing/.admin-token` - Admin session token (generated when debug mode enabled)
+- `testing/.admin-token` - Refresh token for the seeded admin, written by `start-backend.sh` from the `seed` command's output (debug servers only)
 - See `testing/README.md` for full documentation
 
 ## Adding a New Feature (Step-by-Step)

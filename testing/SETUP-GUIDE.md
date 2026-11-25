@@ -74,7 +74,7 @@ The `testing/settings.testing.json` must include ALL required Lightning Server s
 - `database` - Database connection (use `"json-files://local/database"` for testing)
 - `email` - Email service (use `"console"` to print emails to stdout)
 - `files` - File storage
-- `general` - Project settings including `"debug": true` for admin token
+- `general` - Project settings including `"debug": true`, without which `seed` refuses to run
 - `ktorRunConfig` - Host/port configuration
 - `logging` - Log configuration
 - `notifications` - FCM config (can be placeholder)
@@ -84,21 +84,14 @@ The `testing/settings.testing.json` must include ALL required Lightning Server s
 
 ### 2. Debug Admin Token
 
-The server must output an admin token on startup. Add this to your server's endpoints file:
+`start-backend.sh` runs the server's `seed` command before serving and saves the token from its
+`Admin token: '<refresh token>'` line.  The starter's `seed()` (in `Seed.kt`) prints it after seeding, which only
+happens on a debug server (`deleteSeedData()` refuses otherwise), so `serve` never prints a token:
 
 ```kotlin
-import com.lightningkite.lightningserver.StartupTask
-import com.lightningkite.lightningserver.settings.generalSettings
-
-// In your endpoints object:
-val debugAdminToken = path.path("debug-admin-token") bind StartupTask {
-    if (generalSettings().debug) {
-        println("Admin token: '${YourAuth.session.createSession(Uuid.fromLongs(0L, 10L)).second}'")
-    }
-}
+val (_, refreshToken) = UserAuth.session.newSession(SeedData.admin._id, label = "Seeded admin")
+println("Admin token: '${refreshToken.string}'")
 ```
-
-Replace `YourAuth` with your authentication object name.
 
 ### 3. SDK Must Match Server
 
@@ -153,14 +146,14 @@ testing/
 ## Checklist for New Project Setup
 
 - [ ] Create `testing/` directory
-- [ ] Create `testing/.gitignore` with: `.admin-token`, `.backend.log`, `.frontend.log`, `.browser-inject.js`, `.frontend-url`, `.backend-url`, `local/`
+- [ ] Create `testing/.gitignore` with: `.admin-token`, `.backend.log`, `.seed.log`, `.frontend.log`, `.browser-inject.js`, `.frontend-url`, `.backend-url`, `local/`
 - [ ] Copy and adapt `settings.testing.json` from project's `settings.json`
 - [ ] Update `settings.testing.json` with test port and `"debug": true`
 - [ ] Update `apps/vite.config.mjs` proxy target to test backend port
 - [ ] Copy and adapt shell scripts, updating port numbers
-- [ ] Add debug admin token startup task to server if not present
+- [ ] Make the server's `seed` command print `Admin token: '<refresh token>'` (see Debug Admin Token)
 - [ ] Verify server main class in `server/build.gradle.kts`
-- [ ] Test with `./testing/start-backend.sh` - verify admin token output
+- [ ] Test with `./testing/start-backend.sh` - verify `testing/.admin-token` is written
 - [ ] Test with `./testing/start-frontend.sh` - verify Vite starts
 - [ ] Test browser login with SameServer option and token injection
 

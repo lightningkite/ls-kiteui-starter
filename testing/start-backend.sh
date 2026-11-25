@@ -1,6 +1,7 @@
 #!/bin/bash
-# Start the backend server if not already running
+# Seed sample data, save the seeded admin's refresh token, and start the backend server if not already running
 # Usage: ./testing/start-backend.sh
+#        GRADLE_ARGS=--offline ./testing/start-backend.sh   (extra Gradle arguments, e.g. without network access)
 #
 # Uses testing/settings.testing.json for port 8081 (to avoid conflict with instaclub on 8080)
 
@@ -9,6 +10,7 @@ cd "$(dirname "$0")/.."
 
 PORT=8081
 LOG_FILE="testing/.backend.log"
+SEED_LOG_FILE="testing/.seed.log"
 TOKEN_FILE="testing/.admin-token"
 # Use absolute path since gradle's workingDir may differ
 SETTINGS_FILE="$(pwd)/testing/settings.testing.json"
@@ -35,11 +37,24 @@ if [[ ! -f "$SETTINGS_FILE" ]]; then
     exit 1
 fi
 
-echo "Starting backend server on port $PORT..."
 echo "Using settings: $SETTINGS_FILE"
 
-# Start server in background with testing settings
-./gradlew :server:run --args="--settings $SETTINGS_FILE dev" > "$LOG_FILE" 2>&1 &
+# Seeding resets the seed rows (hand-made rows survive) and prints a fresh admin refresh token.  It only runs with general.debug.
+echo "Seeding sample data..."
+if ! ./gradlew $GRADLE_ARGS :server:run --args="--settings $SETTINGS_FILE seed" > "$SEED_LOG_FILE" 2>&1; then
+    echo "ERROR: Seeding failed. Check $SEED_LOG_FILE for details:"
+    tail -20 "$SEED_LOG_FILE"
+    exit 1
+fi
+sed -n "s/^Admin token: '\(.*\)'$/\1/p" "$SEED_LOG_FILE" > "$TOKEN_FILE"
+if [[ ! -s "$TOKEN_FILE" ]]; then
+    echo "ERROR: Seeding printed no admin token. Check $SEED_LOG_FILE"
+    exit 1
+fi
+echo "Admin refresh token saved to $TOKEN_FILE"
+
+echo "Starting backend server on port $PORT..."
+./gradlew $GRADLE_ARGS :server:run --args="--settings $SETTINGS_FILE dev" > "$LOG_FILE" 2>&1 &
 SERVER_PID=$!
 
 echo "Waiting for server to start (PID: $SERVER_PID)..."
@@ -48,18 +63,6 @@ echo "Waiting for server to start (PID: $SERVER_PID)..."
 for i in {1..90}; do
     if curl -s "http://localhost:$PORT/meta/health" > /dev/null 2>&1; then
         echo "Backend server started successfully on http://localhost:$PORT"
-
-        # Extract admin token from log
-        sleep 1  # Give it a moment to flush logs
-        if grep -q "Admin token:" "$LOG_FILE"; then
-            TOKEN=$(grep "Admin token:" "$LOG_FILE" | sed "s/.*Admin token: '\\([^']*\\)'.*/\\1/")
-            echo "$TOKEN" > "$TOKEN_FILE"
-            echo "Admin token saved to $TOKEN_FILE"
-            echo "Token: $TOKEN"
-        else
-            echo "WARNING: No admin token found in logs (debug mode may need to be enabled)"
-            echo "See: testing/README.md for instructions"
-        fi
         exit 0
     fi
 

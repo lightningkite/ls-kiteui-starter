@@ -1,6 +1,7 @@
 # Generated files from testing scripts
 .admin-token
 .backend.log
+.seed.log
 .frontend.log
 .test-data-ids
 .browser-inject.js
