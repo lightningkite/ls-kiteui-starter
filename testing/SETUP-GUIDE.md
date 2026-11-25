@@ -17,15 +17,9 @@ When changing ports, update ALL of these locations:
    }
    ```
 
-2. **`apps/vite.config.mjs`** - Vite proxy target
+2. **`apps/vite/vite.config.mjs.template`** (and your gitignored copy, `apps/vite/vite.config.mjs`) - Vite proxy target
    ```javascript
-   proxy: {
-     '/api': {
-       target: 'http://localhost:8081',  // <-- CHANGE THIS
-       rewrite: (path) => path.replace(/^\/api/, ''),
-       ws: true,
-     }
-   }
+   const backendPort = parseInt(process.env.BACKEND_PORT || '8081')  // <-- CHANGE THIS
    ```
 
 3. **`testing/start-backend.sh`** - Port variable
@@ -33,25 +27,17 @@ When changing ports, update ALL of these locations:
    PORT=8081  # <-- CHANGE THIS
    ```
 
-4. **`testing/stop-all.sh`** - Port in stop command
-   ```bash
-   if lsof -i :8081 > /dev/null 2>&1; then  # <-- CHANGE THIS
-   ```
-
-5. **`testing/api.sh`** - API base URL
+4. **`testing/api.sh`** - API base URL
    ```bash
    BASE_URL="http://localhost:8081"  # <-- CHANGE THIS
    ```
 
 ### Frontend Port (default: 8941)
 
-1. **`apps/vite.config.mjs`** - Vite server port
+1. **`apps/vite/vite.config.mjs.template`** (and `apps/vite/vite.config.mjs`) - Vite server port.  `strictPort`
+   makes Vite fail instead of moving to the next free port.
    ```javascript
-   server: {
-     host: true,
-     port: 8941,  // <-- CHANGE THIS
-     allowedHosts: ["...", "localhost:8941"],  // <-- UPDATE THIS TOO
-   }
+   const frontendPort = parseInt(process.env.FRONTEND_PORT || '8941')  // <-- CHANGE THIS
    ```
 
 2. **`testing/start-frontend.sh`** - Port variable
@@ -59,10 +45,11 @@ When changing ports, update ALL of these locations:
    PORT=8941  # <-- CHANGE THIS
    ```
 
-3. **`testing/stop-all.sh`** - Port in stop command
-   ```bash
-   if lsof -i :8941 > /dev/null 2>&1; then  # <-- CHANGE THIS
-   ```
+3. **`testing/settings.testing.json`** - `cors` origins, `general.publicUrl`, `general.wsUrl` and `webUrl`
+
+`stop-all.sh` has no ports: it stops the PIDs the start scripts recorded in `testing/.backend.pid` and
+`testing/.frontend.pid`, so it never touches another project's servers.  The start scripts refuse to start when
+their port is already taken by something they didn't start.
 
 ## Critical Setup Requirements
 
@@ -95,7 +82,7 @@ println("Admin token: '${refreshToken.string}'")
 
 ### 3. SDK Must Match Server
 
-If you get 404 errors like `No route matching POST /auth/user/token/simple`, the SDK is out of sync:
+If you get 404 errors like `No route matching POST /auth/session/token/simple`, the SDK is out of sync:
 
 ```bash
 ./gradlew :server:generateSdk
@@ -136,8 +123,8 @@ testing/
 ├── settings.testing.json   # Server config (get from project's settings.json)
 ├── start-backend.sh        # Start backend server
 ├── start-frontend.sh       # Start Vite frontend
-├── stop-all.sh             # Stop all servers
-├── api.sh                  # Make API calls (optional)
+├── stop-all.sh             # Stop the servers the start scripts recorded
+├── api.sh                  # Call the API as the seeded admin
 ├── prepare-browser-test.sh # All-in-one setup script
 ├── README.md               # Project-specific notes
 └── SETUP-GUIDE.md          # This file
@@ -146,10 +133,10 @@ testing/
 ## Checklist for New Project Setup
 
 - [ ] Create `testing/` directory
-- [ ] Create `testing/.gitignore` with: `.admin-token`, `.backend.log`, `.seed.log`, `.frontend.log`, `.browser-inject.js`, `.frontend-url`, `.backend-url`, `local/`
+- [ ] Create `testing/.gitignore` with: `.admin-token`, `.backend.log`, `.seed.log`, `.frontend.log`, `.backend.pid`, `.frontend.pid`, `.browser-inject.js`, `.frontend-url`, `.backend-url`
 - [ ] Copy and adapt `settings.testing.json` from project's `settings.json`
 - [ ] Update `settings.testing.json` with test port and `"debug": true`
-- [ ] Update `apps/vite.config.mjs` proxy target to test backend port
+- [ ] Update the ports in `apps/vite/vite.config.mjs.template` (and `apps/vite/vite.config.mjs`)
 - [ ] Copy and adapt shell scripts, updating port numbers
 - [ ] Make the server's `seed` command print `Admin token: '<refresh token>'` (see Debug Admin Token)
 - [ ] Verify server main class in `server/build.gradle.kts`

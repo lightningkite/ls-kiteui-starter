@@ -3,7 +3,7 @@
 # Usage: ./testing/prepare-browser-test.sh
 #
 # This script:
-# 1. Stops any existing servers
+# 1. Stops the servers these scripts started earlier
 # 2. Starts backend and captures admin token
 # 3. Starts frontend (Vite)
 # 4. Outputs Chrome integration instructions
@@ -56,7 +56,7 @@ if [[ -f "$TOKEN_FILE" ]]; then
     TOKEN=$(cat "$TOKEN_FILE")
 fi
 
-# Frontend is on port 8941 (configured in vite.config.mjs)
+# Frontend is on port 8941 (configured in apps/vite/vite.config.mjs.template)
 FRONTEND_PORT=8941
 echo ""
 

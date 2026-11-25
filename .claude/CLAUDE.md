@@ -36,7 +36,7 @@ ls-kiteui-starter/
 
 **server/** - JVM application with Lightning Server:
 - `Server.kt` - Main server definition with endpoints, settings, and middleware
-- `Main.kt` - Entry point with CLI commands (`serve`, `sdk`)
+- `Main.kt` - Entry point with CLI commands (`serve`, `dev`, `sdk`; `seed` is in `Seed.kt`)
 - `UserEndpoints.kt` - REST endpoints for User CRUD with role-based permissions
 - `UserAuth.kt` (UserAuth) - Authentication with email/password/TOTP/backup codes
 - `FcmTokenEndpoints.kt` - Firebase Cloud Messaging token management
@@ -44,7 +44,7 @@ ls-kiteui-starter/
 
 **apps/** - Multiplatform KiteUI application:
 - `App.kt` - Main application entry point with navigation and theming
-- `LandingScreen.kt`, `HomeScreen.kt`, `LoginScreen.kt` - Screen implementations
+- `views/` - `@Routable` pages: `LandingPage`, `LoginPage`, `HomePage`, `SecurityPage`
 - `sdk/` - Auto-generated API client from server (via `generateSdk` task)
 - Platform-specific implementations in `androidMain/`, `iosMain/`, `jsMain/`
 
@@ -196,7 +196,7 @@ The project uses Firebase Cloud Messaging:
 
 ## Manual/Browser Testing
 
-The `testing/` directory contains scripts for AI-assisted browser testing. These use ports 8081 (backend) and 8951 (frontend) to avoid conflicts with other projects.
+The `testing/` directory contains scripts for AI-assisted browser testing. These use ports 8081 (backend) and 8941 (frontend) to avoid conflicts with other projects.
 
 ### Quick Start
 
@@ -210,9 +210,9 @@ The `testing/` directory contains scripts for AI-assisted browser testing. These
 ```bash
 ./testing/start-all.sh        # Start backend + frontend
 ./testing/start-backend.sh    # Start backend on :8081
-./testing/start-frontend.sh   # Start frontend on :8951
-./testing/stop-all.sh         # Stop all servers
-./testing/api.sh GET /path    # Make API calls
+./testing/start-frontend.sh   # Start frontend on :8941
+./testing/stop-all.sh         # Stop the servers these scripts started (PIDs in testing/.*.pid)
+./testing/api.sh GET /auth/session/self   # Call the API as the seeded admin
 ```
 
 ### Chrome Integration (Claude Code)
@@ -220,7 +220,7 @@ The `testing/` directory contains scripts for AI-assisted browser testing. These
 After running `prepare-browser-test.sh`, use Claude's Chrome MCP tools:
 
 1. `mcp__claude-in-chrome__tabs_context_mcp(createIfEmpty=true)`
-2. `mcp__claude-in-chrome__navigate(tabId=..., url='http://localhost:8951')`
+2. `mcp__claude-in-chrome__navigate(tabId=..., url='http://localhost:8941')`
 3. Inject a refresh token as localStorage `sessionToken` if available (see `testing/.admin-token`); the app moves it into its HttpOnly cookie on load.  See "Sessions" in `testing/README.md`
 4. `mcp__claude-in-chrome__computer(action='screenshot')` for visual verification
 
@@ -265,12 +265,12 @@ Follow this sequence to add a complete new feature (e.g., a "Project" model):
    ```
 
 7. **Create UI screen** in `apps/src/commonMain/kotlin/.../`
-   - Implement as a `@Serializable` screen class
+   - Implement as a `@Routable` `Page` class in `views/`
    - Use `currentSession()` for API access
-   - Follow existing `HomeScreen.kt` or `LoginScreen.kt` patterns
+   - Follow existing `HomePage.kt` or `LoginPage.kt` patterns
 
 8. **Add navigation** in `App.kt`
-   - Register the new screen in the `PageNavigator` configuration
+   - Routes are generated from `@Routable`; add a `NavLink` to the `appNav` in `App.kt` if it belongs in the main navigation
    - Add a navigation link from the appropriate existing screen
 
 9. **Verify**
@@ -301,5 +301,5 @@ See `local.properties.example` for required credentials.
 - **Do not commit** `settings.json` with real credentials (it contains FCM private key)
 - **Use `./local/` directory** for temporary files, not `/tmp`
 - **Regenerate SDK** after any server endpoint changes before implementing client features
-- **Role hierarchy**: `NoOne < User < Admin < Developer < Root`
-- **Tests** require a test database configuration (see `server/src/test/.../TestSettings.kt`)
+- **Role hierarchy**: `User < Admin < Developer < Root`
+- **Tests** use an in-memory database: `ServerTest.kt` runs each test with `Server.testBlocking(settings = { database set Database.Settings("ram") })`

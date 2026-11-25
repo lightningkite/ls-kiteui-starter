@@ -14,7 +14,7 @@ Scripts for manual and browser testing of the application.
 ```
 
 This script:
-1. Stops any existing servers
+1. Stops the servers these scripts started earlier (never anything else on 8081 or 8941)
 2. Seeds sample data (`seed` command, debug servers only), saves the seeded admin's refresh token to `.admin-token`, and starts the backend on port 8081
 3. Starts frontend on port 8941 (Vite with proxy to backend)
 4. Outputs Chrome integration instructions
@@ -69,20 +69,23 @@ ACCESS=$(curl -s -X POST http://localhost:8081/auth/session/token/simple -H 'Con
 curl -H "Authorization: $ACCESS" http://localhost:8081/auth/session/self
 ```
 
+`./testing/api.sh GET /auth/session/self` does both steps.
+
 ## Scripts
 
 | Script | Purpose |
 |--------|---------|
-| `prepare-browser-test.sh` | All-in-one: stops servers, starts fresh, outputs instructions |
+| `prepare-browser-test.sh` | All-in-one: stops our servers, starts fresh, outputs instructions |
 | `start-backend.sh` | Seed sample data, save the seeded admin's refresh token, start backend on :8081 |
 | `start-frontend.sh` | Start Vite frontend on :8941 |
 | `start-all.sh` | Start backend + frontend |
-| `stop-all.sh` | Stop all test servers |
+| `stop-all.sh` | Stop the servers these scripts started (PIDs in `.backend.pid`, `.frontend.pid`) |
+| `api.sh` | `./testing/api.sh METHOD PATH [JSON]`: call the backend as the seeded admin |
 
 ## Configuration Files
 
 - `settings.testing.json` - Server settings (port 8081, debug mode, console email)
-- `apps/vite.config.mjs` - Vite config (port 8941, proxy to 8081)
+- `apps/vite/vite.config.mjs.template` - Vite config (port 8941 with `strictPort`, proxy to 8081), copied to the gitignored `apps/vite/vite.config.mjs`
 
 ## Generated Files (gitignored)
 
@@ -91,6 +94,7 @@ curl -H "Authorization: $ACCESS" http://localhost:8081/auth/session/self
 - `.backend.log` - Backend server output
 - `.frontend.log` - Vite server output
 - `.browser-inject.js` - JS snippet for manual session injection
+- `.backend.pid`, `.frontend.pid` - PIDs of the servers the start scripts launched, for `stop-all.sh`
 
 ## Troubleshooting
 
