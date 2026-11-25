@@ -18,6 +18,7 @@ import com.lightningkite.lskiteuistarter._id
 import com.lightningkite.lskiteuistarter.api.Server
 import com.lightningkite.lskiteuistarter.api.UserAuth
 import com.lightningkite.lskiteuistarter.api.UserAuth.RoleCache.userRole
+import com.lightningkite.lskiteuistarter.api.UserAuth.memberships
 import com.lightningkite.lskiteuistarter.email
 import com.lightningkite.lskiteuistarter.role
 import com.lightningkite.services.data.EmailAddress
@@ -29,8 +30,10 @@ import com.lightningkite.services.database.eq
 import com.lightningkite.services.database.findOne
 import com.lightningkite.services.database.insertOne
 import com.lightningkite.services.database.inside
+import com.lightningkite.services.database.mask
 import com.lightningkite.services.database.or
 import com.lightningkite.services.database.updateRestrictions
+import kotlinx.coroutines.flow.toList
 import kotlin.uuid.Uuid
 
 object UserEndpoints : ServerBuilder() {
@@ -49,9 +52,20 @@ object UserEndpoints : ServerBuilder() {
 
             val self = User._id eq auth.id
 
+            val myOrgIds = auth.memberships().map { it.organization }.toSet()
+            val fellowMemberIds = MembershipEndpoints.info.table()
+                .find(Membership.organization inside myOrgIds)
+                .toList()
+                .map { it.user }
+            val fellowMember = User._id inside fellowMemberIds
+
             ModelPermissions(
                 create = admin,
-                read = admin or self,
+                read = admin or self or fellowMember,
+                readMask = mask {
+                    // Fellow members see everyone as a plain User: they need names, not who holds system roles.
+                    it.role.mask(UserRole.User, unless = admin or self)
+                },
                 update = admin or self,
                 updateRestrictions = updateRestrictions {
                     it.role.requires(admin) { it.inside(allowedRoles) }

@@ -220,6 +220,40 @@ class ServerTest {
     }
 
     @Test
+    fun userReadPermissions() = Server.testBlocking(settings = { database set Database.Settings("ram") }) {
+        val member = execute { UserEndpoints.info.table().insertOne(User(email = "member@test.com".toEmailAddress(), name = "Member")) }
+        val colleague = execute { UserEndpoints.info.table().insertOne(User(email = "colleague@test.com".toEmailAddress(), name = "Colleague", role = UserRole.Admin)) }
+        val outsider = execute { UserEndpoints.info.table().insertOne(User(email = "outsider@test.com".toEmailAddress(), name = "Outsider")) }
+        val admin = execute { UserEndpoints.info.table().insertOne(User(email = "admin@test.com".toEmailAddress(), name = "Admin", role = UserRole.Admin)) }
+
+        val org = execute { OrganizationEndpoints.info.table().insertOne(Organization(name = "Acme")) }
+        val otherOrg = execute { OrganizationEndpoints.info.table().insertOne(Organization(name = "Other")) }
+        execute {
+            MembershipEndpoints.info.table().insertOne(Membership(organization = org._id, user = member._id))
+            MembershipEndpoints.info.table().insertOne(Membership(organization = org._id, user = colleague._id))
+            MembershipEndpoints.info.table().insertOne(Membership(organization = otherOrg._id, user = outsider._id))
+        }
+
+        val memberAuth = UserAuth.testAuth(member)
+        val rest = UserEndpoints.rest.endpoints
+
+        // A member reads the users who share an organization with them, without their system role
+        val seen = rest.query.test(memberAuth, Query<User>())
+        assertEquals(setOf("Member", "Colleague"), seen.map { it.name }.toSet())
+        assertEquals("colleague@test.com", rest.detail.test(colleague._id, memberAuth, Unit).email.raw)
+        assertEquals(UserRole.User, rest.detail.test(colleague._id, memberAuth, Unit).role)
+        assertEquals(UserRole.Admin, rest.detail.test(colleague._id, UserAuth.testAuth(colleague), Unit).role)
+
+        // ...and can't find users outside their organizations
+        assertFailsWith<NotFoundException> { rest.detail.test(outsider._id, memberAuth, Unit) }
+
+        // An admin still reads everyone, roles included
+        val adminSeen = rest.query.test(UserAuth.testAuth(admin), Query<User>())
+        assertEquals(setOf("Member", "Colleague", "Outsider", "Admin"), adminSeen.map { it.name }.toSet())
+        assertEquals(UserRole.Admin, adminSeen.single { it.name == "Colleague" }.role)
+    }
+
+    @Test
     fun userRoleEscalation() = Server.testBlocking(settings = { database set Database.Settings("ram") }) {
         val regularUser = execute { UserEndpoints.info.table().insertOne(
             User(email = "user@test.com".toEmailAddress(), name = "User", role = UserRole.User)
