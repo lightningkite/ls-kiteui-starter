@@ -2,30 +2,24 @@
 # Start the Vite frontend dev server if not already running
 # Usage: ./testing/start-frontend.sh
 #
-# Uses port 8941 (configured in apps/vite.config.mjs)
+# Uses port 8941 (configured in apps/vite/vite.config.mjs.template)
 # Vite proxies /api requests to backend on port 8081
 
 set -e
 cd "$(dirname "$0")/.."
 
 LOG_FILE="testing/.frontend.log"
+PID_FILE="testing/.frontend.pid"
 PORT=8941
 
-# Check if Vite is already running
-if curl -s "http://localhost:$PORT/" 2>/dev/null | grep -q -E "(vite|KiteUI|html)"; then
-    echo "Frontend already running on http://localhost:$PORT"
+if [[ -f "$PID_FILE" ]] && kill -0 "$(cat "$PID_FILE")" 2>/dev/null; then
+    echo "Frontend already running (PID $(cat "$PID_FILE")) on http://localhost:$PORT"
     exit 0
 fi
 
-# Check if port is in use by something else
-if lsof -i :$PORT > /dev/null 2>&1; then
-    echo "WARNING: Port $PORT is in use. Checking if it's our frontend..."
-    if curl -s "http://localhost:$PORT/" > /dev/null 2>&1; then
-        echo "Frontend running on http://localhost:$PORT"
-        exit 0
-    fi
-    echo "ERROR: Port $PORT is in use by another process:"
-    lsof -i :$PORT | head -3
+if nc -z localhost $PORT > /dev/null 2>&1; then
+    echo "ERROR: Port $PORT is in use by a process these scripts didn't start (another project's frontend?)."
+    echo "       Free the port first; stop-all.sh only stops servers these scripts started."
     exit 1
 fi
 
@@ -34,6 +28,7 @@ echo "Starting Vite frontend dev server..."
 # Start Vite in background
 ./gradlew $GRADLE_ARGS :apps:jsViteDev > "$LOG_FILE" 2>&1 &
 VITE_PID=$!
+echo $VITE_PID > "$PID_FILE"
 
 echo "Waiting for Vite to start (PID: $VITE_PID)..."
 
@@ -49,6 +44,7 @@ for i in {1..120}; do
 
     # Check if process died
     if ! kill -0 $VITE_PID 2>/dev/null; then
+        rm "$PID_FILE"
         echo "ERROR: Vite process died. Check $LOG_FILE for details:"
         tail -30 "$LOG_FILE"
         exit 1
@@ -62,7 +58,7 @@ for i in {1..120}; do
     sleep 1
 done
 
-echo "ERROR: Frontend failed to start within 120 seconds"
+echo "ERROR: Frontend failed to start within 120 seconds; it may still be starting (stop it with ./testing/stop-all.sh)"
 echo "Check $LOG_FILE for details:"
 tail -30 "$LOG_FILE"
 exit 1

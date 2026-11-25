@@ -7,3 +7,5 @@
 .browser-inject.js
 .frontend-url
 .backend-url
+.backend.pid
+.frontend.pid

@@ -1,38 +1,33 @@
 #!/bin/bash
-# Stop all test servers
+# Stop the test servers these scripts started (recorded in testing/.backend.pid and testing/.frontend.pid).
+# Whatever else holds ports 8081 or 8941, such as another project's server, is left alone.
 # Usage: ./testing/stop-all.sh
 
 cd "$(dirname "$0")/.."
 
 echo "Stopping servers..."
 
-# Stop backend on port 8081
-if lsof -i :8081 > /dev/null 2>&1; then
-    echo "Stopping backend on port 8081..."
-    PID=$(lsof -t -i :8081 2>/dev/null || true)
-    if [[ -n "$PID" ]]; then
-        kill $PID 2>/dev/null || true
-        sleep 1
-        # Force kill if still running
-        if kill -0 $PID 2>/dev/null; then
-            kill -9 $PID 2>/dev/null || true
+for NAME in backend frontend; do
+    PID_FILE="testing/.$NAME.pid"
+    if [[ ! -f "$PID_FILE" ]]; then
+        echo "  $NAME: not running"
+        continue
+    fi
+    PID=$(cat "$PID_FILE")
+    if kill -0 "$PID" 2>/dev/null; then
+        kill "$PID"
+        for i in {1..10}; do
+            kill -0 "$PID" 2>/dev/null || break
+            sleep 1
+        done
+        if kill -0 "$PID" 2>/dev/null; then
+            kill -9 "$PID"
         fi
-        echo "  Backend stopped"
+        echo "  $NAME stopped (PID $PID)"
+    else
+        echo "  $NAME: already exited"
     fi
-else
-    echo "  Backend not running"
-fi
-
-# Stop frontend on port 8941
-if lsof -i :8941 > /dev/null 2>&1; then
-    echo "Stopping frontend on port 8941..."
-    PID=$(lsof -t -i :8941 2>/dev/null || true)
-    if [[ -n "$PID" ]]; then
-        kill $PID 2>/dev/null || true
-        echo "  Frontend stopped"
-    fi
-else
-    echo "  Frontend not running"
-fi
+    rm "$PID_FILE"
+done
 
 echo "Done"
