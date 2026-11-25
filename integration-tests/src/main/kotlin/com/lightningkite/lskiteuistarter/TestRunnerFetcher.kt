@@ -26,7 +26,9 @@ import io.ktor.client.plugins.cookies.CookiesStorage
 import io.ktor.http.Url
 import io.ktor.http.parseServerSetCookieHeader
 import io.ktor.http.renderCookieHeader
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.builtins.serializer
@@ -63,7 +65,11 @@ class TestRunnerFetcher(
         inSerializer: KSerializer<I>,
         body: I,
         outSerializer: KSerializer<O>,
-    ): O {
+    ): O = withContext(Dispatchers.Main) {
+        // The server and body reads hop to worker threads, and callers such as rememberSuspending run Unconfined, so
+        // without this the caller, and every UI update it makes, would carry on there, racing the UI thread.  A
+        // browser's fetch always answers on the UI thread.
+
         // 1. Serialize input to JSON body (skip for Unit input)
         val bodyData = if (inSerializer.descriptor == Unit.serializer().descriptor) null
         else TypedData.text(json.encodeToString(inSerializer, body), MediaType.Application.Json)
@@ -115,11 +121,11 @@ class TestRunnerFetcher(
         // 7. Deserialize response (skip for Unit output)
         if (outSerializer.descriptor == Unit.serializer().descriptor) {
             @Suppress("UNCHECKED_CAST")
-            return Unit as O
+            return@withContext Unit as O
         }
         val responseBody = response.body?.text()
             ?: throw IllegalStateException("Expected response body but got none for $method $url")
-        return json.decodeFromString(outSerializer, responseBody)
+        json.decodeFromString(outSerializer, responseBody)
     }
 
     /**

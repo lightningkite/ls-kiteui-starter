@@ -37,8 +37,9 @@ class SecurityTest {
         val pin = Regex(""">\s*([A-Z]{6})\s*<""").find(email.html)!!.groupValues[1]
         setValue("codeInput", pin)
         click("submitButton")
-        waitForId("loginButton")
-        click("loginButton")
+        // The login button is in the tree, hidden, until the proofs are enough; clicking it early logs in with too few.
+        waitFor(description = "login button shown") { findClickable("Login").isNotEmpty() }
+        click(findClickable("Login").single().path)
         waitForText("Two-Factor Authentication", timeoutMs = 15_000)
 
         val (newPassword, confirmation, deviceName) = findAll("TextInput").map { it.path }
