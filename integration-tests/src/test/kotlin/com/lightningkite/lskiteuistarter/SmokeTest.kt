@@ -37,10 +37,9 @@ class SmokeTest {
 
     /**
      * Logged-out: navigating straight to a guarded page (HomePage) must bounce through LandingPage
-     * to LoginPage instead of hanging. HomePage's auth guard defers its `reset(LandingPage())` past a
-     * real suspension point -- see the comment on the guard in HomeScreen.kt for why a same-tick
-     * reset() silently never reaches the view. This is the one path the happy-path `authedUserSeesHome`
-     * test above can't catch, since it only fires when logged out.
+     * to LoginPage instead of hanging: the guard resets the navigator during the render the
+     * navigation itself caused. This is the one path the happy-path `authedUserSeesHome` test above
+     * can't catch, since it only fires when logged out.
      */
     @Test
     fun loggedOutUserRedirectedFromHome() = integrationTest(

@@ -14,18 +14,14 @@ import com.lightningkite.reactive.context.reactive
 import com.lightningkite.reactive.core.Constant
 import com.lightningkite.reactive.core.Reactive
 import com.lightningkite.reactive.core.remember
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 @Routable("/security")
 class SecurityPage : Page {
     override val title: Reactive<String> get() = Constant("Security")
 
     override fun ElementWriter.CanAddTheme.render() {
-        // The delay matters; see HomePage.
         reactive {
-            if (currentSession() == null)
-                launch { delay(50); context.pageNavigator.reset(LandingPage()) }
+            if (currentSession() == null) context.pageNavigator.reset(LandingPage())
         }
 
         val security = remember {
