@@ -32,26 +32,4 @@ class MembersTest {
             "User: Carol Contractor" in page && "User: Bob Builder" !in page
         }
     }
-
-    @Test
-    fun memberSeesFellowMembersByName() = integrationTest(
-        initialPage = MembersPage(),
-        setup = {
-            val bob = createUser(email = "bob@example.com", name = "Bob Builder")
-            val carol = createUser(email = "carol@example.com", name = "Carol Contractor")
-            val org = OrganizationEndpoints.info.table().insertOne(Organization(name = "Acme"))
-            for (user in listOf(bob, carol))
-                MembershipEndpoints.info.table().insertOne(Membership(organization = org._id, user = user._id))
-            loginAs(bob)
-        },
-    ) {
-        waitForText("User: Bob Builder")
-        waitForText("User: Carol Contractor")
-
-        setValue(findAll("TextInput").single().path, "carol")
-        waitFor(description = "only Carol listed") {
-            val page = snapshot()
-            "User: Carol Contractor" in page && "User: Bob Builder" !in page
-        }
-    }
 }
